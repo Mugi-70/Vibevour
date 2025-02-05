@@ -14,5 +14,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('sidebar');
+});
+
+Route::get('/grup', function () {
+    return view('grup');
+});
+
+Route::get('/ready_grup', function () {
+    return view('ready_grup');
+});
+
+Route::get('/pembuatan_grup', function () {
+    return view('pembuatan_grup');
 });
