@@ -3,9 +3,8 @@
 @section('content')
     <div class="container">
         <div class="header">
-            <h2>Grup</h2>
-            <a href=""></a>
-            <a href="/pembuatan_grup" type="button" class="create btn btn-primary">+ Buat Grup </a>
+            <h2>Pembuatan Grup</h2>
+            {{-- <a href="/pembuatan_grup" type="button" class="create btn btn-primary">+ Buat Grup </a> --}}
         </div>
         <div class="line"></div>
 
@@ -23,7 +22,7 @@
                         <label for="anggota" class="form-label fw-bold">Anggota</label>
                         <input type="text" class="form-control" id="anggota" placeholder="Masukkan Anggota">
                     </div>
-                    <button type="button" class="btn btn-secondary align-self-end">
+                    <button type="button" class="btn btn-outline-secondary align-self-end">
                         <i class="bi bi-person-plus"></i> Anggota
                     </button>
                 </div>
@@ -62,14 +61,29 @@
                 <!-- Tanggal -->
                 <div class="mb-3">
                     <label for="tanggal" class="form-label fw-bold">Tanggal</label>
-                    <div class="d-flex">
-                        <input type="date" class="form-control me-2" id="tanggalMulai">
-                        <span class="align-self-center">s.d.</span>
-                        <input type="date" class="form-control ms-2" id="tanggalSelesai">
+                    <div class="d-flex align-items-center">
+                        <!-- Input Tanggal Mulai -->
+                        <div class="position-relative me-2">
+                            <input type="text" class="form-control datepicker" id="tanggalMulai" placeholder="dd/mm/yy"
+                                style="width: 30rem">
+                            <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
+                        </div>
+
+                        <span class="align-self-center me-2">s.d.</span>
+
+                        <!-- Input Tanggal Selesai -->
+                        <div class="position-relative">
+                            <input type="text" class="form-control datepicker" id="tanggalSelesai" placeholder="dd/mm/yy"
+                                style="width: 30rem">
+                            <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
+                        </div>
                     </div>
-                    <small class="text-muted"><i class="bi bi-question-circle"></i> Tentukan rentang tanggal untuk kegiatan
-                        grup, misalnya dari 1 Januari hingga 3 Januari 2025.</small>
+                    <small class="text-muted d-block mt-1">
+                        <i class="bi bi-question-circle"></i>
+                        Tentukan rentang tanggal untuk kegiatan grup, misalnya dari 1 Januari hingga 3 Januari 2025.
+                    </small>
                 </div>
+
 
                 <!-- Deskripsi -->
                 <div class="mb-3">
@@ -79,8 +93,21 @@
             </form>
         </div>
         <div class="d-flex justify-content-end mt-3">
-            <a href="/grup" type="button" class="btn btn-danger m-1">Kembali</a>
-            <a href="/ready_grup" type="submit" class="btn btn-primary m-1">Buat Group</a>
+            <a href="/grup" type="button" class="btn btn-secondary m-1">Kembali<i
+                    class="bi bi-chevron-compact-right"></i></a>
+            <a href="/ready_grup" type="submit" class="btn btn-success m-1" style="border:none">Simpan
+                Group <i class="bi bi-save"></i>
+            </a>
         </div>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            $("#tanggalMulai, #tanggalSelesai").datepicker({
+                format: "dd-mm-yy",
+                autoclose: true,
+                todayHighlight: true
+            });
+        });
+    </script>
 @endsection
