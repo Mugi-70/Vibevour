@@ -7,6 +7,11 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 
     <link rel="stylesheet" href="{{ asset('css/grup.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
@@ -18,8 +23,8 @@
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <div class="logo">Vibe<span style="color:blueviolet;">Four</span></div>
-        <hr>
+        <div class="logo">Vibe<span>Four</span></div>
+
         <a href="#" class="menu-item active"><i class="bi bi-house-door"></i> Beranda</a>
 
         <div onclick="dropdownVote()" class="menu-item ">
@@ -31,7 +36,7 @@
         </div>
 
         <div onclick="dropdownPenjadwalan()" class="menu-item">
-            <i class="bi bi-calendar-event"></i> Penjadwalan<i id="icon_jadwal" class=" tanda bi bi-chevron-right"></i>
+            <i class="bi bi-calendar-event"></i> Penjadwalan<i id="icon_jadwal" class=" tanda bi bi-chevron-down"></i>
         </div>
 
         <div id="menu_penjadwalan" class="hidden">
@@ -40,8 +45,10 @@
         <div id="menu_penjadwalan_pertemuan" class="hidden">
             <a href="#" class="menu-sub-item">Pertemuanmu</a>
         </div>
-        <hr>
-        <a href="/logout" class="menu-item"><i class="bi bi-box-arrow-right"></i> Keluar Akun</a>
+
+        <div class="logout">
+            <a href="#" class="menu-item"><i class="bi bi-box-arrow-right"></i> Keluar</a>
+        </div>
     </div>
 
     <div class="content" id="content">
@@ -76,7 +83,7 @@
             if (menuGrup.classList.contains("hidden") && menuPertemuan.classList.contains("hidden")) {
                 icon.style.transform = "rotate(0deg)";
             } else {
-                icon.style.transform = "rotate(90deg)";
+                icon.style.transform = "rotate(180deg)";
             }
         }
     </script>

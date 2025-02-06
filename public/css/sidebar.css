@@ -18,10 +18,11 @@
             font-size: 22px;
             font-weight: bold;
             color: #72B5F6;
+            margin-bottom: 30px;
         }
 
         .sidebar .menu-item {
-            padding: 10px;
+            padding: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -54,8 +55,14 @@
             font-size: 18px;
         }
 
+        .logout {
+            position: absolute;
+            bottom: 0;
+            font-weight: bold;
+        }
+
         .tanda {
-            margin-left: 50px
+            margin-left: 40px
         }
 
         /* #icon_jadwal {

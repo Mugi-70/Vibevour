@@ -65,3 +65,28 @@ body{
     border: none;
 }
 
+textarea {
+    height: 110px;
+}
+
+
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px 35px;
+    /* Tambahkan padding agar teks tidak bertabrakan */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.input-container i {
+    position: absolute;
+    right: 0;
+    left: 420px;
+    top: 50%;
+    transform: translateY(-50%);
+}
