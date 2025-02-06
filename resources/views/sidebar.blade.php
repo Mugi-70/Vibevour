@@ -5,109 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Sidebar</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ asset('css/grup.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+    <title>VibeFour</title>
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .sidebar {
-            width: 250px;
-            background: white;
-            height: 100vh;
-            position: fixed;
-            padding: 20px;
-            transition: all 0.3s;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar .logo {
-            font-size: 22px;
-            font-weight: bold;
-            color: #72B5F6;
-        }
-
-        .sidebar .menu-item {
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #333;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: 0.3s;
-            cursor: pointer;
-        }
-
-        .sidebar .menu-sub-item {
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            margin-left: 30px;
-            gap: 10px;
-            color: #333;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-
-        /* .sidebar .menu-item:hover,
-        .menu-item.active {
-            background: #72B5F6;
-            color: #000000;
-        } */
-
-        .menu-item i {
-            font-size: 18px;
-        }
-
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-            transition: 0.3s;
-        }
-
-        .navbar {
-            background: white;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .toggle-btn {
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .sidebar-hidden {
-            margin-left: -250px;
-        }
-
-        .content-expanded {
-            margin-left: 0 !important;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                margin-left: -250px;
-            }
-
-            .content {
-                margin-left: 0;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -127,11 +31,14 @@
         </div>
 
         <div onclick="dropdownPenjadwalan()" class="menu-item">
-            <i class="bi bi-calendar-event"></i> Penjadwalan
+            <i class="bi bi-calendar-event"></i> Penjadwalan<i id="icon_jadwal" class=" tanda bi bi-chevron-right"></i>
         </div>
 
         <div id="menu_penjadwalan" class="hidden">
-            <a href="/penjadwalan" class="menu-sub-item">Penjadwalan Saya</a>
+            <a href="/grup" class="menu-sub-item">Grup</a>
+        </div>
+        <div id="menu_penjadwalan_pertemuan" class="hidden">
+            <a href="#" class="menu-sub-item">Pertemuanmu</a>
         </div>
         <hr>
         <a href="/logout" class="menu-item"><i class="bi bi-box-arrow-right"></i> Keluar Akun</a>
@@ -161,6 +68,16 @@
 
         function dropdownPenjadwalan() {
             document.getElementById("menu_penjadwalan").classList.toggle("hidden");
+            document.getElementById("menu_penjadwalan_pertemuan").classList.toggle("hidden");
+            const menuGrup = document.getElementById("menu_penjadwalan");
+            const menuPertemuan = document.getElementById("menu_penjadwalan_pertemuan");
+            const icon = document.getElementById("icon_jadwal");
+
+            if (menuGrup.classList.contains("hidden") && menuPertemuan.classList.contains("hidden")) {
+                icon.style.transform = "rotate(0deg)";
+            } else {
+                icon.style.transform = "rotate(90deg)";
+            }
         }
     </script>
 
