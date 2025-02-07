@@ -23,7 +23,7 @@ body{
         height: 50vh;
 }
 
-.navbar {
+.card_form {
     background: white;
     padding: 20px;
     display: flex;
@@ -89,4 +89,18 @@ textarea {
     left: 420px;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.anggota-grup {
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.hide {
+    display: none;
+}
+
+.show {
+    display: flex;
 }

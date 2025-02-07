@@ -8,23 +8,27 @@
         </div>
         <div class="line"></div>
 
-        <div class="navbar">
+        <div class="card_form">
             <form>
                 <div class="mb-3">
                     <label for="namaGrup" class="form-label fw-bold">Nama Grup</label>
-                    <input type="text" class="form-control" id="namaGrup" style="width: 60rem"
-                        placeholder="Masukkan Nama Grup">
+                    <input type="text" class="form-control" id="namaGrup" placeholder="Masukkan Nama Grup">
                 </div>
 
                 <!-- Anggota -->
                 <div class="mb-3 d-flex align-items-center">
                     <div class="flex-grow-1 me-2">
                         <label for="anggota" class="form-label fw-bold">Anggota</label>
-                        <input type="text" class="form-control" id="anggota" placeholder="Masukkan Anggota">
+                        {{-- <input type="text" class="form-control" id="anggota" placeholder="Masukkan Anggota"> --}}
+                        <div class="anggota-grup">
+                            <p>Anggota</p>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary align-self-end">
+                    <button type="button" class="btn btn-outline-secondary align-self-end" data-bs-toggle="modal"
+                        data-bs-target="#modalanggota">
                         <i class="bi bi-person-plus"></i> Anggota
                     </button>
+                    @include('modal.tambah_anggota')
                 </div>
 
                 <!-- Durasi dan Waktu -->
@@ -32,8 +36,8 @@
                     <div class="col-md-6">
                         <label for="durasi" class="form-label fw-bold">Durasi</label>
                         <div class="input-group">
-                            <select class="form-select" id="durasi">
-                                <option value="15 menit">15 menit <i class="bi bi-check2"></i></option>
+                            <select class="form-select" id="durasi" onchange="handleSelectChange(this)">
+                                <option value="15 menit">15 menit</option>
                                 <option value="30 menit">30 menit</option>
                                 <option value="45 menit">45 menit</option>
                                 <option value="60 menit">60 menit</option>
@@ -43,15 +47,41 @@
                                 <i class="bi bi-clock"></i>
                             </span>
                         </div>
+
+                        <!-- Elemen tambahan untuk Kustomisasi -->
+                        <div id="customInputGroup" class="d-flex hide mt-2">
+                            <input type="text" name="popup" class="form-control me-2"
+                                placeholder="Masukkan durasi kustom">
+                            <select name="satuan" class="form-select">
+                                <option value="menit">Menit</option>
+                                <option value="jam">Jam</option>
+                            </select>
+                        </div>
+
+
                         <small class="text-muted"><i class="bi bi-question-circle"></i> Atur lama waktu kegiatan di
                             sini.</small>
                     </div>
                     <div class="col-md-6">
                         <label for="waktu" class="form-label fw-bold">Waktu</label>
                         <div class="d-flex">
-                            <input type="time" class="form-control me-2" id="waktuMulai">
-                            <span class="align-self-center">s.d.</span>
-                            <input type="time" class="form-control ms-2" id="waktuSelesai">
+                            <div class="waktu-mulai position-relative">
+                                <div class="input-group">
+                                    <input type="time" class="form-control" id="waktuMulai">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-clock"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="align-self-center m-sm-1">s.d.</span>
+                            <div class="waktu-selesai position-relative">
+                                <div class="input-group">
+                                    <input type="time" class="form-control ms-2" id="waktuSelesai">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-clock"></i>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <small class="text-muted"><i class="bi bi-question-circle"></i> Tentukan waktu operasional kegiatan
                             grup.</small>
@@ -62,18 +92,18 @@
                 <div class="mb-3">
                     <label for="tanggal" class="form-label fw-bold">Tanggal</label>
                     <div class="d-flex align-items-center">
-                        <!-- Input Tanggal Mulai -->
+                        <!-- Tanggal Mulai -->
                         <div class="position-relative me-2">
-                            <input type="text" class="form-control datepicker" id="tanggalMulai" placeholder="dd/mm/yy"
+                            <input type="text" class="form-control" id="tanggalMulai" placeholder="dd/mm/yy"
                                 style="width: 30rem">
                             <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
                         </div>
 
                         <span class="align-self-center me-2">s.d.</span>
 
-                        <!-- Input Tanggal Selesai -->
+                        <!-- Tanggal Selesai -->
                         <div class="position-relative">
-                            <input type="text" class="form-control datepicker" id="tanggalSelesai" placeholder="dd/mm/yy"
+                            <input type="text" class="form-control" id="tanggalSelesai" placeholder="dd/mm/yy"
                                 style="width: 30rem">
                             <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
                         </div>
@@ -83,7 +113,6 @@
                         Tentukan rentang tanggal untuk kegiatan grup, misalnya dari 1 Januari hingga 3 Januari 2025.
                     </small>
                 </div>
-
 
                 <!-- Deskripsi -->
                 <div class="mb-3">
@@ -102,12 +131,50 @@
     </div>
 
     <script>
-        $(document).ready(function() {
-            $("#tanggalMulai, #tanggalSelesai").datepicker({
-                format: "dd-mm-yy",
-                autoclose: true,
-                todayHighlight: true
-            });
+        /* tanggal */
+        let startDatePicker = flatpickr("#tanggalMulai", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            onChange: function(selectedDates, dateStr) {
+                endDatePicker.set("minDate", dateStr);
+            }
         });
+
+        let endDatePicker = flatpickr("#tanggalSelesai", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+        });
+        /* tanggal */
+
+        /* waktu */
+        let startPicker = flatpickr("#waktuMulai", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            onChange: function(selectedDates, dateStr) {
+                endPicker.set("minTime", dateStr);
+            }
+        });
+
+        let endPicker = flatpickr("#waktuSelesai", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true
+        });
+        /* waktu */
+
+        function handleSelectChange(selectElement) {
+            const customInputGroup = document.getElementById("customInputGroup");
+
+            if (selectElement.value === "Kustomisasi") {
+                customInputGroup.classList.remove("hide");
+                customInputGroup.classList.add("show");
+            } else {
+                customInputGroup.classList.remove("show");
+                customInputGroup.classList.add("hide");
+            }
+        }
     </script>
 @endsection
