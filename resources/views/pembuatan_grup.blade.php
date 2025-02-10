@@ -4,7 +4,6 @@
     <div class="container">
         <div class="header">
             <h2>Pembuatan Grup</h2>
-            {{-- <a href="/pembuatan_grup" type="button" class="create btn btn-primary">+ Buat Grup </a> --}}
         </div>
         <div class="line"></div>
 
@@ -19,7 +18,6 @@
                 <div class="mb-3 d-flex align-items-center">
                     <div class="flex-grow-1 me-2">
                         <label for="anggota" class="form-label fw-bold">Anggota</label>
-                        {{-- <input type="text" class="form-control" id="anggota" placeholder="Masukkan Anggota"> --}}
                         <div class="anggota-grup">
                             <p>Anggota</p>
                         </div>
