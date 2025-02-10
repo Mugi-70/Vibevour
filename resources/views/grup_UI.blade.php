@@ -2,9 +2,10 @@
 
 @section('content')
     <div class="d-flex align-items-start">
-        <div class="card shadow-sm p-3 flex-grow-1" style="border-radius: 10px;">
+        <div class="card-grup shadow p-3">
             <div class="row align-items-center">
-                <div class="col-md-4 text-center">
+                <!-- Bagian Kiri -->
+                <div class="col-md-5 text-center">
                     <div class="d-flex flex-column align-items-center">
                         <i class="bi bi-people-fill fs-1"></i>
                         <h5 class="fw-bold mt-2">Jual-Beli</h5>
@@ -14,10 +15,13 @@
                     </div>
                 </div>
 
-                <div class="vertical"></div>
+                <div class="col-md-1 d-flex justify-content-center">
+                    <div class="vertical"></div>
+                </div>
 
-                <div class="col-md-8">
-                    <ul class="list-unstyled">
+                <!-- Bagian Kanan -->
+                <div class="col-md-6">
+                    <ul class="list-unstyled" style="width: 100%">
                         <li class="mb-2">
                             <i class="bi bi-calendar"></i>
                             <strong>Tanggal:</strong> 01 Januari 2025 - 07 Januari 2025
@@ -35,6 +39,7 @@
             </div>
         </div>
 
+
         <!-- tombol -->
         <div class="d-flex flex-column ms-3">
             <button class="btn btn-primary mb-2">
@@ -51,4 +56,6 @@
             </button>
         </div>
     </div>
+
+    <div class="card_form mt-5"></div>
 @endsection
