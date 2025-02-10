@@ -27,7 +27,6 @@ body{
     background: white;
     padding: 20px;
     display: flex;
-    /* align-items: center; */
     justify-content: center;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 5px
@@ -41,13 +40,13 @@ body{
 
 .header .create {
     background-color: #E8F4FF;
-        border: none;
-        font-size: 20px;
-        color: #000000;
-        width: 200px;
+    border: none;
+    font-size: 20px;
+    color: #000000;
+    width: 200px;
 }
 
-.card {
+.card-ikon {
     width: 397px;
     height: 241px;
     background-color: #E8F4FF;
@@ -97,10 +96,77 @@ textarea {
     border-radius: 5px;
 }
 
-.hide {
-    display: none;
+#kustomGrup.hide {
+    display: none !important;
 }
 
-.show {
+#kustomGrup.show {
+    display: flex !important;
+}
+
+#searchResults {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+#searchResults .dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+}
+
+#searchResults .dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
+.card_meet {
+    background: white;
+    height: 70vh;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #000000;
+}
+
+.line-meet {
+    height: 1px;
+    background-color: black;
+    width: 100%;
+    /* margin: px; */
+}
+
+.card-riwayat {
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.filter-meet {
+    border-radius: 20px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #000000;
+    border-radius: 50%;
+}
+
+.card-detail-grup {
+    background: white;
+    width: 80%;
+    height: 100%;
+    border-radius: 28px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.vertical {
+    width: 1px;
+    height: 200px;
+    border: 1px solid gray;
 }

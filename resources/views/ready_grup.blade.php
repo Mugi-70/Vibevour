@@ -9,7 +9,7 @@
         <div class="line"></div>
 
         <div class="grup">
-            <div class="card">
+            <div class="card-ikon">
                 <div class="card-body">
                     <h5 class="card-title">Jual-Beli</h5>
                 </div>

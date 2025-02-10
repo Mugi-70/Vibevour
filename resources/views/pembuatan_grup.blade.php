@@ -49,15 +49,14 @@
                         </div>
 
                         <!-- Elemen tambahan untuk Kustomisasi -->
-                        <div id="customInputGroup" class="d-flex hide mt-2">
-                            <input type="text" name="popup" class="form-control me-2"
-                                placeholder="Masukkan durasi kustom">
+                        <div id="kustomGrup" class="hide d-flex mt-2">
+                            <input type="number" id="kustom" name="popup" class="form-control me-2" placeholder=""
+                                min="1">
                             <select name="satuan" class="form-select">
                                 <option value="menit">Menit</option>
                                 <option value="jam">Jam</option>
                             </select>
                         </div>
-
 
                         <small class="text-muted"><i class="bi bi-question-circle"></i> Atur lama waktu kegiatan di
                             sini.</small>
@@ -67,7 +66,7 @@
                         <div class="d-flex">
                             <div class="waktu-mulai position-relative">
                                 <div class="input-group">
-                                    <input type="time" class="form-control" id="waktuMulai">
+                                    <input type="time" class="form-control" id="waktuMulai" placeholder="01:00">
                                     <span class="input-group-text">
                                         <i class="bi bi-clock"></i>
                                     </span>
@@ -76,7 +75,7 @@
                             <span class="align-self-center m-sm-1">s.d.</span>
                             <div class="waktu-selesai position-relative">
                                 <div class="input-group">
-                                    <input type="time" class="form-control ms-2" id="waktuSelesai">
+                                    <input type="time" class="form-control ms-2" id="waktuSelesai" placeholder="12:00">
                                     <span class="input-group-text">
                                         <i class="bi bi-clock"></i>
                                     </span>
@@ -131,9 +130,28 @@
     </div>
 
     <script>
+        document.getElementById("kustom").addEventListener("keyup", function() {
+            value = this.value;
+            if (value < 0) {
+                this.value = 0;
+            }
+        });
+
+        function handleSelectChange(selectElement) {
+            const kustomGrup = document.getElementById("kustomGrup");
+
+            if (selectElement.value === "Kustomisasi") {
+                kustomGrup.classList.remove("hide");
+                kustomGrup.classList.add("show");
+            } else {
+                kustomGrup.classList.remove("show");
+                kustomGrup.classList.add("hide");
+            }
+        }
+
         /* tanggal */
         let startDatePicker = flatpickr("#tanggalMulai", {
-            dateFormat: "Y-m-d",
+            dateFormat: "d-m-Y",
             minDate: "today",
             onChange: function(selectedDates, dateStr) {
                 endDatePicker.set("minDate", dateStr);
@@ -141,7 +159,7 @@
         });
 
         let endDatePicker = flatpickr("#tanggalSelesai", {
-            dateFormat: "Y-m-d",
+            dateFormat: "d-m-Y",
             minDate: "today",
         });
         /* tanggal */
@@ -164,17 +182,5 @@
             time_24hr: true
         });
         /* waktu */
-
-        function handleSelectChange(selectElement) {
-            const customInputGroup = document.getElementById("customInputGroup");
-
-            if (selectElement.value === "Kustomisasi") {
-                customInputGroup.classList.remove("hide");
-                customInputGroup.classList.add("show");
-            } else {
-                customInputGroup.classList.remove("show");
-                customInputGroup.classList.add("hide");
-            }
-        }
     </script>
 @endsection

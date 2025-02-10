@@ -28,3 +28,11 @@ Route::get('/ready_grup', function () {
 Route::get('/pembuatan_grup', function () {
     return view('pembuatan_grup');
 });
+
+Route::get('/pertemuan', function () {
+    return view('pertemuan');
+});
+
+Route::get('/grup_UI', function () {
+    return view('grup_UI');
+});
