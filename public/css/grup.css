@@ -46,13 +46,13 @@ body{
     width: 200px;
 }
 
-.card {
+/* .card {
     width: 397px;
     height: 241px;
     background-color: #E8F4FF;
     border: none;
     cursor: pointer;
-}
+} */
 
 .card-body h5{
     font-size: 30px;
@@ -165,13 +165,34 @@ textarea {
 }
 
 .vertical {
-    border-left: 1px solid #ddd;
+    border: 1px solid #ddd;
     height: 200px;
 }
 
 .card-grup {
     display: flex;
-    width: 100%;
+    width: 85%;
     background: white;
     border-radius: 28px;
+}
+
+.avatar-search {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: red;
+    color: #ffffff;
+    margin: 5px;
+    border-radius: 50%;
+}
+
+.box-item .nama-user h6 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.box-item .nama-user p {
+    color: #808080;
 }
