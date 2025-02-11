@@ -16,8 +16,7 @@
                     <a class="nav-link" aria-current="page" href="#">Link</a>
                 </li>
             </ul>
-            <button class="filter-meet btn btn-outline-dark m-1" type="submit"><i
-                    class="bi bi-sliders m-1"></i>Filter</button>
+            <button class="filter-meet btn btn-dark m-1" type="submit"><i class="bi bi-sliders m-1"></i>Filter</button>
         </div>
         <div class="line-meet"></div>
         <div class="card-riwayat m-3">
