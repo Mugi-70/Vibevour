@@ -12,7 +12,32 @@
                         <i class="bi bi-search"></i>
                     </span>
                     <input type="text" class="form-control" placeholder="Silakan cari data dengan memasukkan nama">
-                    <div id="searchResults" class="dropdown-menu show w-100 position-relative">hai</div>
+                    <div id="searchResults" class="dropdown-menu d-flex flex-column show w-100 position-relative">
+                        <div class="box-item d-flex">
+                            <div class="avatar-search">p</div>
+                            <div class="nama-user mt-1">
+                                <h6>Notaris</h6>
+                                <p style="margin-top: -10px">Notaris@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <div class="box-item d-flex">
+                            <div class="avatar-search">p</div>
+                            <div class="nama-user mt-1">
+                                <h6>Notaris</h6>
+                                <p style="margin-top: -10px">Notaris@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <div class="box-item d-flex">
+                            <div class="avatar-search">p</div>
+                            <div class="nama-user mt-1">
+                                <h6>Notaris</h6>
+                                <p style="margin-top: -10px">Notaris@gmail.com</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0">
