@@ -1,4 +1,4 @@
-@extends('sidebar')
+@extends('Jadwal.sidebar')
 
 @section('content')
     <div class="container">
@@ -26,7 +26,7 @@
                         data-bs-target="#modalanggota">
                         <i class="bi bi-person-plus"></i> Anggota
                     </button>
-                    @include('modal.tambah_anggota')
+                    @include('Jadwal.modal.tambah_anggota')
                 </div>
 
                 <!-- Durasi dan Waktu -->

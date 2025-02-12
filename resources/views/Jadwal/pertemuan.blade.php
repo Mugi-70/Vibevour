@@ -1,4 +1,4 @@
-@extends('sidebar')
+@extends('Jadwal.sidebar')
 
 @section('content')
     <div class="header">

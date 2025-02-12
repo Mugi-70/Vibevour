@@ -14,25 +14,25 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('sidebar');
+    return view('Jadwal.sidebar');
 });
 
 Route::get('/grup', function () {
-    return view('grup');
+    return view('Jadwal.grup');
 });
 
 Route::get('/ready_grup', function () {
-    return view('ready_grup');
+    return view('Jadwal.ready_grup');
 });
 
 Route::get('/pembuatan_grup', function () {
-    return view('pembuatan_grup');
+    return view('Jadwal.pembuatan_grup');
 });
 
 Route::get('/pertemuan', function () {
-    return view('pertemuan');
+    return view('Jadwal.pertemuan');
 });
 
 Route::get('/grup_UI', function () {
-    return view('grup_UI');
+    return view('Jadwal.grup_UI');
 });
