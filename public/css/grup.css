@@ -59,7 +59,7 @@ body{
     font-weight: bold;
 }
 
-.card .card_footer .share {
+.share {
     background-color: #ffffff;
     border: none;
 }
@@ -196,3 +196,4 @@ textarea {
 .box-item .nama-user p {
     color: #808080;
 }
+
