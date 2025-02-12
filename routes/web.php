@@ -36,3 +36,11 @@ Route::get('/pertemuan', function () {
 Route::get('/grup_UI', function () {
     return view('grup_UI');
 });
+
+Route::get('/vote', function () {
+    return view('voting.vote');
+});
+
+Route::get('/tambahvote', function () {
+    return view('voting.tambahvote');
+});

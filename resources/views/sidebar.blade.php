@@ -18,6 +18,7 @@
 
     <link rel="stylesheet" href="{{ asset('css/grup.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tambahvote.css') }}">
     <title>VibeFour</title>
 
 </head>
@@ -56,15 +57,9 @@
 
     <div class="content" id="content">
 
-    </div>
 
-    <div class="content" id="content">
+        @yield('content')
 
-        <div class="container mt-4">
-
-            @yield('content')
-
-        </div>
     </div>
 
     <script>
