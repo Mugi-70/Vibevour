@@ -26,7 +26,6 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="logo">Vibe<span style="color:blueviolet;">Four</span></div>
-
         <a href="#" class="menu-item"><i class="bi bi-house-door"></i> Beranda</a>
 
         <!-- Dropdown Voting -->
@@ -38,7 +37,6 @@
         <div class="collapse" id="menu_vote">
             <a href="/vote" class="menu-sub-item">Vote Saya</a>
         </div>
-
 
         <!-- Dropdown Penjadwalan -->
         <a class="menu-item" data-bs-toggle="collapse" href="#menu_penjadwalan" role="button" aria-expanded="false"
@@ -55,15 +53,11 @@
     </div>
 
     <div class="content" id="content">
-
-    </div>
-
-    <div class="content" id="content">
-
+        <div class="hai">
+            @yield('header')
+        </div>
         <div class="container mt-4">
-
             @yield('content')
-
         </div>
     </div>
 
