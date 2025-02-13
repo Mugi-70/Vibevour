@@ -1,7 +1,15 @@
 @extends('Jadwal.sidebar')
 
+@section('header')
+    <div class="title d-flex">
+        <h3 class="mt-3" style="font-weight: bold">Grup</h3>
+        <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
+            title="Halaman Grup Jual-Beli"><i class="bi bi-question-circle"></i></button>
+    </div>
+@endsection
+
 @section('content')
-    <div class="row">
+    <div class="row position-relative">
         <div class="card shadow col-10 me-3" style="border-radius: 28px; border:none">
             <div class="card-body">
                 <div class="row align-items-center w-100">
@@ -9,7 +17,7 @@
                     <div class="col-md-3 text-center">
                         <div class="d-flex flex-column align-items-center">
                             <i class="bi bi-people-fill fs-1"></i>
-                            <h5 class="fw-bold mt-2">Jual-Beli</h5>
+                            <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
                             <button class="btn btn-outline-danger mt-2">
                                 <i class="bi bi-box-arrow-left"></i> Keluar Grup
                             </button>
@@ -18,35 +26,62 @@
 
                     <!-- Kanan -->
                     <div class="col-md-9" style="border-left: 1px solid #ddd">
-                        <ul class="list-unstyled">
-                            <li class="mb-3">
-                                <i class="bi bi-calendar"></i>
-                                <strong>Tanggal:</strong> 01 Januari 2025 - 07 Januari 2025
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-clock"></i>
-                                <strong>Jam:</strong> 07:00 AM s.d. 09:30 AM
-                            </li>
-                            <li>
-                                <i class="bi bi-clock-history"></i>
-                                <strong>Durasi:</strong> 30 menit
-                            </li>
-                        </ul>
-                        <label for="">Deskripsi</label>
-                        <textarea name="" id="" cols="30" rows="10"></textarea>
+
+                        <table class="table table-borderless">
+                            <tr>
+                                <td style="width: 7em">
+                                    <i class="bi bi-calendar"></i>
+                                    <strong>Tanggal</strong>
+                                </td>
+                                <td style="width: 1em">
+                                    :
+                                </td>
+                                <td>
+                                    {{ $tnggl }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="bi bi-clock-history"></i>
+                                    <strong>Jam</strong>
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    {{ $wtku }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="bi bi-clock-history"></i>
+                                    <strong>Durasi</strong>
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    {{ $durasi }}
+                                </td>
+                            </tr>
+                        </table>
+                        <strong>Deskripsi</strong>
+                        <div class="card p-1">
+                            {{ $desk }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- tombol -->
-        <div class="row col-2 p-2">
+        <div class="tombol-kanan d-flex flex-column gap-2">
             <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
                 aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
                 <i class="bi bi-people"></i> Daftar Anggota
             </button>
             @include('jadwal.off_canvas.daftar_anggota')
-            <button class="btn btn-outline-secondary" style="height: 40px; font-size:14px">
+            <button class="btn btn-outline-dark" style="height: 40px; font-size:14px">
                 <i class="bi bi-share"></i> Bagikan
             </button>
             <button class="btn btn-warning" style="height: 40px; font-size:14px">
@@ -69,21 +104,30 @@
             </button>
         </div>
         <div class="card-body d-flex">
-            <ul class="list-unstyled mt-5">
-                <li class="mb-5">
-                    Senin 1 Januari 2025
-                </li>
-                <li class="mb-5">
-                    Selasa 1 Januari 2025
-                </li>
-                <li class="mb-5">
-                    Rabu 1 Januari 2025
-                </li>
-                <li class="mb-5">
-                    Senin 1 Januari 2025
-                </li>
-            </ul>
-            <table class="table table-bordered">
+            <table class="table table-bordered"
+                style=" border-top: transparent !important; border-left:transparent !important;">
+                <tr>
+                    <td></td>
+                    {{-- wktu --}}
+                    @foreach ($times as $ts)
+                        <td style="height: 80px; text-align:center; vertical-align:middle">{{ $ts }}</td>
+                    @endforeach
+                </tr>
+                @foreach ($tgl as $t)
+                    <tr>
+                        <td style="width: 11em; vertical-align: middle">
+                            {{ $t }}
+                        </td>
+                        @foreach ($times as $ts)
+                            <td onclick="openModal(this)" style="height: 100px">
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </table>
+            @include('Jadwal.modal.buat_jadwal')
+
+            {{-- <table class="table table-bordered">
                 <thead class="table" style="text-align: center; border-top: transparent !important;">
                     <tr>
                         <td>07:00 - 07:30</td>
@@ -101,30 +145,8 @@
                         <td onclick="openModal(this)" style="height: 80px"></td>
                         <td onclick="openModal(this)" style="height: 80px"></td>
                     </tr>
-                    <tr>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                    </tr>
-                    <tr>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                    </tr>
-                    <tr>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                    </tr>
                 </tbody>
-                @include('Jadwal.modal.buat_jadwal')
-            </table>
+            </table> --}}
         </div>
     </div>
 
@@ -132,8 +154,9 @@
         let selectedCell;
 
         function openModal(cell) {
+            console.log("Modal dibuka!", cell);
             selectedCell = cell;
-            document.getElementById("scheduleInput").value = cell.innerHTML;
+            document.getElementById("scheduleModal").value = cell.innerHTML;
             let scheduleModal = new bootstrap.Modal(document.getElementById("scheduleModal"));
             scheduleModal.show();
         }

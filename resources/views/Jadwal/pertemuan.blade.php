@@ -27,7 +27,7 @@
                 </div>
                 <button type="button" class="btn btn-outline-dark ms-auto mt-1" style="height: 40px" data-bs-toggle="modal"
                     data-bs-target="#exampleModal">Detail</button>
-                @include('modal.detail_pertemuan')
+                @include('Jadwal.modal.detail_pertemuan')
             </div>
         </div>
     </div>
