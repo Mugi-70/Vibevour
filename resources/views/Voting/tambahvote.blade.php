@@ -8,24 +8,24 @@
 
 
 <div class="container mt-4">
-    <div class="container mt-4">
-        <div class="card p-4">
-            <h4>apa</h4>
-            <hr class="my-3" style="height: 2px; background-color: black;">
-            <h5>Judul</h5>
-            <input type="text" class="form-control mb-3">
-            <h5>Deskripsi</h5>
-            <textarea class="form-control mb-3" rows="3"></textarea>
-        </div>
-
-        <div id="questionContainer"></div>
-
-        <div class="text-end mt-3">
-            <button class="btn btn-primary" id="addQuestionBtn">
-                <i class="bi bi-plus"></i> Tambah Pertanyaan
-            </button>
-        </div>
+    <div class="card p-4">
+        <h4>Info</h4>
+        <hr class="my-3" style="height: 2px; background-color: black;">
+        <h5>Judul</h5>
+        <input type="text" class="form-control mb-3">
+        <h5>Deskripsi</h5>
+        <textarea class="form-control mb-3" rows="3"></textarea>
     </div>
+
+    <div id="questionContainer">
+
+    </div>
+    <div class="text-end mt-3">
+        <button class="btn btn-primary" id="addQuestionBtn">
+            <i class="bi bi-plus"></i> Tambah Pertanyaan
+        </button>
+    </div>
+
 
     <div class="modal fade" id="uploadFotoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -52,17 +52,15 @@
     </div>
 
     <script>
+        
         document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOMContentLoaded");
             const uploadContainer = document.getElementById("uploadContainer");
             const uploadInput = document.getElementById("uploadInput");
             const previewImage = document.getElementById("previewImage");
             const uploadIcon = document.getElementById("uploadIcon");
             const uploadText = document.getElementById("uploadText");
             const uploadHint = document.getElementById("uploadHint");
-
-            uploadContainer.onclick = function() {
-                uploadInput.click();
-            };
 
             uploadInput.onchange = function() {
                 const file = uploadInput.files[0];
@@ -112,7 +110,7 @@
 
                 card.innerHTML = `
                     <button class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
-                    <h4>apa</h4>
+                    <h4>Daftar Pertanyaan</h4>
                     <hr class="my-3" style="height: 2px; background-color: black;">
                     <h5>Pertanyaan</h5>
                     <textarea class="form-control mb-3" rows="3" placeholder="Masukkan pertanyaan"></textarea>
@@ -142,7 +140,7 @@
                 return `
                     <div class="row mb-2 align-items-center choice-item">
                         <div class="col">
-                            <input type="text" class="form-control" placeholder="Masukkan pilihan">
+                            <input type="text" class="form-control" >
                         </div>
                         <div class="col-auto">
                             <button class="btn btn-outline-danger remove-choice-btn">
@@ -155,10 +153,9 @@
                             </label>
                         </div>
                     </div>
-                    <div class="text-center mb-2 position-relative image-container d-none">
-                        <img id="${choiceId}" src="" class="img-thumbnail" style="max-width: 70%; height: auto;">
-                        <button class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn">
-                            <i class="bi bi-x"></i>
+                    <div class=" mb-2 position-relative image-container d-none">
+                        <img id="${choiceId}" src="" class="img-thumbnail" style="width: 70%; height: 20%;">
+                        <button class="btn btn-danger btn-md position-absolute top-0 end-0 remove-image-btn" <i class="bi bi-x-lg"></i>>
                         </button>
                     </div>
                 `;
@@ -243,25 +240,38 @@
     </script>
 
     <div class="card p-4 mt-3">
-        <h4>apa</h4>
+        <h4>Pengaturan</h4>
         <hr style="height: 2px; background-color: black; width: 100%; margin: 20px 0;">
         <div class="row ">
-            <div class="col-md-4">
-                <div class="form-check form-switch mb-2">
-                    <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
-                    <input type="text" id="randomCode" class="form-control mt-2 d-none" readonly>
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-check form-switch mb-2">
+                            <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="protectVote">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-check form-switch">
-                    <label class="form-check-label" for="includeName">Sertakan nama untuk mengisi</label>
+                <div class="row">
+                    <div class="col-md-10">
+                        <input type="text" id="randomCode" class="form-control mt-2 d-none" readonly>
+                    </div>
                 </div>
-            </div>
-
-            <div class="col-sm">
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="protectVote">
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="includeName">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-check form-switch">
+                            <label class="form-check-label" for="includeName">Sertakan nama untuk mengisi</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="includeName">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -287,20 +297,37 @@
                 }
             </script>
 
+            <div class="col-md-2"></div>
 
 
-            <div class="col-sm d-flex align-items-center">
-                <div class="vr h-100"></div>
-            </div>
 
             <div class="col-md-5">
-                <div class="mb-2">
-                    <label for="voteCloseDate" class="form-label">Tutup vote pada</label>
-                    <input type="datetime-local" class="form-control" id="voteCloseDate">
-                    <div id="error-message" class="text-danger mt-1 d-none">Tanggal dan waktu harus di masa depan!</div>
+                <div class="mb-2 input-group">
+                    <input type="text" class="form-control" id="datetimePicker" placeholder="Pilih Tanggal & Jam">
+                    <span class="input-group-text">
+                        <i class="bi bi-calendar-event"></i>
+                    </span>
                 </div>
 
                 <script>
+                    flatpickr("#datetimePicker", {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        time_24hr: true,
+                        minDate: "today",
+                        onReady: function(selectedDates, dateStr, instance) {
+                            let now = new Date();
+                            instance.set("minDate", now);
+                        }
+                    });
+                </script>
+                <!-- <div class="mb-2">
+                    <label for="voteCloseDate" class="form-label">Tutup vote pada</label>
+                    <input type="datetime-local" class="form-control" id="voteCloseDate">
+                    <div id="error-message" class="text-danger mt-1 d-none">Tanggal dan waktu harus di masa depan!</div>
+                </div> -->
+
+                <!--<script>
                     function setMinDateTime() {
                         let now = new Date();
                         let year = now.getFullYear();
@@ -328,9 +355,10 @@
                     });
 
                     setMinDateTime();
-                </script>
+                </script> -->
 
                 <div>
+
                     <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
                     <select class="form-select" id="voteVisibility">
                         <option>Private</option>
@@ -340,7 +368,12 @@
             </div>
         </div>
     </div>
-    <div class="text-end">
-        <button class="btn btn-success" style="margin-top: 10px; width:200px;">Simpan</button>
+    <div class="text-end mt-3">
+        <a href="/vote" type="button" class="btn btn-secondary m-1">Kembali<i
+                class="bi bi-chevron-compact-right"></i></a>
+        <a href="/ready_grup" type="submit" class="btn btn-success m-1" style="border:none">Simpan
+            Vote <i class="bi bi-save"></i>
+        </a>
     </div>
-    @endsection
+</div>
+@endsection

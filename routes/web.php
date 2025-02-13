@@ -44,3 +44,7 @@ Route::get('/vote', function () {
 Route::get('/tambahvote', function () {
     return view('voting.tambahvote');
 });
+
+Route::get('/tampilanvote', function () {
+    return view('voting.tampilanvote');
+});
