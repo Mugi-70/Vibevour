@@ -115,38 +115,18 @@
                 </tr>
                 @foreach ($tgl as $t)
                     <tr>
-                        <td style="width: 11em; vertical-align: middle">
+                        <td style="width: 10em; vertical-align: middle;">
                             {{ $t }}
                         </td>
                         @foreach ($times as $ts)
-                            <td onclick="openModal(this)" style="height: 100px">
+                            <td onclick="openModal(this)" data-tanggal="{{ $t }}"
+                                data-waktu="{{ $ts }}" style="height: 100px; max-width:20px ">
                             </td>
                         @endforeach
                     </tr>
                 @endforeach
             </table>
             @include('Jadwal.modal.buat_jadwal')
-
-            {{-- <table class="table table-bordered">
-                <thead class="table" style="text-align: center; border-top: transparent !important;">
-                    <tr>
-                        <td>07:00 - 07:30</td>
-                        <td>07:30 - 08:00</td>
-                        <td>08:00 - 08:30</td>
-                        <td>08:30 - 09:00</td>
-                        <td>09:00 - 09:30</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                        <td onclick="openModal(this)" style="height: 80px"></td>
-                    </tr>
-                </tbody>
-            </table> --}}
         </div>
     </div>
 
@@ -156,19 +136,59 @@
         function openModal(cell) {
             console.log("Modal dibuka!", cell);
             selectedCell = cell;
-            document.getElementById("scheduleModal").value = cell.innerHTML;
+
+            // Ambil tanggal & waktu dari data atribut
+            let tanggal = cell.getAttribute("data-tanggal");
+            let waktu = cell.getAttribute("data-waktu");
+
+            console.log("Tanggal:", tanggal, "Waktu:", waktu); // Debugging
+
+            // Masukkan tanggal & waktu ke dalam modal
+            document.getElementById("selectedDate").innerText = tanggal;
+            document.getElementById("selectedTime").innerText = waktu;
             let scheduleModal = new bootstrap.Modal(document.getElementById("scheduleModal"));
             scheduleModal.show();
         }
 
         function saveSchedule() {
             let text = document.getElementById("scheduleInput").value;
+
             if (selectedCell) {
-                selectedCell.innerHTML = text;
+                // Cek apakah tombol sudah ada atau belum
+                let existingButton = selectedCell.querySelector("button");
+
+                if (!existingButton) {
+                    // Jika belum ada tombol, buat tombol baru
+                    let button = document.createElement("button");
+                    button.className = "btn btn-primary     custom w-100 h-100";
+                    button.setAttribute("data-bs-toggle", "offcanvas");
+                    button.setAttribute("data-bs-target", "#jadwal");
+                    button.innerText = text || "Lihat"; // Jika kosong, default "Lihat"
+
+                    button.innerHTML = `
+                <div class="title">${text}</div>
+                <div class="subtitle">
+                <i class="bi bi-person icon"></i>
+                    <p>1 Anggota</p>
+                    </div>
+                `;
+
+                    button.onclick = function(event) {
+                        event.stopPropagation();
+                    };
+
+                    selectedCell.appendChild(button);
+                } else {
+                    // Jika tombol sudah ada, cukup ubah teksnya
+                    existingButton.innerText = text || "Lihat";
+                }
             }
+
+            // Tutup modal setelah simpan
             let scheduleModal = bootstrap.Modal.getInstance(document.getElementById("scheduleModal"));
             scheduleModal.hide();
         }
+
 
         /* tooltips */
         document.addEventListener("DOMContentLoaded", function() {
@@ -179,4 +199,5 @@
         });
         /* tooltips */
     </script>
+    @include('Jadwal.off_canvas.jadwal')
 @endsection
