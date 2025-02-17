@@ -1,4 +1,4 @@
-<div class="offcanvas offcanvas-end shadow" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel"
+<div class="offcanvas offcanvas-end shadow" tabindex="-1" id="daftar_anggota" aria-labelledby="offcanvasRightLabel"
     data-bs-backdrop="false" style="background-color: #F0F3F8">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasRightLabel"><i class="bi bi-people-fill me-2"></i><strong>Daftar
@@ -12,6 +12,29 @@
                 <i class="bi bi-search"></i>
             </span>
             <input type="text" class="form-control" placeholder="Cari..." style="">
+        </div>
+        <div class="box-item d-flex mt-3">
+            <div class="avatar-search">p</div>
+            <div class="nama-user mt-1">
+                <h6>Penjual</h6>
+                <p style="margin-top: -10px;">Penjual@gmail.com
+                    <span class="badge rounded-pill text-bg-dark">Admin</span>
+                </p>
+            </div>
+        </div>
+        <div class="box-item d-flex">
+            <div class="avatar-search">p</div>
+            <div class="nama-user mt-1">
+                <h6>Notaris</h6>
+                <p style="margin-top: -10px">Notaris@gmail.com</p>
+            </div>
+        </div>
+        <div class="box-item d-flex">
+            <div class="avatar-search">p</div>
+            <div class="nama-user mt-1">
+                <h6>Pembeli</h6>
+                <p style="margin-top: -10px">Pembeli@gmail.com</p>
+            </div>
         </div>
     </div>
 </div>
