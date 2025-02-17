@@ -52,7 +52,7 @@
     </div>
 
     <script>
-        
+        //Card gambar
         document.addEventListener("DOMContentLoaded", function() {
             console.log("DOMContentLoaded");
             const uploadContainer = document.getElementById("uploadContainer");
@@ -98,7 +98,7 @@
             });
         });
 
-
+        // Card pertanyaan
         document.addEventListener("DOMContentLoaded", function() {
             const questionContainer = document.getElementById("questionContainer");
             const addQuestionBtn = document.getElementById("addQuestionBtn");
@@ -258,7 +258,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-10">
-                        <input type="text" id="randomCode" class="form-control mt-2 d-none" readonly>
+                        <input type="text" id="randomCode" class="form-control mb-2 d-none" readonly>
                     </div>
                 </div>
                 <div class="row">
@@ -297,11 +297,15 @@
                 }
             </script>
 
-            <div class="col-md-2"></div>
+            <div class="col-md-2 d-flex">
+                <div class="vr"></div>
+            </div>
+
 
 
 
             <div class="col-md-5">
+                <label for="datetimePicker" class="form-label">Tutup vote pada</label>
                 <div class="mb-2 input-group">
                     <input type="text" class="form-control" id="datetimePicker" placeholder="Pilih Tanggal & Jam">
                     <span class="input-group-text">
@@ -358,7 +362,6 @@
                 </script> -->
 
                 <div>
-
                     <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
                     <select class="form-select" id="voteVisibility">
                         <option>Private</option>
