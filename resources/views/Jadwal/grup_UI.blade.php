@@ -18,7 +18,7 @@
                         <div class="d-flex flex-column align-items-center">
                             <i class="bi bi-people-fill fs-1"></i>
                             <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
-                            <button class="btn btn-outline-danger mt-2">
+                            <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#leave_grup">
                                 <i class="bi bi-box-arrow-left"></i> Keluar Grup
                             </button>
                         </div>
@@ -76,18 +76,19 @@
 
         <!-- tombol -->
         <div class="tombol-kanan d-flex flex-column gap-2">
-            <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
+            <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
                 aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
                 <i class="bi bi-people"></i> Daftar Anggota
             </button>
-            @include('jadwal.off_canvas.daftar_anggota')
             <button class="btn btn-outline-dark" style="height: 40px; font-size:14px">
                 <i class="bi bi-share"></i> Bagikan
             </button>
-            <button class="btn btn-warning" style="height: 40px; font-size:14px">
+            <button class="btn btn-warning" style="height: 40px; font-size:14px" data-bs-toggle="offcanvas"
+                data-bs-target="#edit_grup" aria-controls="offcanvasRight">
                 <i class="bi bi-pencil"></i> Edit Grup
             </button>
-            <button class="btn btn-danger" style="height: 40px; font-size:14px">
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup"
+                style="height: 40px; font-size:14px">
                 <i class="bi bi-trash"></i> Hapus Grup
             </button>
         </div>
@@ -126,9 +127,20 @@
                     </tr>
                 @endforeach
             </table>
-            @include('Jadwal.modal.buat_jadwal')
         </div>
     </div>
+
+    {{-- modal --}}
+    @include('Jadwal.modal.keluar_grup')
+    @include('Jadwal.modal.buat_jadwal')
+    @include('Jadwal.modal.hapus_grup')
+    {{-- modal --}}
+
+    {{-- offcanvas --}}
+    @include('Jadwal.off_canvas.edit_grup')
+    @include('jadwal.off_canvas.daftar_anggota')
+    {{-- offcanvas --}}
+
 
     <script>
         let selectedCell;
@@ -160,7 +172,7 @@
                 if (!existingButton) {
                     // Jika belum ada tombol, buat tombol baru
                     let button = document.createElement("button");
-                    button.className = "btn btn-primary     custom w-100 h-100";
+                    button.className = "btn btn-primary custom w-100 h-100";
                     button.setAttribute("data-bs-toggle", "offcanvas");
                     button.setAttribute("data-bs-target", "#jadwal");
                     button.innerText = text || "Lihat"; // Jika kosong, default "Lihat"

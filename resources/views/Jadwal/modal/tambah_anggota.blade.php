@@ -1,5 +1,4 @@
-<div class="modal fade" id="modalanggota" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
-    aria-labelledby="modalanggotaLabel" aria-hidden="true">
+<div class="modal fade" id="modalanggota" tabindex="-1" data-bs-backdrop="static" aria-labelledby="modalanggotaLabel">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header border-0">
