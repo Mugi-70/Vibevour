@@ -10,7 +10,7 @@
             <h5><strong>Tanggal Pertemuan</strong></h5>
             <div class="tanggal-1 d-flex">
                 <i class="bi bi-calendar"></i>
-                <p class="ms-2">Coba</p>
+                <p class="ms-2">Januari 2025</p>
             </div>
         </div>
         <hr>
@@ -28,7 +28,7 @@
             </h6>
             <h6 class="ms-4 d-flex">
                 <i class="bi bi-clock-history me-2"></i>
-                <p>07:00</p>
+                <p>07:30</p>
             </h6>
         </div>
         <hr>
@@ -45,15 +45,16 @@
             <div class="box-item d-flex">
                 <div class="avatar-search">p</div>
                 <div class="nama-user mt-1">
-                    <h6>Notaris</h6>
-                    <p style="margin-top: -10px">Notaris@gmail.com</p>
+                    <h6>Penjual</h6>
+                    <p style="margin-top: -10px">Penjual@gmail.com</p>
                 </div>
             </div>
         </div>
     </div>
     <div class="card h-25 justify-content-center align-items-center"
         style="background-color: #F0F3F8; border-radius: 0px">
-        <button type="button" class="btn btn-danger w-50" style="font-size: 14px">Batalkan Pertemuan <i
-                class="bi bi-trash3"></i></button>
+        <button type="button" class="btn btn-danger w-50" style="font-size: 14px" data-bs-toggle="modal"
+            data-bs-target="#cancel">Batalkan Pertemuan <i class="bi bi-trash3"></i></button>
     </div>
 </div>
+@include('Jadwal.modal.batal_jadwal')
