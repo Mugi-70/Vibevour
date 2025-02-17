@@ -21,8 +21,8 @@ class GrupController extends Controller
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
         quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 
-        $tgl = ["01-01-2025", "02-01-2025", "03-01-2025"];
-        $times = ["08:00", "08:30", "09:00"];
+        $tgl = ["1 Januari 2025", "2 Januari 2025", "3 Januari 2025"];
+        $times = ["07:00", "07:30", "08:00", "08:30", "09:00"];
 
         return view('Jadwal.grup_UI', compact('nama_grup', 'durasi', 'wtku', 'tnggl', 'desk', 'tgl', 'times'));
     }
