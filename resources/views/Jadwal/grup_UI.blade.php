@@ -37,7 +37,7 @@
                                     :
                                 </td>
                                 <td>
-                                    {{ $tnggl }}
+                                    {{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}
                                 </td>
                             </tr>
                             <tr>
@@ -49,7 +49,7 @@
                                     :
                                 </td>
                                 <td>
-                                    {{ $wtku }}
+                                    {{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}
                                 </td>
                             </tr>
                             <tr>
@@ -80,7 +80,7 @@
                 aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
                 <i class="bi bi-people"></i> Daftar Anggota
             </button>
-            <button class="btn btn-outline-dark" style="height: 40px; font-size:14px">
+            <button class="btn btn-outline-dark" style="height: 40px; font-size:14px" hidden>
                 <i class="bi bi-share"></i> Bagikan
             </button>
             <button class="btn btn-warning" style="height: 40px; font-size:14px" data-bs-toggle="offcanvas"
@@ -92,6 +92,7 @@
                 <i class="bi bi-trash"></i> Hapus Grup
             </button>
         </div>
+        <!-- tombol -->
     </div>
 
     <div class="card shadow mt-5 p-3" style="border-radius: 28px; border:none">
@@ -109,19 +110,20 @@
                 style=" border-top: transparent !important; border-left:transparent !important;">
                 <tr>
                     <td></td>
-                    {{-- wktu --}}
+                    {{-- waktu --}}
                     @foreach ($times as $ts)
                         <td style="height: 80px; text-align:center; vertical-align:middle">{{ $ts }}</td>
                     @endforeach
                 </tr>
+                {{-- tanggal --}}
                 @foreach ($tgl as $t)
                     <tr>
                         <td style="width: 10em; vertical-align: middle;">
                             {{ $t }}
                         </td>
                         @foreach ($times as $ts)
-                            <td onclick="openModal(this)" data-tanggal="{{ $t }}"
-                                data-waktu="{{ $ts }}" style="height: 100px; max-width:20px ">
+                            <td class="item" data-tanggal="{{ $t }}" data-waktu="{{ $ts }}"
+                                style="height: 100px; max-width:20px; cursor: pointer;">
                             </td>
                         @endforeach
                     </tr>
@@ -143,64 +145,79 @@
 
 
     <script>
+        $(".item").click(function() {
+            openModal($(this))
+        })
+
+
+        /* membuka modal */
         let selectedCell;
 
         function openModal(cell) {
             console.log("Modal dibuka!", cell);
             selectedCell = cell;
 
-            // Ambil tanggal & waktu dari data atribut
-            let tanggal = cell.getAttribute("data-tanggal");
-            let waktu = cell.getAttribute("data-waktu");
+            // mengambil data tanggal & waktu
+            let tanggal = cell.attr("data-tanggal");
+            let waktu = cell.attr("data-waktu");
 
-            console.log("Tanggal:", tanggal, "Waktu:", waktu); // Debugging
+            // memanggil tanggal & waktu ke modal
+            $("#selectedDate").text(tanggal);
+            $("#selectedTime").text(waktu);
 
-            // Masukkan tanggal & waktu ke dalam modal
-            document.getElementById("selectedDate").innerText = tanggal;
-            document.getElementById("selectedTime").innerText = waktu;
-            let scheduleModal = new bootstrap.Modal(document.getElementById("scheduleModal"));
-            scheduleModal.show();
+            // menampikan modal
+            $("#scheduleModal").modal("show");
         }
+        /* membuka modal */
 
+        /* saving jadwal */
         function saveSchedule() {
-            let text = document.getElementById("scheduleInput").value;
+            let text = $("#scheduleInput").val();
 
             if (selectedCell) {
-                // Cek apakah tombol sudah ada atau belum
-                let existingButton = selectedCell.querySelector("button");
+                // cek apakah tombol sudah ada dalam cell
+                let existingButton = selectedCell.find("button");
 
-                if (!existingButton) {
-                    // Jika belum ada tombol, buat tombol baru
-                    let button = document.createElement("button");
-                    button.className = "btn btn-primary custom w-100 h-100";
-                    button.setAttribute("data-bs-toggle", "offcanvas");
-                    button.setAttribute("data-bs-target", "#jadwal");
-                    button.innerText = text || "Lihat"; // Jika kosong, default "Lihat"
-
-                    button.innerHTML = `
-                <div class="title">${text}</div>
-                <div class="subtitle">
-                <i class="bi bi-person icon"></i>
-                    <p>1 Anggota</p>
+                if (existingButton.length === 0) {
+                    // jika belum ada tombol yang dibuat, buat tombol baru
+                    let button = $(`
+                <button class="btn btn-primary custom w-100 h-100"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#jadwal">
+                    <div class="d-flex flex-column text-center">
+                        <div class="title">${text || "Lihat"}</div>
+                        <div class="subtitle d-flex align-items-center">
+                            <i class="bi bi-person icon me-2"></i>
+                            <p class="m-0">1 Anggota</p>
+                        </div>
                     </div>
-                `;
-
-                    button.onclick = function(event) {
+                </button>
+            `);
+                    // mencegah modal terbuka saat klik tombol
+                    button.click(function(event) {
                         event.stopPropagation();
-                    };
+                    });
 
-                    selectedCell.appendChild(button);
+                    // tambahkan tombol ke dalam cell
+                    selectedCell.append(button);
                 } else {
-                    // Jika tombol sudah ada, cukup ubah teksnya
-                    existingButton.innerText = text || "Lihat";
+                    // jika tombol sudah ada, ubah isinya
+                    existingButton.html(`
+                <div class="d-flex flex-column text-center">
+                    <div class="title">${text || "Lihat"}</div>
+                    <div class="subtitle d-flex align-items-center">
+                        <i class="bi bi-person icon me-2"></i>
+                        <p class="m-0">1 Anggota</p>
+                    </div>
+                </div>
+            `);
                 }
             }
 
-            // Tutup modal setelah simpan
-            let scheduleModal = bootstrap.Modal.getInstance(document.getElementById("scheduleModal"));
-            scheduleModal.hide();
+            // menutup modal
+            $("#scheduleModal").modal("hide");
         }
-
+        /* saving jadwal */
 
         /* tooltips */
         document.addEventListener("DOMContentLoaded", function() {

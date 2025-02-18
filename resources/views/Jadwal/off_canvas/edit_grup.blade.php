@@ -30,22 +30,23 @@
     </div>
     <div class="offcanvas-body">
         <div class="nm-grup">
-            <h5><strong>Nama Grup</strong></h5>
-            <input type="text" class="form-control" style="background-color: transparent; border: 1px solid">
+            <label for="" class="form-label fw-bold">Nama Grup</label>
+            <input type="text" class="form-control" style="background-color: transparent; border: 1px solid"
+                value="{{ $nama_grup }}">
         </div>
         <hr>
         <div class="anggota">
-            <h5 class="label-anggota d-flex justify-content-between">
-                <strong>Anggota</strong>
+            <h6 class="label-anggota d-flex justify-content-between">
+                <label for="" class="form-label fw-bold">Anggota</label>
                 <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal"
                     data-bs-target="#modalanggota" style="font-size: 14px">+ Anggota</button>
-            </h5>
-            <div class="box-item d-flex align-items-center mt-3">
+            </h6>
+            <div class="box-item-1 d-flex align-items-center mt-3">
                 <div class="avatar-search">p</div>
                 <div class="nama-user mt-2">
                     <h6>Penjual</h6>
                 </div>
-                <button type="button" class="btn btn-outline-danger h-25 ms-auto"
+                <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
                     style="font-size: 14px; border-radius: 50%">
                     X
                 </button>
@@ -55,7 +56,7 @@
                 <div class="nama-user mt-2">
                     <h6>Notaris</h6>
                 </div>
-                <button type="button" class="btn btn-outline-danger h-25 ms-auto"
+                <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
                     style="font-size: 14px; border-radius: 50%">
                     X
                 </button>
@@ -65,7 +66,7 @@
                 <div class="nama-user mt-2">
                     <h6>Pembeli</h6>
                 </div>
-                <button type="button" class="btn btn-outline-danger h-25 ms-auto"
+                <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
                     style="font-size: 14px; border-radius: 50%">
                     X
                 </button>
@@ -77,7 +78,7 @@
             <div class="select-wrapper">
                 <i class="bi bi-clock"></i>
                 <select class="form-select" id="durasi" onchange="handleSelectChange(this)"
-                    style="background-color: transparent; border: 1px solid ">
+                    style="background-color: transparent; border: 1px solid">
                     <option value="15 menit">15 menit</option>
                     <option value="30 menit">30 menit</option>
                     <option value="45 menit">45 menit</option>
@@ -89,7 +90,7 @@
             <!-- Elemen tambahan untuk Kustomisasi -->
             <div id="kustomGrup" class="hide d-flex mt-2">
                 <input type="number" id="kustom" name="popup" class="form-control me-2" placeholder=""
-                    min="1">
+                    min="1" style="background-color: transparent; border: 1px solid ">
                 <select name="satuan" class="form-select" style="background-color: transparent; border: 1px solid ">
                     <option value="menit">Menit</option>
                     <option value="jam">Jam</option>
@@ -98,22 +99,24 @@
         </div>
         <hr>
         <div class="time">
-            <label for="waktu" class="form-label fw-bold">Waktu</label>
+            <label for="waktu" class="form-label fw-bold">Jam</label>
             <div class="d-flex">
+                {{-- mulai --}}
                 <div class="waktu-mulai position-relative">
                     <div class="input-group">
                         <input type="text" class="form-control" id="waktuMulai" placeholder="01:00"
-                            style="background-color: transparent; border: 1px solid ">
+                            style="background-color: transparent; border: 1px solid " value="{{ $wtku_mulai }}">
                         <span class="input-group-text" style="background-color: transparent; border: 1px solid ">
                             <i class="bi bi-clock"></i>
                         </span>
                     </div>
                 </div>
                 <span class="align-self-center m-sm-1">s.d.</span>
+                {{-- selesai --}}
                 <div class="waktu-selesai position-relative">
                     <div class="input-group">
                         <input type="text" class="form-control ms-2" id="waktuSelesai" placeholder="12:00"
-                            style="background-color: transparent; border: 1px solid ">
+                            style="background-color: transparent; border: 1px solid" value="{{ $wtku_selesai }}">
                         <span class="input-group-text" style="background-color: transparent; border: 1px solid ">
                             <i class="bi bi-clock"></i>
                         </span>
@@ -129,7 +132,7 @@
                     <!-- Tanggal Mulai -->
                     <div class="position-relative me-2">
                         <input type="text" class="form-control" id="tanggalMulai" placeholder="dd/mm/yy"
-                            style="background-color: transparent; border: 1px solid ">
+                            style="background-color: transparent; border: 1px solid" value="{{ $tnggl_mulai }}">
                         <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
                     </div>
 
@@ -138,17 +141,23 @@
                     <!-- Tanggal Selesai -->
                     <div class="position-relative">
                         <input type="text" class="form-control" id="tanggalSelesai" placeholder="dd/mm/yy"
-                            style="background-color: transparent; border: 1px solid ">
+                            style="background-color: transparent; border: 1px solid" value="{{ $tnggl_selesai }}">
                         <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
                     </div>
                 </div>
             </div>
         </div>
+        <hr>
+        <div class="row">
+            <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
+            <textarea style="border-radius: 10px; background-color:transparent">{{ $desk }}</textarea>
+        </div>
     </div>
     <div class="card h-25 justify-content-center align-items-center"
         style="background-color: #F0F3F8; border-radius: 0px">
         <div class="b-grup d-flex">
-            <button type="button" class="btn btn-secondary m-2" style="font-size: 14px">Batal</button>
+            <button type="button" class="btn btn-secondary m-2" data-bs-dismiss="offcanvas"
+                style="font-size: 14px">Batal</button>
             <button type="button" class="btn btn-primary m-2" style="font-size: 14px">Simpan Perubahan</button>
         </div>
     </div>
@@ -158,6 +167,12 @@
 
 
 <script>
+    $(document).ready(function() {
+        $(".delete").click(function() {
+            $("div").remove(".box-item-1");
+        })
+    })
+
     /* waktu */
     let startPicker = flatpickr("#waktuMulai", {
         enableTime: true,
@@ -176,6 +191,21 @@
         time_24hr: true
     });
     /* waktu */
+
+    /* tanggal */
+    let startDatePicker = flatpickr("#tanggalMulai", {
+        dateFormat: "d-m-Y",
+        minDate: "today",
+        onChange: function(selectedDates, dateStr) {
+            endDatePicker.set("minDate", dateStr);
+        }
+    });
+
+    let endDatePicker = flatpickr("#tanggalSelesai", {
+        dateFormat: "d-m-Y",
+        minDate: "today",
+    });
+    /* tanggal */
 
     document.getElementById("kustom").addEventListener("keyup", function() {
         value = this.value;
