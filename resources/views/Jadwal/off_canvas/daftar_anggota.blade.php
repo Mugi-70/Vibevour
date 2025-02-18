@@ -18,7 +18,7 @@
             <div class="nama-user mt-1">
                 <h6>Penjual</h6>
                 <p style="margin-top: -10px;">Penjual@gmail.com
-                    <span class="badge rounded-pill text-bg-dark">Admin</span>
+                    <span class="badge rounded-pill text-bg-dark ms-5">Admin</span>
                 </p>
             </div>
         </div>

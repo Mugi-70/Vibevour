@@ -7,6 +7,7 @@
             </div>
             <div class="modal-body m-3">
                 <h6>
+                    <center><i class="bi bi-exclamation-triangle"></i></center>
                     <center>Apakah anda yakin ingin menghapus grup ini ?
                         Otomatis anda akan keluar dari grup ini!
                     </center>
