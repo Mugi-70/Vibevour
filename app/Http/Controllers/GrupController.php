@@ -15,15 +15,16 @@ class GrupController extends Controller
 
         $nama_grup = "Jual-Beli";
         $durasi = "30 menit";
-        $wtku = "07:00 s.d. 09:00";
-        $tnggl = "01 Januari 2025 s.d. 03 Januari 2025";
+        $wtku_mulai = "07:00";
+        $wtku_selesai = "09:00";
+        $tnggl_mulai = "01 Januari 2025";
+        $tnggl_selesai = "03 Januari 2025";
         $desk = "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
 
         $tgl = ["1 Januari 2025", "2 Januari 2025", "3 Januari 2025"];
-        $times = ["07:00", "07:30", "08:00", "08:30", "09:00"];
+        $times = ["07:00 - 07:30", "07:30 - 08:00", "08:00 - 08:30", "08:30 - 09:00"];
 
-        return view('Jadwal.grup_UI', compact('nama_grup', 'durasi', 'wtku', 'tnggl', 'desk', 'tgl', 'times'));
+        return view('Jadwal.grup_UI', compact('nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
     }
 }
