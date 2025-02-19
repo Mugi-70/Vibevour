@@ -11,7 +11,7 @@
         <div class="grup">
             <div class="card" style="width: 30%; height: 200px; background-color:#E8F4FF;">
                 <div class="card-body">
-                    <h5 class="card-title">Jual-Beli</h5>
+                    <h5 class="card-title" style="font-size: 30px; font-weight: bold;">Jual-Beli</h5>
                 </div>
                 <div class="card-footer d-flex justify-content-end m-2"
                     style="border-top:none; background-color:transparent">

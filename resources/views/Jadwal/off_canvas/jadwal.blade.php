@@ -42,6 +42,7 @@
         <hr>
         <div class="present">
             <h5><strong>Dihadiri Oleh :</strong></h5>
+            {{-- @foreach ($hadir as $h) --}}
             <div class="box-item d-flex">
                 <div class="avatar-search">p</div>
                 <div class="nama-user mt-1">
@@ -49,12 +50,25 @@
                     <p style="margin-top: -10px">Penjual@gmail.com</p>
                 </div>
             </div>
+            <div class="box-item d-flex d-none">
+                <div class="avatar-search">p</div>
+                <div class="nama-user mt-1">
+                    <h6>Notaris</h6>
+                    <p style="margin-top: -10px">Notaris@gmail.com</p>
+                </div>
+            </div>
+            {{-- @endforeach --}}
         </div>
     </div>
-    <div class="card h-25 justify-content-center align-items-center"
+    <div class="card h-25 d-flex flex-row align-items-center justify-content-center p-1"
         style="background-color: #F0F3F8; border-radius: 0px">
-        <button type="button" class="btn btn-danger w-50" style="font-size: 14px" data-bs-toggle="modal"
+        <button type="button" class="btn btn-danger w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
             data-bs-target="#cancel">Batalkan Pertemuan <i class="bi bi-trash3"></i></button>
+        <button type="button" class="hu btn btn-primary w-50 m-1" data-bs-toggle="modal" data-bs-target="#hadiri"
+            style="font-size: 14px">Setujui Jadwal <i class="bi bi-clipboard-check"></i></button>
     </div>
 </div>
 @include('Jadwal.modal.batal_jadwal')
+@include('Jadwal.modal.hadiri_jadwal')
+
+<script></script>

@@ -30,12 +30,8 @@ Route::get('/pembuatan_grup', function () {
     return view('Jadwal.pembuatan_grup');
 });
 
-Route::get('/pertemuan', function () {
-    return view('Jadwal.pertemuan');
-});
-
 Route::get('/grup_UI', [GrupController::class, 'index']);
-
+Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 
 // cari period dari rentang tanggal
 // cari period dari jam (sesuai dengan durasi)

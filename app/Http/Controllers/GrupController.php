@@ -25,6 +25,14 @@ class GrupController extends Controller
         $tgl = ["1 Januari 2025", "2 Januari 2025", "3 Januari 2025"];
         $times = ["07:00 - 07:30", "07:30 - 08:00", "08:00 - 08:30", "08:30 - 09:00"];
 
-        return view('Jadwal.grup_UI', compact('nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
+        $hadir = ["Penjual", "Notaris"];
+
+        return view('Jadwal.grup_UI', compact('hadir', 'nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
+    }
+
+    public function pertemuan()
+    {
+        $anggota = ["Penjual", "Notaris", "Pembeli"];
+        return view("Jadwal.pertemuan", compact('anggota'));
     }
 }
