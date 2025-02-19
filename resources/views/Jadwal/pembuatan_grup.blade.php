@@ -39,25 +39,15 @@
                                 <option value="30 menit">30 menit</option>
                                 <option value="45 menit">45 menit</option>
                                 <option value="60 menit">60 menit</option>
-                                <option value="Kustomisasi">Kustomisasi</option>
                             </select>
                             <span class="input-group-text">
                                 <i class="bi bi-clock"></i>
                             </span>
                         </div>
 
-                        <!-- Elemen tambahan untuk Kustomisasi -->
-                        <div id="kustomGrup" class="hide d-flex mt-2">
-                            <input type="number" id="kustom" name="popup" class="form-control me-2" placeholder=""
-                                min="1">
-                            <select name="satuan" class="form-select">
-                                <option value="menit">Menit</option>
-                                <option value="jam">Jam</option>
-                            </select>
-                        </div>
-
-                        <small class="text-muted"><i class="bi bi-question-circle"></i> Atur lama waktu kegiatan di
-                            sini.</small>
+                        <small class="text-muted"><i class="bi bi-question-circle"></i>
+                            Atur lama waktu kegiatan disini.
+                        </small>
                     </div>
                     <div class="col-md-6">
                         <label for="waktu" class="form-label fw-bold">Waktu</label>
@@ -128,25 +118,6 @@
     </div>
 
     <script>
-        document.getElementById("kustom").addEventListener("keyup", function() {
-            value = this.value;
-            if (value < 0) {
-                this.value = 0;
-            }
-        });
-
-        function handleSelectChange(selectElement) {
-            const kustomGrup = document.getElementById("kustomGrup");
-
-            if (selectElement.value === "Kustomisasi") {
-                kustomGrup.classList.remove("hide");
-                kustomGrup.classList.add("show");
-            } else {
-                kustomGrup.classList.remove("show");
-                kustomGrup.classList.add("hide");
-            }
-        }
-
         /* tanggal */
         let startDatePicker = flatpickr("#tanggalMulai", {
             dateFormat: "d-m-Y",
