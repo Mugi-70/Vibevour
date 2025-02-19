@@ -83,21 +83,12 @@
                     <option value="30 menit">30 menit</option>
                     <option value="45 menit">45 menit</option>
                     <option value="60 menit">60 menit</option>
-                    <option value="Kustomisasi">Kustomisasi</option>
-                </select>
-            </div>
-
-            <!-- Elemen tambahan untuk Kustomisasi -->
-            <div id="kustomGrup" class="hide d-flex mt-2">
-                <input type="number" id="kustom" name="popup" class="form-control me-2" placeholder=""
-                    min="1" style="background-color: transparent; border: 1px solid ">
-                <select name="satuan" class="form-select" style="background-color: transparent; border: 1px solid ">
-                    <option value="menit">Menit</option>
-                    <option value="jam">Jam</option>
                 </select>
             </div>
         </div>
+
         <hr>
+
         <div class="time">
             <label for="waktu" class="form-label fw-bold">Jam</label>
             <div class="d-flex">
@@ -206,23 +197,4 @@
         minDate: "today",
     });
     /* tanggal */
-
-    document.getElementById("kustom").addEventListener("keyup", function() {
-        value = this.value;
-        if (value < 0) {
-            this.value = 0;
-        }
-    });
-
-    function handleSelectChange(selectElement) {
-        const kustomGrup = document.getElementById("kustomGrup");
-
-        if (selectElement.value === "Kustomisasi") {
-            kustomGrup.classList.remove("hide");
-            kustomGrup.classList.add("show");
-        } else {
-            kustomGrup.classList.remove("show");
-            kustomGrup.classList.add("hide");
-        }
-    }
 </script>

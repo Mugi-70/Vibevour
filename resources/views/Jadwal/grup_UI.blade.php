@@ -12,7 +12,7 @@
     <div class="row position-relative">
         <div class="card shadow col-10 me-3" style="border-radius: 28px; border:none">
             <div class="card-body">
-                <div class="row align-items-center w-100">
+                <div class="row  w-100">
                     <!-- Kiri -->
                     <div class="col-md-3 text-center">
                         <div class="d-flex flex-column align-items-center">
@@ -145,16 +145,16 @@
 
 
     <script>
+        /* fungsi memunculkan modal dengan klik */
         $(".item").click(function() {
             openModal($(this))
         })
+        /* fungsi memunculkan modal dengan klik */
 
-
-        /* membuka modal */
+        /* membuka modal saat kolom di klik */
         let selectedCell;
 
         function openModal(cell) {
-            console.log("Modal dibuka!", cell);
             selectedCell = cell;
 
             // mengambil data tanggal & waktu
@@ -181,18 +181,18 @@
                 if (existingButton.length === 0) {
                     // jika belum ada tombol yang dibuat, buat tombol baru
                     let button = $(`
-                <button class="btn btn-primary custom w-100 h-100"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#jadwal">
-                    <div class="d-flex flex-column text-center">
-                        <div class="title">${text || "Lihat"}</div>
-                        <div class="subtitle d-flex align-items-center">
-                            <i class="bi bi-person icon me-2"></i>
-                            <p class="m-0">1 Anggota</p>
-                        </div>
-                    </div>
-                </button>
-            `);
+                        <button class="bjadwal btn btn-primary custom w-100 h-100"
+                                data-bs-toggle="offcanvas"
+                                data-bs-target="#jadwal">
+                            <div class="d-flex flex-column text-center">
+                                <div class="title">${text || "Lihat"}</div>
+                                <div class="subtitle d-flex align-items-center">
+                                    <i class="bi bi-person icon me-2"></i>
+                                    <p class="m-0">1 Anggota</p>
+                                </div>
+                            </div>
+                        </button>
+                    `);
                     // mencegah modal terbuka saat klik tombol
                     button.click(function(event) {
                         event.stopPropagation();
@@ -220,13 +220,61 @@
         /* saving jadwal */
 
         /* tooltips */
-        document.addEventListener("DOMContentLoaded", function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+        $(document).ready(function() {
+            $('.btn').tooltip();
         });
         /* tooltips */
+
+        $(document).ready(function() {
+            $(".delete-meet").click(function() {
+                $(".bjadwal").remove();
+
+                // tutup modal pembatalan jadwal
+                $("#cancel").modal("hide");
+
+                // tutup offcanvas jadwal
+                $("#jadwal").offcanvas("hide");
+
+                // Hapus backdrop
+                $(".modal-backdrop").remove();
+
+                // Pastikan body tidak terkunci
+                $("body").removeClass("modal-open").css("overflow", "");
+
+                // Reset elemen offcanvas agar bisa ditampilkan lagi
+                setTimeout(function() {
+                    $("#jadwal").removeClass("show").attr("aria-hidden", "true");
+                    $(".offcanvas-backdrop").remove();
+                }, 500);
+            });
+
+            // Ketika tombol yang memunculkan offcanvas diklik lagi
+            // $("[data-bs-target='#jadwal']").click(function() {
+            //     setTimeout(function() {
+            //         $("#jadwal").addClass("show");
+            //     }, 100);
+            // });
+        });
+
+        $(document).ready(function() {
+            $(".hadiri").click(function() {
+                let subtitle = $(".bjadwal .subtitle p"); // ambil tag p
+                let jumlahAnggota = parseInt(subtitle.text()) || 1; // Ambil angka dari teks
+
+                jumlahAnggota++; // Tambah jumlah anggota
+
+                $("#hadiri").remove();
+                $(".modal-backdrop").remove();
+                $(".hu").hide();
+                $(".box-item").removeClass("d-none");
+
+                // Perbarui teks
+                subtitle.text(jumlahAnggota + " Anggota");
+            });
+            $(document).on("click", ".bjadwal", function() {
+                $(".hu").show();
+            });
+        });
     </script>
     @include('Jadwal.off_canvas.jadwal')
 @endsection
