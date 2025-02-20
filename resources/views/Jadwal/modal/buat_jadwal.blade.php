@@ -27,6 +27,7 @@
                             </td>
                             <td>
                                 <p id="selectedDate">
+                                    2 Januari 2025
                                 </p>
                             </td>
                         </tr>
@@ -39,7 +40,7 @@
                                 :
                             </td>
                             <td>
-                                <p id="selectedTime"></p>
+                                <p id="selectedTime">07:30 - 08:00</p>
                             </td>
                         </tr>
                         <tr>

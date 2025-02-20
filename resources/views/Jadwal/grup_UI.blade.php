@@ -136,6 +136,7 @@
     @include('Jadwal.modal.keluar_grup')
     @include('Jadwal.modal.buat_jadwal')
     @include('Jadwal.modal.hapus_grup')
+    @include('Jadwal.modal.anggota_free')
     {{-- modal --}}
 
     {{-- offcanvas --}}
@@ -179,19 +180,27 @@
                 let existingButton = selectedCell.find("button");
 
                 if (existingButton.length === 0) {
+                    //  <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
+                    // <div class="d-flex justify-content-between align-items-center mb-1">
+                    // <p class="m-0 fw-bold">+2 anggota</p>
+                    // <button type="button" class="btn btn-warning"  data-bs-toggle="modal" data-bs-target="#availability_member">lihat</button>
+                    // </div>
+                    // <button type="button" class="btn btn-primary"  data-bs-toggle="modal" data-bs-target="#scheduleModal">Buat Pertemuan</button>
+                    // </div>
+
                     // jika belum ada tombol yang dibuat, buat tombol baru
                     let button = $(`
-                        <button class="bjadwal btn btn-primary custom w-100 h-100"
-                                data-bs-toggle="offcanvas"
-                                data-bs-target="#jadwal">
-                            <div class="d-flex flex-column text-center">
-                                <div class="title">${text || "Lihat"}</div>
-                                <div class="subtitle d-flex align-items-center">
-                                    <i class="bi bi-person icon me-2"></i>
-                                    <p class="m-0">1 Anggota</p>
-                                </div>
-                            </div>
-                        </button>
+                    <button class="bjadwal btn btn-primary custom w-100 h-100"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#jadwal">
+                        <div class="d-flex flex-column text-center">
+                        <div class="title">${text || "Lihat"}</div>
+                        <div class="subtitle d-flex align-items-center">
+                            <i class="bi bi-person icon me-2"></i>
+                            <p class="m-0">1 Anggota</p>
+                        </div>
+                        </div>
+                    </button>
                     `);
                     // mencegah modal terbuka saat klik tombol
                     button.click(function(event) {

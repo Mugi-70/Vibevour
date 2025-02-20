@@ -61,10 +61,10 @@
     </div>
 
     <script>
-        document.getElementById("toggleSidebar").addEventListener("click", function() {
-            document.getElementById("sidebar").classList.toggle("sidebar-hidden");
-            document.getElementById("content").classList.toggle("content-expanded");
-        });
+        // document.getElementById("toggleSidebar").addEventListener("click", function() {
+        //     document.getElementById("sidebar").classList.toggle("sidebar-hidden");
+        //     document.getElementById("content").classList.toggle("content-expanded");
+        // });
 
         // document.getElementById("toggleSidebar").addEventListener("click", function() {
         //     document.getElementById("sidebar").classList.toggle("d-none");

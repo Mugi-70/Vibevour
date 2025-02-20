@@ -31,6 +31,7 @@ Route::get('/pembuatan_grup', function () {
 });
 
 Route::get('/grup_UI', [GrupController::class, 'index']);
+Route::get('/grup_UI_anggota', [GrupController::class, 'anggota']);
 Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 
 // cari period dari rentang tanggal

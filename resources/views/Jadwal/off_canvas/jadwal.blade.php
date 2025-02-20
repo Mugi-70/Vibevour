@@ -64,8 +64,8 @@
         style="background-color: #F0F3F8; border-radius: 0px">
         <button type="button" class="btn btn-danger w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
             data-bs-target="#cancel">Batalkan Pertemuan <i class="bi bi-trash3"></i></button>
-        <button type="button" class="hu btn btn-primary w-50 m-1" data-bs-toggle="modal" data-bs-target="#hadiri"
-            style="font-size: 14px">Setujui Jadwal <i class="bi bi-clipboard-check"></i></button>
+        {{-- <button type="button" class="hu btn btn-primary w-50 m-1" data-bs-toggle="modal" data-bs-target="#hadiri"
+            style="font-size: 14px">Setujui Jadwal <i class="bi bi-clipboard-check"></i></button> --}}
     </div>
 </div>
 @include('Jadwal.modal.batal_jadwal')
