@@ -57,7 +57,7 @@
                 <p class="text-muted mt-4">Vote di tutup pada dd/mm/yyyy --:--</p>
                 <div class="row">
                     <div class="col">
-                        <button class="btn btn-primary btn-sm">Vote</button>
+                        <a href="/hasilvote" class="btn btn-primary btn-sm">Vote</a>
                         <div class="btn btn-success btn-sm">Hasil</div>
                     </div>
                     <div class="col">

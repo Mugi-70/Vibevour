@@ -52,187 +52,190 @@
     </div>
 
     <script>
-        //Card gambar
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("DOMContentLoaded");
-            const uploadContainer = document.getElementById("uploadContainer");
-            const uploadInput = document.getElementById("uploadInput");
-            const previewImage = document.getElementById("previewImage");
-            const uploadIcon = document.getElementById("uploadIcon");
-            const uploadText = document.getElementById("uploadText");
-            const uploadHint = document.getElementById("uploadHint");
+        //Card modal gambar
+        $(document).ready(function() {
+            const $uploadContainer = $("#uploadContainer");
+            const $uploadInput = $("#uploadInput");
+            const $previewImage = $("#previewImage");
+            const $uploadIcon = $("#uploadIcon");
+            const $uploadText = $("#uploadText");
+            const $uploadHint = $("#uploadHint");
+            let currentImageTarget = null;
 
-            uploadInput.onchange = function() {
-                const file = uploadInput.files[0];
+            $uploadContainer.on('click', function(e) {
+                console.log("diklik bg");
+                e.preventDefault();
+                $uploadInput.click();
+            });
+
+            $uploadInput.on('change', function() {
+                const file = this.files[0];
                 if (file) {
+                    if (file.size > 3 * 1024 * 1024) {
+                        alert('File terlalu besar. Maksimal ukuran file adalah 3MB.');
+                        return;
+                    }
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        previewImage.src = e.target.result;
-                        previewImage.classList.remove("d-none");
+                        $previewImage
+                            .attr('src', e.target.result)
+                            .removeClass('d-none');
 
-                        uploadIcon.style.display = "none";
-                        uploadText.style.display = "none";
-                        uploadHint.style.display = "none";
+                        $uploadIcon.hide();
+                        $uploadText.hide();
+                        $uploadHint.hide();
                     };
                     reader.readAsDataURL(file);
                 }
-            };
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const uploadInput = document.getElementById("uploadInput");
-            const previewImage = document.getElementById("previewImage");
-            const uploadIcon = document.getElementById("uploadIcon");
-            const uploadText = document.getElementById("uploadText");
-            const uploadHint = document.getElementById("uploadHint");
-
-            const modalElement = document.getElementById("uploadFotoModal");
-            modalElement.addEventListener("hidden.bs.modal", function() {
-                uploadInput.value = "";
-                previewImage.src = "";
-                previewImage.classList.add("d-none");
-
-                uploadIcon.style.display = "block";
-                uploadText.style.display = "block";
-                uploadHint.style.display = "block";
             });
-        });
 
-        // Card pertanyaan
-        document.addEventListener("DOMContentLoaded", function() {
-            const questionContainer = document.getElementById("questionContainer");
-            const addQuestionBtn = document.getElementById("addQuestionBtn");
-            let currentImageTarget = null;
+            $('#uploadFotoModal').on('hidden.bs.modal', function() {
+                $uploadInput.val('');
+                $previewImage
+                    .attr('src', '')
+                    .addClass('d-none');
+                $uploadIcon.show();
+                $uploadText.show();
+                $uploadHint.show();
+            });
 
-            function createQuestionCard() {
-                const card = document.createElement("div");
-                card.classList.add("card", "p-4", "mt-3", "position-relative", "card-question");
-
-                card.innerHTML = `
-                    <button class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
-                    <h4>Daftar Pertanyaan</h4>
-                    <hr class="my-3" style="height: 2px; background-color: black;">
-                    <h5>Pertanyaan</h5>
-                    <textarea class="form-control mb-3" rows="3" placeholder="Masukkan pertanyaan"></textarea>
-
-                    <h5>Pilihan</h5>
-                    <div class="choices">
-                        ${createChoiceElement()}
-                        ${createChoiceElement()}
-                    </div>
-
-                    <div class="text-start">
-                        <button class="btn btn-link add-choice-btn" style="text-decoration: none;">Tambah Pilihan +</button>
-                    </div>
-                `;
-
-                questionContainer.appendChild(card);
-                updateDeleteButtons();
-
-                card.querySelector(".add-choice-btn").addEventListener("click", function(e) {
-                    e.preventDefault();
-                    card.querySelector(".choices").insertAdjacentHTML("beforeend", createChoiceElement());
+            // Card pertanyaan                
+            function updateChoiceNumbers($choicesContainer) {
+                $choicesContainer.find('.choice-item').each(function(index) {
+                    $(this).find('input[type="text"]').attr('placeholder', `Pilihan ${index + 1}`);
                 });
+                updateDeleteChoiceButtons($choicesContainer);
+            }
+
+            function updateDeleteChoiceButtons($choicesContainer) {
+                const $choices = $choicesContainer.find('.choice-item');
+                const $deleteButtons = $choicesContainer.find('.remove-choice-btn');
+                $deleteButtons.toggle($choices.length > 2);
             }
 
             function createChoiceElement() {
                 const choiceId = "img_" + Date.now();
-                return `
+                return $(`
+                <div class="choice-group">
                     <div class="row mb-2 align-items-center choice-item">
+                        <div class="col-auto">
+                            <span class="choice-number fw-bold"></span>
+                        </div>
                         <div class="col">
-                            <input type="text" class="form-control" >
+                            <input type="text" class="form-control" placeholder="Pilihan">
                         </div>
                         <div class="col-auto">
-                            <button class="btn btn-outline-danger remove-choice-btn">
+                            <button type="button" class="btn btn-outline-danger remove-choice-btn">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
                         <div class="col-auto">
-                            <label class="btn btn-primary d-flex align-items-center open-upload-modal" data-bs-toggle="modal" data-bs-target="#uploadFotoModal" data-target="${choiceId}">
+                            <button type="button" class="btn btn-primary d-flex align-items-center open-upload-modal" data-bs-toggle="modal" data-bs-target="#uploadFotoModal" data-target="${choiceId}">
                                 <i class="bi bi-image me-2"></i> Tambah Gambar
-                            </label>
+                            </button>
                         </div>
                     </div>
-                    <div class=" mb-2 position-relative image-container d-none">
+                    <div class="mb-2 position-relative image-container d-none">
                         <img id="${choiceId}" src="" class="img-thumbnail" style="width: 70%; height: 20%;">
-                        <button class="btn btn-danger btn-md position-absolute top-0 end-0 remove-image-btn" <i class="bi bi-x-lg"></i>>
+                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn">
+                            <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
-                `;
+                </div>
+            `);
+            }
+
+            function updateChoiceNumbers($choicesContainer) {
+                $choicesContainer.find('.choice-item').each(function(index) {
+                    $(this).find('.choice-number').text((index + 1) + '.');
+                    $(this).find('input[type="text"]').attr('placeholder', `Pilihan ${index + 1}`);
+                });
+                updateDeleteChoiceButtons($choicesContainer);
+            }
+
+            function createQuestionCard() {
+                const $card = $(`
+                <div class="card p-4 mt-3 position-relative card-question">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
+                    <h4>Daftar Pertanyaan</h4>
+                    <hr class="my-3" style="height: 2px; background-color: black;">
+                    <h5>Pertanyaan</h5>
+                    <textarea class="form-control mb-3" rows="3" placeholder="Masukkan pertanyaan"></textarea>
+                    <h5>Pilihan</h5>
+                    <div class="choices"></div>
+                    <div class="text-start mt-2">
+                        <button type="button" class="btn btn-link add-choice-btn" style="text-decoration: none;">
+                            <i class="bi bi-plus-circle"></i> Tambah Pilihan
+                        </button>
+                    </div>
+                </div>
+            `);
+
+                const $choicesContainer = $card.find('.choices');
+
+                $choicesContainer.append(createChoiceElement());
+                $choicesContainer.append(createChoiceElement());
+
+                $("#questionContainer").append($card);
+                updateDeleteButtons();
+                updateChoiceNumbers($choicesContainer);
+
+                $card.find(".add-choice-btn").on('click', function(e) {
+                    e.preventDefault();
+                    const $choices = $(this).parent().siblings(".choices");
+                    $choices.append(createChoiceElement());
+                    updateChoiceNumbers($choices);
+                });
+
+                return $card;
             }
 
             function updateDeleteButtons() {
-                const questionCards = document.querySelectorAll(".card-question");
-                questionCards.forEach((card) => {
-                    const deleteBtn = card.querySelector(".delete-question-btn");
-                    if (questionCards.length > 1) {
-                        deleteBtn.classList.remove("d-none");
-                    } else {
-                        deleteBtn.classList.add("d-none");
-                    }
+                const $questionCards = $(".card-question");
+                $questionCards.each(function() {
+                    const $deleteBtn = $(this).find(".delete-question-btn");
+                    $deleteBtn.toggle($questionCards.length > 1);
                 });
             }
 
-            addQuestionBtn.addEventListener("click", createQuestionCard);
+            $("#addQuestionBtn").on('click', function() {
+                createQuestionCard();
+            });
 
-            questionContainer.addEventListener("click", function(e) {
-                if (e.target.classList.contains("remove-choice-btn")) {
-                    const choiceItem = e.target.closest(".choice-item");
-                    if (choiceItem) {
-                        const imageContainer = choiceItem.nextElementSibling;
-                        if (imageContainer && imageContainer.classList.contains("image-container")) {
-                            imageContainer.remove();
-                        }
-                        choiceItem.remove();
-                    }
-                }
+            $(document).on('click', '.open-upload-modal', function() {
+                currentImageTarget = $("#" + $(this).data("target"));
+            });
 
-                if (e.target.classList.contains("delete-question-btn")) {
-                    e.target.closest(".card-question").remove();
-                    updateDeleteButtons();
-                }
-
-                if (e.target.closest(".open-upload-modal")) {
-                    const btn = e.target.closest(".open-upload-modal");
-                    currentImageTarget = document.getElementById(btn.getAttribute("data-target"));
-                }
-
-                if (e.target.classList.contains("remove-image-btn")) {
-                    const imgContainer = e.target.closest(".image-container");
-                    if (imgContainer) imgContainer.classList.add("d-none");
+            $(document).on('click', '#confirmUpload', function() {
+                if (currentImageTarget && $previewImage.attr('src')) {
+                    currentImageTarget
+                        .attr('src', $previewImage.attr('src'))
+                        .closest(".image-container")
+                        .removeClass('d-none');
                 }
             });
 
-            const uploadInput = document.getElementById("uploadInput");
-            const previewImage = document.getElementById("previewImage");
-
-            document.getElementById("uploadContainer").addEventListener("click", function() {
-                uploadInput.click();
+            $(document).on('click', '.remove-image-btn', function(e) {
+                e.stopPropagation();
+                const $container = $(this).closest('.image-container');
+                $container.addClass('d-none');
+                $container.find('img').attr('src', '');
             });
 
-            uploadInput.addEventListener("change", function() {
-                const file = uploadInput.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewImage.src = e.target.result;
-                        previewImage.classList.remove("d-none");
-                    };
-                    reader.readAsDataURL(file);
+            $(document).on('click', '.remove-choice-btn', function() {
+                const $choiceGroup = $(this).closest('.choice-group');
+                const $choicesContainer = $choiceGroup.closest('.choices');
+                const totalChoices = $choicesContainer.find('.choice-group').length;
+
+                if (totalChoices > 2) {
+                    $choiceGroup.remove();
+                    updateChoiceNumbers($choicesContainer);
                 }
             });
 
-            document.getElementById("confirmUpload").addEventListener("click", function() {
-                if (currentImageTarget && uploadInput.files.length > 0) {
-                    currentImageTarget.src = previewImage.src;
-                    currentImageTarget.closest(".image-container").classList.remove("d-none");
-                }
-            });
-
-            document.getElementById("uploadFotoModal").addEventListener("hidden.bs.modal", function() {
-                uploadInput.value = "";
-                previewImage.src = "";
-                previewImage.classList.add("d-none");
+            $(document).on('click', '.delete-question-btn', function() {
+                $(this).closest(".card-question").remove();
+                updateDeleteButtons();
             });
 
             createQuestionCard();
@@ -276,28 +279,29 @@
             </div>
 
             <script>
-                document.getElementById('protectVote').addEventListener('change', function() {
-                    let textbox = document.getElementById('randomCode');
+                $(document).ready(function() {
+                    $('#protectVote').on('change', function() {
+                        let textbox = $('#randomCode');
 
-                    if (this.checked) {
-                        textbox.value = generateRandomCode();
-                        textbox.classList.remove('d-none');
-                    } else {
-                        textbox.classList.add('d-none');
+                        if ($(this).is(':checked')) {
+                            textbox.val(generateRandomCode()).removeClass('d-none');
+                        } else {
+                            textbox.addClass('d-none');
+                        }
+                    });
+
+                    function generateRandomCode() {
+                        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                        let code = '';
+                        for (let i = 0; i < 6; i++) {
+                            code += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        return code;
                     }
                 });
-
-                function generateRandomCode() {
-                    let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                    let code = '';
-                    for (let i = 0; i < 6; i++) {
-                        code += chars.charAt(Math.floor(Math.random() * chars.length));
-                    }
-                    return code;
-                }
             </script>
 
-            <div class="col-md-2 d-flex">
+            <div class="col-sm-1 d-flex">
                 <div class="vr"></div>
             </div>
 
@@ -374,7 +378,7 @@
     <div class="text-end mt-3">
         <a href="/vote" type="button" class="btn btn-secondary m-1">Kembali<i
                 class="bi bi-chevron-compact-right"></i></a>
-        <a href="/ready_grup" type="submit" class="btn btn-success m-1" style="border:none">Simpan
+        <a href="/tampilanvote" type="submit" class="btn btn-success m-1" style="border:none">Simpan
             Vote <i class="bi bi-save"></i>
         </a>
     </div>
