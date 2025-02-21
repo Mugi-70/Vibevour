@@ -10,92 +10,106 @@
 
 @section('content')
     <div class="row position-relative">
-        <div class="card shadow col-10 me-3" style="border-radius: 28px; border:none">
-            <div class="card-body">
-                <div class="row  w-100">
-                    <!-- Kiri -->
-                    <div class="col-md-3 text-center">
-                        <div class="d-flex flex-column align-items-center">
-                            <i class="bi bi-people-fill fs-1"></i>
-                            <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
-                            <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#leave_grup">
-                                <i class="bi bi-box-arrow-left"></i> Keluar Grup
-                            </button>
+        <div class="col-md-9">
+            <div class="card shadow-sm" style=" border:none">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Kiri -->
+                        <div class="col-md-3 text-center">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="bi bi-people-fill fs-4"></i>
+                                <h6 class="fw-bold">{{ $nama_grup }}</h5>
+                                <button class="btn btn-outline-danger mt-2" style="font-size: 14px" data-bs-toggle="modal" data-bs-target="#leave_grup">
+                                    <i class="bi bi-box-arrow-left"></i> Keluar Grup
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Kanan -->
+                        <div class="col-md-9" style="border-left: 1px solid #ddd">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <td style="width: 7em">
+                                        <i class="bi bi-calendar"></i>
+                                        <strong>Tanggal</strong>
+                                    </td>
+                                    <td style="width: 1em">
+                                        :
+                                    </td>
+                                    <td>
+                                        {{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-clock-history"></i>
+                                        <strong>Jam</strong>
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        {{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-clock-history"></i>
+                                        <strong>Durasi</strong>
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        {{ $durasi }}
+                                    </td>
+                                </tr>
+                            </table>
+                            
                         </div>
                     </div>
-
-                    <!-- Kanan -->
-                    <div class="col-md-9" style="border-left: 1px solid #ddd">
-
-                        <table class="table table-borderless">
-                            <tr>
-                                <td style="width: 7em">
-                                    <i class="bi bi-calendar"></i>
-                                    <strong>Tanggal</strong>
-                                </td>
-                                <td style="width: 1em">
-                                    :
-                                </td>
-                                <td>
-                                    {{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <i class="bi bi-clock-history"></i>
-                                    <strong>Jam</strong>
-                                </td>
-                                <td>
-                                    :
-                                </td>
-                                <td>
-                                    {{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <i class="bi bi-clock-history"></i>
-                                    <strong>Durasi</strong>
-                                </td>
-                                <td>
-                                    :
-                                </td>
-                                <td>
-                                    {{ $durasi }}
-                                </td>
-                            </tr>
-                        </table>
-                        <strong>Deskripsi</strong>
-                        <div class="card p-1">
-                            {{ $desk }}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Deskripsi</strong>
+                            <div class="card mt-2">
+                                <div class="card-body pt-2 pb-2" style="font-size: 14px">
+                                    {{ $desk }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
+                aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
+                <i class="bi bi-people"></i> Daftar Anggota
+                </button>
+                <button class="btn btn-outline-dark" style="height: 40px; font-size:14px" hidden>
+                    <i class="bi bi-share"></i> Bagikan
+                </button>
+                <button class="btn btn-warning" style="height: 40px; font-size:14px" data-bs-toggle="offcanvas"
+                    data-bs-target="#edit_grup" aria-controls="offcanvasRight">
+                    <i class="bi bi-pencil"></i> Edit Grup
+                </button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup"
+                    style="height: 40px; font-size:14px">
+                    <i class="bi bi-trash"></i> Hapus Grup
+                </button>
+            </div>
+        
+        </div>
+        
 
         <!-- tombol -->
         <div class="tombol-kanan d-flex flex-column gap-2">
-            <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
-                aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
-                <i class="bi bi-people"></i> Daftar Anggota
-            </button>
-            <button class="btn btn-outline-dark" style="height: 40px; font-size:14px" hidden>
-                <i class="bi bi-share"></i> Bagikan
-            </button>
-            <button class="btn btn-warning" style="height: 40px; font-size:14px" data-bs-toggle="offcanvas"
-                data-bs-target="#edit_grup" aria-controls="offcanvasRight">
-                <i class="bi bi-pencil"></i> Edit Grup
-            </button>
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup"
-                style="height: 40px; font-size:14px">
-                <i class="bi bi-trash"></i> Hapus Grup
-            </button>
+            
         </div>
         <!-- tombol -->
     </div>
 
-    <div class="card shadow mt-5 p-3" style="border-radius: 28px; border:none">
+    <div class="card shadow-sm mt-4 p-3" style="border:none">
         <div class="header-kalender d-flex justify-content-between">
             <h4><i class="bi bi-clipboard"></i> Jam/Tanggal</h4>
             <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
