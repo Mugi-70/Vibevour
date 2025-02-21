@@ -1,26 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
-body{
+body {
     margin: 0;
     padding: 0;
-    font-family:'Poppins';
+    font-family: "Poppins";
 }
 
-.line{
-        height: 2px;
-        background-color: black;
-        width: 100%;
-        margin: 20px 0;
-    }
+.line {
+    height: 2px;
+    background-color: black;
+    width: 100%;
+    margin: 20px 0;
+}
 
 .text {
     display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-        height: 50vh;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    height: 50vh;
 }
 
 .card_form {
@@ -30,20 +30,6 @@ body{
     justify-content: center;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
-}
-
-.header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.header .create {
-    background-color: #E8F4FF;
-    border: none;
-    font-size: 20px;
-    color: #000000;
-    width: 200px;
 }
 
 /* .card {
@@ -67,7 +53,6 @@ body{
 textarea {
     height: 110px;
 }
-
 
 .input-container {
     position: relative;
@@ -205,7 +190,7 @@ textarea {
 }
 
 .custom {
-    background-color: #039BE6;
+    background-color: #039be6;
     border-radius: 12px;
     padding: 5px;
     text-align: center;
@@ -234,5 +219,3 @@ textarea {
     margin: 1px;
     margin-top: 5px;
 }
-
-
