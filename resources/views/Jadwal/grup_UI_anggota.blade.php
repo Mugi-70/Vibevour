@@ -12,6 +12,29 @@
     <div class="row position-relative">
         <div class="card shadow col-10 me-3" style="border-radius: 28px; border:none">
             <div class="card-body">
+                <div class="position-absolute top-0 end-0 p-2 d-block d-md-none">
+                    <button class="btn btn-outline-dark border-0" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota">
+                                <i class="bi bi-people"></i> Daftar Anggota
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#edit_grup">
+                                <i class="bi bi-pencil"></i> Edit Grup
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
+                                <i class="bi bi-trash"></i> Hapus Grup
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
                 <div class="row  w-100">
                     <!-- Kiri -->
                     <div class="col-md-3 text-center">
@@ -74,18 +97,23 @@
             </div>
         </div>
 
-        <!-- tombol -->
-        <div class="tombol-kanan d-flex flex-column gap-2">
+        <!-- Tombol untuk Desktop -->
+        <div class="tombol-kanan d-none d-md-flex flex-column gap-2">
             <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
-                aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
+                aria-controls="offcanvasRight">
                 <i class="bi bi-people"></i> Daftar Anggota
             </button>
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup"
-                style="height: 40px; font-size:14px">
+            <button class="btn btn-outline-dark" hidden>
+                <i class="bi bi-share"></i> Bagikan
+            </button>
+            <button class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
+                aria-controls="offcanvasRight">
+                <i class="bi bi-pencil"></i> Edit Grup
+            </button>
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
                 <i class="bi bi-trash"></i> Hapus Grup
             </button>
         </div>
-        <!-- tombol -->
     </div>
 
     <div class="card shadow mt-5 p-3" style="border-radius: 28px; border:none">

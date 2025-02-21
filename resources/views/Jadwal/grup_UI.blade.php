@@ -11,62 +11,74 @@
 @section('content')
     <div class="row position-relative">
         <div class="card shadow col-10 me-3" style="border-radius: 28px; border:none">
-            <div class="card-body">
-                <div class="row  w-100">
+            <div class="card-body position-relative">
+                <!-- Ikon titik tiga untuk mobile -->
+                <div class="position-absolute top-0 end-0 p-2 d-block d-md-none">
+                    <button class="btn btn-outline-dark border-0" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota">
+                                <i class="bi bi-people"></i> Daftar Anggota
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#edit_grup">
+                                <i class="bi bi-pencil"></i> Edit Grup
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
+                                <i class="bi bi-trash"></i> Hapus Grup
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="row w-100">
                     <!-- Kiri -->
                     <div class="col-md-3 text-center">
                         <div class="d-flex flex-column align-items-center">
                             <i class="bi bi-people-fill fs-1"></i>
                             <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
-                            <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#leave_grup">
+                            <button class="btn btn-outline-danger mt-2 mb-3" data-bs-toggle="modal"
+                                data-bs-target="#leave_grup">
                                 <i class="bi bi-box-arrow-left"></i> Keluar Grup
                             </button>
                         </div>
                     </div>
 
                     <!-- Kanan -->
-                    <div class="col-md-9" style="border-left: 1px solid #ddd">
-
+                    <div class="col-md-9" style="">
                         <table class="table table-borderless">
                             <tr>
                                 <td style="width: 7em">
                                     <i class="bi bi-calendar"></i>
                                     <strong>Tanggal</strong>
                                 </td>
-                                <td style="width: 1em">
-                                    :
-                                </td>
-                                <td>
-                                    {{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}
-                                </td>
+                                <td style="width: 1em">:</td>
+                                <td>{{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}</td>
                             </tr>
                             <tr>
                                 <td>
                                     <i class="bi bi-clock-history"></i>
                                     <strong>Jam</strong>
                                 </td>
-                                <td>
-                                    :
-                                </td>
-                                <td>
-                                    {{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}
-                                </td>
+                                <td>:</td>
+                                <td>{{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}</td>
                             </tr>
                             <tr>
                                 <td>
                                     <i class="bi bi-clock-history"></i>
                                     <strong>Durasi</strong>
                                 </td>
-                                <td>
-                                    :
-                                </td>
-                                <td>
-                                    {{ $durasi }}
-                                </td>
+                                <td>:</td>
+                                <td>{{ $durasi }}</td>
                             </tr>
                         </table>
                         <strong>Deskripsi</strong>
-                        <div class="card p-1">
+                        <div class="card p-1 mt-2">
                             {{ $desk }}
                         </div>
                     </div>
@@ -74,26 +86,25 @@
             </div>
         </div>
 
-        <!-- tombol -->
-        <div class="tombol-kanan d-flex flex-column gap-2">
+        <!-- Tombol untuk Desktop -->
+        <div class="tombol-kanan d-none d-md-flex flex-column gap-2">
             <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
-                aria-controls="offcanvasRight" style="height: 40px; font-size:14px">
+                aria-controls="offcanvasRight">
                 <i class="bi bi-people"></i> Daftar Anggota
             </button>
-            <button class="btn btn-outline-dark" style="height: 40px; font-size:14px" hidden>
+            <button class="btn btn-outline-dark" hidden>
                 <i class="bi bi-share"></i> Bagikan
             </button>
-            <button class="btn btn-warning" style="height: 40px; font-size:14px" data-bs-toggle="offcanvas"
-                data-bs-target="#edit_grup" aria-controls="offcanvasRight">
+            <button class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
+                aria-controls="offcanvasRight">
                 <i class="bi bi-pencil"></i> Edit Grup
             </button>
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup"
-                style="height: 40px; font-size:14px">
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
                 <i class="bi bi-trash"></i> Hapus Grup
             </button>
         </div>
-        <!-- tombol -->
     </div>
+
 
     <div class="card shadow mt-5 p-3" style="border-radius: 28px; border:none">
         <div class="header-kalender d-flex justify-content-between">
