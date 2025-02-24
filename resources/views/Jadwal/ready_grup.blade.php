@@ -7,20 +7,30 @@
     </div>
     <div class="line"></div>
 
-    <a href="/grup_UI" style="text-decoration: none">
-        <div class="grup">
-            <div class="card" style="width: 30%; height: 100%; background-color:#E8F4FF;">
-                <div class="card-body">
-                    <h5 class="card-title" style="font-size: 30px; font-weight: bold;">Jual-Beli</h5>
-                </div>
-                <div class="card-footer d-flex justify-content-end m-2"
-                    style="border-top:none; background-color:transparent">
-                    <button type="button" class="share btn btn-primary fw-bold m-1" style="color: #000000"><i
-                            class="bi bi-share-fill m-1" style="color: #000000"></i>
-                        Bagikan
-                    </button>
-                </div>
-            </div>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
-    </a>
+    @endif
+
+    <div class="col-md-4">
+        @foreach ($grup as $item)
+            <a href="/grup_UI" style="text-decoration:none">
+                <div class="card mt-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold fs-6">nama</h5>
+                        <p class="card-text" style="font-size: 14px">Some quick example text to build on the card title and
+                            make
+                            up the bulk of the card's content.</p>
+                        <button href="#" class="btn btn-outline-primary float-end"><i
+                                class="bi bi-share"></i></button>
+                    </div>
+                </div>
+            </a>
+        @endforeach
+    </div>
 @endsection

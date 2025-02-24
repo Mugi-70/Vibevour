@@ -10,21 +10,22 @@
 
 @section('content')
     <div class="row position-relative">
-        <div class="card shadow col-10 me-3" style="border-radius: 28px; border:none">
-            <div class="card-body position-relative">
-                <!-- Ikon titik tiga untuk mobile -->
+        <div class="card shadow w-100" style="border-radius: 28px; border:none;">
+            <div class="card-body">
                 <div class="position-absolute top-0 end-0 p-2 d-block d-md-none">
                     <button class="btn btn-outline-dark border-0" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota">
+                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
+                                style="color: blue">
                                 <i class="bi bi-people"></i> Daftar Anggota
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#edit_grup">
+                            <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
+                                style="color: #fec007">
                                 <i class="bi bi-pencil"></i> Edit Grup
                             </button>
                         </li>
@@ -42,15 +43,14 @@
                         <div class="d-flex flex-column align-items-center">
                             <i class="bi bi-people-fill fs-1"></i>
                             <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
-                            <button class="btn btn-outline-danger mt-2 mb-3" data-bs-toggle="modal"
-                                data-bs-target="#leave_grup">
+                            <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#leave_grup">
                                 <i class="bi bi-box-arrow-left"></i> Keluar Grup
                             </button>
                         </div>
                     </div>
 
                     <!-- Kanan -->
-                    <div class="col-md-9" style="">
+                    <div class="col-md-7" style="border-left: 1px solid #ddd">
                         <table class="table table-borderless">
                             <tr>
                                 <td style="width: 7em">
@@ -63,7 +63,7 @@
                             <tr>
                                 <td>
                                     <i class="bi bi-clock-history"></i>
-                                    <strong>Jam</strong>
+                                    <strong>Waktu</strong>
                                 </td>
                                 <td>:</td>
                                 <td>{{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}</td>
@@ -78,70 +78,75 @@
                             </tr>
                         </table>
                         <strong>Deskripsi</strong>
-                        <div class="card p-1 mt-2">
+                        <div class="card p-1">
                             {{ $desk }}
                         </div>
+                    </div>
+
+                    <!-- Tombol untuk Desktop di Sebelah Kanan Berbaris ke Bawah -->
+                    <div class="col-md-2 d-none d-md-flex flex-column align-items-start gap-2">
+                        <button class="btn btn-primary w-100" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
+                            aria-controls="offcanvasRight">
+                            <i class="bi bi-people"></i> Daftar Anggota
+                        </button>
+                        <button class="btn btn-warning w-100" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
+                            aria-controls="offcanvasRight">
+                            <i class="bi bi-pencil"></i> Edit Grup
+                        </button>
+                        <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup">
+                            <i class="bi bi-trash"></i> Hapus Grup
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tombol untuk Desktop -->
-        <div class="tombol-kanan d-none d-md-flex flex-column gap-2">
-            <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
-                aria-controls="offcanvasRight">
-                <i class="bi bi-people"></i> Daftar Anggota
-            </button>
-            <button class="btn btn-outline-dark" hidden>
-                <i class="bi bi-share"></i> Bagikan
-            </button>
-            <button class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
-                aria-controls="offcanvasRight">
-                <i class="bi bi-pencil"></i> Edit Grup
-            </button>
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
-                <i class="bi bi-trash"></i> Hapus Grup
-            </button>
-        </div>
-    </div>
-
-
-    <div class="card shadow mt-5 p-3" style="border-radius: 28px; border:none">
-        <div class="header-kalender d-flex justify-content-between">
-            <h4><i class="bi bi-clipboard"></i> Jam/Tanggal</h4>
-            <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
-                title=" Klik pada kolom kosong sesuai tanggal dan waktu untuk menambahkan aktivitas.">
-                <h4>
-                    <i class="bi bi-info-circle"></i>
-                </h4>
-            </button>
-        </div>
-        <div class="card-body d-flex">
-            <table class="table table-bordered"
-                style=" border-top: transparent !important; border-left:transparent !important;">
-                <tr>
-                    <td></td>
-                    {{-- waktu --}}
-                    @foreach ($times as $ts)
-                        <td style="height: 80px; text-align:center; vertical-align:middle">{{ $ts }}</td>
-                    @endforeach
-                </tr>
-                {{-- tanggal --}}
-                @foreach ($tgl as $t)
-                    <tr>
-                        <td style="width: 10em; vertical-align: middle;">
-                            {{ $t }}
-                        </td>
-                        @foreach ($times as $ts)
-                            <td class="item" data-tanggal="{{ $t }}" data-waktu="{{ $ts }}"
-                                style="height: 100px; max-width:20px; cursor: pointer;">
+        {{-- kalender --}}
+        <div class="card shadow w-100 mt-5" style="border-radius: 28px; border:none;">
+            <div class="header-kalender d-flex justify-content-between">
+                <h4 class="p-3"><i class="bi bi-clipboard"></i> Jam/Tanggal</h4>
+                <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                    title=" Klik pada kolom kosong sesuai tanggal dan waktu untuk menambahkan aktivitas.">
+                    <h4>
+                        <i class="bi bi-info-circle"></i>
+                    </h4>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-width: 100%; width:100%">
+                    <table class="table table-bordered"
+                        style="min-width: 600px; border-top: transparent !important; border-left: transparent !important;">
+                        <tr>
+                            <td style="width: 6em; vertical-align: middle; left: 0; position: sticky; z-index: 2">
                             </td>
+                            {{-- waktu --}}
+                            @foreach ($waktu_list as $ts)
+                                <td style="height: 80px;  position: sticky; text-align:center; vertical-align:middle">
+                                    {{ $ts }}
+                                </td>
+                            @endforeach
+                        </tr>
+                        {{-- tanggal --}}
+                        @foreach ($tanggal_list as $t)
+                            <tr>
+                                <td style="width: 6em; vertical-align: middle; left: 0; position: sticky; z-index: 2">
+                                    {{ $t }}
+                                </td>
+                                @foreach ($waktu_list as $ts)
+                                    <td class="item" data-tanggal="{{ $t }}" data-waktu="{{ $ts }}"
+                                        style="height: 100px; max-width:20px; cursor: pointer;">
+                                    </td>
+                                @endforeach
+                            </tr>
                         @endforeach
-                    </tr>
-                @endforeach
-            </table>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
+
+
+
 
     {{-- modal --}}
     @include('Jadwal.modal.keluar_grup')

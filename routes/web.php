@@ -22,15 +22,22 @@ Route::get('/grup', function () {
     return view('Jadwal.grup');
 });
 
-Route::get('/ready_grup', function () {
-    return view('Jadwal.ready_grup');
-});
-
 Route::get('/pembuatan_grup', function () {
     return view('Jadwal.pembuatan_grup');
 });
 
-Route::get('/grup_UI', [GrupController::class, 'index']);
+Route::get('/grup', [GrupController::class, 'index'])->name('coba');
+
+//membuat grup
+Route::post('/create/grup', [GrupController::class, 'store'])->name('coba_bikin');
+//edit grup
+Route::put('/edit/grup/{id}', [GrupController::class, 'update'])->name('coba_edit');
+
+//menampilkan grup sesuai yang dipilih
+Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.detail');
+
+
+// Route::get('/grup_UI', [GrupController::class, 'index']);
 Route::get('/grup_UI_anggota', [GrupController::class, 'anggota']);
 Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 
