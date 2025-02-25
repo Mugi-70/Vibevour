@@ -4,7 +4,7 @@
     <div class="title d-flex">
         <h3 class="mt-3" style="font-weight: bold">Grup</h3>
         <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
-            title="Halaman Grup Jual-Beli"><i class="bi bi-question-circle"></i></button>
+            title="Halaman Grup {{ $grup->nama_grup }}"><i class="bi bi-question-circle"></i></button>
     </div>
 @endsection
 
@@ -93,7 +93,8 @@
                             aria-controls="offcanvasRight">
                             <i class="bi bi-pencil"></i> Edit Grup
                         </button>
-                        <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup">
+                        <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup"
+                            id="hapus_grup{{ $grup->id_grup }}">
                             <i class="bi bi-trash"></i> Hapus Grup
                         </button>
                     </div>
@@ -129,12 +130,13 @@
                         {{-- tanggal --}}
                         @foreach ($tanggal_list as $t)
                             <tr>
-                                <td style="width: 6em; vertical-align: middle; left: 0; position: sticky; z-index: 2">
+                                <td style="width: 8em; vertical-align: middle; left: 0; position: sticky; z-index: 2">
                                     {{ $t }}
                                 </td>
                                 @foreach ($waktu_list as $ts)
                                     <td class="item" data-tanggal="{{ $t }}" data-waktu="{{ $ts }}"
-                                        style="height: 100px; max-width:20px; cursor: pointer;">
+                                        style="height: 100px; max-width:20px; cursor: pointer;  color: #6c747e; vertical-align: middle; font-size:14px">
+                                        <p id="lebel">+Jadwal</p>
                                     </td>
                                 @endforeach
                             </tr>
@@ -162,6 +164,24 @@
 
 
     <script>
+        $(document).on('click', '.hapus_grup', function() {
+            var id = $(this).attr('id');
+
+            $.ajax({
+                type: 'delete',
+                url: "/hapus_grup/${id}",
+                data: {
+                    id: id
+                },
+            });
+        });
+
+
+        // function setDeleteFormAction(id) {
+        //     let form = document.getElementById('deleteGrupForm');
+        //     form.action = "/hapus" + "/grup" + /id;
+        // }
+
         /* fungsi memunculkan modal dengan klik */
         $(".item").click(function() {
             openModal($(this))
@@ -196,6 +216,9 @@
                 let existingButton = selectedCell.find("button");
 
                 if (existingButton.length === 0) {
+                    $(document).ready(function() {
+                        $('#lebel').hide();
+                    });
                     //  <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
                     // <div class="d-flex justify-content-between align-items-center mb-1">
                     // <p class="m-0 fw-bold">+2 anggota</p>
@@ -265,6 +288,8 @@
 
                 // Pastikan body tidak terkunci
                 $("body").removeClass("modal-open").css("overflow", "");
+
+                $("#lebel").show();
 
                 // Reset elemen offcanvas agar bisa ditampilkan lagi
                 setTimeout(function() {

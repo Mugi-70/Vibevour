@@ -11,23 +11,24 @@
         </div>
     </div>
     <div class="row">
-        @foreach ($grup as $item)
-            <div class="col-md-4">
-                <a href="{{ route('grup.detail', ['id' => $item->id_grup]) }}" style="text-decoration:none">
-                    <div class="card mt-3 border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold fs-6">{{ $item->nama_grup }}</h5>
-                            <p class="card-text" style="font-size: 14px">{{ $item->deskripsi }}</p>
-                            <button href="#" class="btn btn-outline-primary float-end"><i
-                                    class="bi bi-share"></i></button>
+        {{-- @if () --}}
+            @foreach ($grup as $item)
+                <div class="col-md-4">
+                    <a href="{{ route('grup.detail', ['id' => $item->id_grup]) }}" style="text-decoration:none">
+                        <div class="card mt-3 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold fs-6">{{ $item->nama_grup }}</h5>
+                                <p class="card-text" style="font-size: 14px">{{ $item->deskripsi }}</p>
+                                <button href="#" class="btn btn-outline-primary float-end"><i
+                                        class="bi bi-share"></i></button>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
-        @endforeach
-
+                    </a>
+                </div>
+            @endforeach
     </div>
-    {{-- <div class="d-flex align-items-center justify-content-center" style="min-height: 70vh">
+{{-- @else --}}
+    <div class="d-flex align-items-center justify-content-center d-none" style="min-height: 70vh">
         <p class="text-muted">Kamu Belum Mempunyai Grup</p>
-    </div> --}}
+    </div>
 @endsection

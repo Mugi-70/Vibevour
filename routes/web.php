@@ -32,6 +32,8 @@ Route::get('/grup', [GrupController::class, 'index'])->name('coba');
 Route::post('/create/grup', [GrupController::class, 'store'])->name('coba_bikin');
 //edit grup
 Route::put('/edit/grup/{id}', [GrupController::class, 'update'])->name('coba_edit');
+//hapus grup
+Route::delete('/hapus_grup/{id}', [GrupController::class, 'delete'])->name('coba_hapus');
 
 //menampilkan grup sesuai yang dipilih
 Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.detail');
