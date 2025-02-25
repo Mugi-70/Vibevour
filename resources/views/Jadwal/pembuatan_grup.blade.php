@@ -15,7 +15,8 @@
 
             <div class="mb-3">
                 <label for="namaGrup" class="form-label fw-bold">Nama Grup</label>
-                <input type="text" class="form-control" id="namaGrup" name="nama_grup" placeholder="Masukkan Nama Grup">
+                <input type="text" class="form-control" id="namaGrup" name="nama_grup" placeholder="Masukkan Nama Grup"
+                    required>
             </div>
 
             <!-- Anggota -->
@@ -38,7 +39,8 @@
                 <div class="col-md-6">
                     <label for="durasi" class="form-label fw-bold">Durasi</label>
                     <div class="input-group">
-                        <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)">
+                        <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)"
+                            required>
                             <option value="15 minutes">15 menit</option>
                             <option value="30 minutes">30 menit</option>
                             <option value="45 minutes">45 menit</option>
@@ -60,7 +62,7 @@
                         <div class="waktu-mulai position-relative">
                             <div class="input-group flex-nowrap">
                                 <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai"
-                                    placeholder="01:00">
+                                    placeholder="01:00" required>
                                 <span class="input-group-text">
                                     <i class="bi bi-clock"></i>
                                 </span>
@@ -70,7 +72,7 @@
                         <div class="waktu-selesai position-relative">
                             <div class="input-group flex-nowrap">
                                 <input type="time" class="form-control ms-2" id="waktuSelesai" name="waktu_selesai"
-                                    placeholder="12:00">
+                                    placeholder="12:00" required>
                                 <span class="input-group-text">
                                     <i class="bi bi-clock"></i>
                                 </span>
@@ -89,7 +91,7 @@
                     <!-- Tanggal Mulai -->
                     <div class="position-relative me-2 flex-grow-1">
                         <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
-                            placeholder="dd/mm/yy">
+                            placeholder="dd/mm/yy" required>
                         <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
                     </div>
 
@@ -98,7 +100,7 @@
                     <!-- Tanggal Selesai -->
                     <div class="position-relative flex-grow-1">
                         <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
-                            placeholder="dd/mm/yy">
+                            placeholder="dd/mm/yy" required>
                         <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
                     </div>
                 </div>
@@ -116,11 +118,11 @@
                 <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi" placeholder="Masukkan deskripsi kegiatan"></textarea>
             </div>
         </div>
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <a href="/grup" type="button" class="btn btn-secondary m-1">Kembali<i
-                    class="bi bi-chevron-compact-right"></i></a>
-            <button type="submit" class="btn btn-success m-1" style="border:none">Simpan
-                Group <i class="bi bi-save"></i>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
+            <a href="/grup" type="button" class="btn btn-secondary m-1"><i
+                    class="bi bi-chevron-compact-left"></i>Kembali</a>
+            <button type="submit" class="btn btn-success m-1" style="border:none">
+                <i class="bi bi-save me-2"></i>Simpan Group
             </button>
     </form>
 
