@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('votes', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('slug')->unique();
             $table->text('description');
             $table->string('image')->nullable();
             $table->string('name')->nullable();
-            $table->dateTime('close_at')->nullable();
-            $table->enum('status    ', ['private', 'public']);
+            $table->dateTime('close_date')->nullable();
+            $table->enum('status', ['open', 'closed'])->default('open');
+            $table->enum('result_visibility', ['public', 'private'])->default('private');
+            $table->string('code', 6)->nullable();
             $table->timestamps();
         });
     }

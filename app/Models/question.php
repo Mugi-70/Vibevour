@@ -8,4 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class question extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['vote_id', 'question'];
+    
+    public function vote()
+    {
+        return $this->belongsTo(vote::class);
+    }
+    public function options()
+    {
+        return $this->hasMany(option::class);
+    }
 }

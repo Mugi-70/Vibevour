@@ -37,9 +37,9 @@ Route::get('/grup_UI', function () {
     return view('grup_UI');
 });
 
-Route::get('/vote', function () {
-    return view('voting.vote');
-});
+// Route::get('/vote', function () {
+//     return view('voting.vote');
+// });
 
 Route::get('/tambahvote', function () {
     return view('voting.tambahvote');
@@ -52,3 +52,6 @@ Route::get('/tampilanvote', function () {
 Route::get('/hasilvote', function () {
     return view('voting.hasilvote');
 });
+
+Route::post('/simpanvote', [App\Http\Controllers\VoteController::class, 'store'])->name('vote.store');
+Route::get('/vote', [App\Http\Controllers\VoteController::class, 'index'])->name('vote.index');
