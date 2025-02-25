@@ -99,6 +99,7 @@ class GrupController extends Controller
             'desk' => $grup->deskripsi,
             'waktu_list' => $waktu_list,
             'tanggal_list' => $tanggal_list,
+            'grup' => $grup
         ]);
     }
 
@@ -133,5 +134,17 @@ class GrupController extends Controller
         $grup->save();
 
         return redirect('/grup_UI')->with('success', 'Grup berhasil dibuat!');
+    }
+
+    //todo 
+    public function delete(string $id)
+    {
+        $grup = Grup::find($id);
+        // if (!$grup) {
+        //     return redirect()->route('coba')->with('error', 'Grup tidak ditemukan');
+        // }
+
+        $grup->delete();
+        return redirect('/grup')->with('success', 'Grup berhasil dihapus');
     }
 }
