@@ -34,8 +34,7 @@
             @method('PUT')
             <div class="nm-grup">
                 <label for="" class="form-label fw-bold">Nama Grup</label>
-                <input type="text" class="form-control" name="nama_grup"
-                    style="background-color: transparent; border: 1px solid" value="{{ $nama_grup }}">
+                <input type="text" class="form-control" name="nama_grup" value="{{ $nama_grup }}">
             </div>
             <hr>
             <div class="anggota">
@@ -80,8 +79,7 @@
                 <label for="durasi" class="form-label fw-bold">Durasi</label>
                 <div class="select-wrapper">
                     <i class="bi bi-clock"></i>
-                    <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)"
-                        style="background-color: transparent; border: 1px solid">
+                    <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)">
                         <option value="15 menit">15 menit</option>
                         <option value="30 menit">30 menit</option>
                         <option value="45 menit">45 menit</option>
@@ -91,56 +89,64 @@
             </div>
 
             <hr>
-
+            {{-- waktu --}}
             <div class="time">
-                <label for="waktu" class="form-label fw-bold">Jam</label>
-                <div class="d-flex">
+                <label for="waktu" class="form-label fw-bold">Waktu</label>
+                <div class="row gx-2">
                     {{-- mulai --}}
-                    <div class="waktu-mulai position-relative">
-                        <div class="input-group">
+                    <div class="col-5">
+                        <div class="input-group flex-nowrap">
                             <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai"
-                                placeholder="01:00" style="background-color: transparent; border: 1px solid "
-                                value="{{ $wtku_mulai }}">
-                            <span class="input-group-text" style="background-color: transparent; border: 1px solid ">
+                                placeholder="01:00" value="{{ $wtku_mulai }}">
+                            <span class="input-group-text">
                                 <i class="bi bi-clock"></i>
                             </span>
                         </div>
                     </div>
-                    <span class="align-self-center m-sm-1">s.d.</span>
+                    <div class="col-2 text-center align-self-center">s.d.</div>
                     {{-- selesai --}}
-                    <div class="waktu-selesai position-relative">
-                        <div class="input-group">
-                            <input type="text" class="form-control ms-2" id="waktuSelesai" name="waktu_selesai"
-                                placeholder="12:00" style="background-color: transparent; border: 1px solid"
-                                value="{{ $wtku_selesai }}">
-                            <span class="input-group-text" style="background-color: transparent; border: 1px solid ">
+                    <div class="col-5">
+                        <div class="input-group flex-nowrap">
+                            <input type="text" class="form-control" id="waktuSelesai" name="waktu_selesai"
+                                placeholder="12:00" value="{{ $wtku_selesai }}">
+                            <span class="input-group-text">
                                 <i class="bi bi-clock"></i>
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
+
             <hr>
+
+            {{-- tanggal --}}
             <div class="tanggal">
                 <div class="mb-3">
                     <label for="tanggal" class="form-label fw-bold">Tanggal</label>
-                    <div class="d-flex align-items-center">
+                    <div class="row gx-2">
                         <!-- Tanggal Mulai -->
-                        <div class="position-relative me-2">
-                            <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
-                                placeholder="dd/mm/yy" style="background-color: transparent; border: 1px solid"
-                                value="{{ $tnggl_mulai }}">
-                            <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
+                        <div class="col-5">
+                            <div class="input-group flex-nowrap">
+                                <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
+                                    placeholder="dd/mm/yy" value="{{ $tnggl_mulai }}" required>
+                                <span class="input-group-text">`
+                                    <i class="bi bi-calendar"></i>
+                                </span>
+                            </div>
                         </div>
 
-                        <span class="align-self-center me-2">s.d.</span>
+                        <div class="col-2 text-center align-self-center">s.d.</div>
 
                         <!-- Tanggal Selesai -->
-                        <div class="position-relative">
-                            <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
-                                placeholder="dd/mm/yy" style="background-color: transparent; border: 1px solid"
-                                value="{{ $tnggl_selesai }}">
-                            <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
+                        <div class="col-5">
+                            <div class="input-group flex-nowrap">
+                                <input type="text" class="form-control" id="tanggalSelesai"
+                                    name="tanggal_selesai" placeholder="dd/mm/yy" value="{{ $tnggl_selesai }}"
+                                    required>
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,7 +154,10 @@
             <hr>
             <div class="row">
                 <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
-                <textarea style="border-radius: 10px; background-color:transparent" name="deskripsi">{{ $desk }}</textarea>
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" style="height: 100px">{{ $desk }}</textarea>
+                    <label for="floatingTextarea2">Isi Disini</label>
+                </div>
             </div>
     </div>
     <div class="card h-25 justify-content-center align-items-center"

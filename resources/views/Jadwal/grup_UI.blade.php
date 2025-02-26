@@ -12,7 +12,7 @@
     <div class="row position-relative">
         <div class="card shadow w-100" style="border-radius: 28px; border:none;">
             <div class="card-body">
-                <div class="position-absolute top-0 end-0 p-2 d-block d-md-none">
+                <div class="position-absolute top-0 end-0 p-1 d-md-none">
                     <button class="btn btn-outline-dark border-0" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
@@ -50,38 +50,44 @@
                     </div>
 
                     <!-- Kanan -->
-                    <div class="col-md-7" style="border-left: 1px solid #ddd">
-                        <table class="table table-borderless">
-                            <tr>
-                                <td style="width: 7em">
-                                    <i class="bi bi-calendar"></i>
-                                    <strong>Tanggal</strong>
-                                </td>
-                                <td style="width: 1em">:</td>
-                                <td>{{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <i class="bi bi-clock-history"></i>
-                                    <strong>Waktu</strong>
-                                </td>
-                                <td>:</td>
-                                <td>{{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <i class="bi bi-clock-history"></i>
-                                    <strong>Durasi</strong>
-                                </td>
-                                <td>:</td>
-                                <td>{{ $durasi }}</td>
-                            </tr>
-                        </table>
-                        <strong>Deskripsi</strong>
-                        <div class="card p-1">
-                            {{ $desk }}
+                    <div class="col-md-7 px-3 py-2">
+                        <div class="card shadow-sm p-3 border-0">
+                            <!-- Baris Label -->
+                            <div class="row text-center fw-bold">
+                                <div class="col-4 text-primary">
+                                    <i class="bi bi-calendar me-1"></i> Tanggal
+                                </div>
+                                <div class="col-4 text-success">
+                                    <i class="bi bi-clock-history me-1"></i> Waktu
+                                </div>
+                                <div class="col-4 text-danger">
+                                    <i class="bi bi-clock me-1"></i> Durasi
+                                </div>
+                            </div>
+
+                            <!-- Baris Keterangan -->
+                            <div class="row text-center mt-1">
+                                <div class="col-4">
+                                    {{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}
+                                </div>
+                                <div class="col-4">
+                                    {{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}
+                                </div>
+                                <div class="col-4">
+                                    {{ $durasi }}
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Deskripsi -->
+                            <strong>Deskripsi</strong>
+                            <div class="card p-2 bg-light border-0">
+                                {{ $desk }}
+                            </div>
                         </div>
                     </div>
+
 
                     <!-- Tombol untuk Desktop di Sebelah Kanan Berbaris ke Bawah -->
                     <div class="col-md-2 d-none d-md-flex flex-column align-items-start gap-2">
@@ -135,8 +141,8 @@
                                 </td>
                                 @foreach ($waktu_list as $ts)
                                     <td class="item" data-tanggal="{{ $t }}" data-waktu="{{ $ts }}"
-                                        style="height: 100px; max-width:20px; cursor: pointer;  color: #6c747e; vertical-align: middle; font-size:14px">
-                                        <p id="lebel">+Jadwal</p>
+                                        style="height: 50px; max-width:20px; cursor: pointer;  color: #6c747e; vertical-align: middle;">
+                                        <p id="lebel" style="font-size: 100%">+Jadwal</p>
                                     </td>
                                 @endforeach
                             </tr>
