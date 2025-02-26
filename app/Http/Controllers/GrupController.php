@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Grup;
+use App\Models\User;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 
@@ -146,5 +147,24 @@ class GrupController extends Controller
 
         $grup->delete();
         return redirect('/grup')->with('success', 'Grup berhasil dihapus');
+    }
+
+    public function cari_anggota(Request $request)
+    {
+        $search = $request->input('search', ''); // Pastikan tetap ada default string kosong
+
+        // Ambil produk jika ada pencarian, jika tidak, tampilkan semua
+        $products = User::where('name', 'LIKE', "%$search%")
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'items' => $products->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'text' => $product->name
+                ];
+            })
+        ]);
     }
 }

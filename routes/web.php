@@ -43,6 +43,10 @@ Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.de
 Route::get('/grup_UI_anggota', [GrupController::class, 'anggota']);
 Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 
+//coba cari 
+Route::get('/cari', [GrupController::class, 'cari_anggota']);
+
+
 // cari period dari rentang tanggal
 // cari period dari jam (sesuai dengan durasi)
 

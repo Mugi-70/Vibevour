@@ -13,14 +13,14 @@
         @csrf
         <div class="card p-3 justify-content-center" style="overflow: hidden; max-width: 100%;">
 
-            <div class="mb-3">
+            <div class="mb-4">
                 <label for="namaGrup" class="form-label fw-bold">Nama Grup</label>
                 <input type="text" class="form-control" id="namaGrup" name="nama_grup" placeholder="Masukkan Nama Grup"
                     required>
             </div>
 
             <!-- Anggota -->
-            <div class="mb-3 d-flex align-items-center">
+            <div class="mb-4 d-flex align-items-center">
                 <div class="flex-grow-1 me-2">
                     <label for="anggota" class="form-label fw-bold">Anggota</label>
                     <div class="anggota-grup">
@@ -35,12 +35,11 @@
             </div>
 
             <!-- Durasi dan Waktu -->
-            <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
                     <label for="durasi" class="form-label fw-bold">Durasi</label>
                     <div class="input-group">
-                        <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)"
-                            required>
+                        <select class="form-select" id="durasi" name="durasi" required>
                             <option value="15 minutes">15 menit</option>
                             <option value="30 minutes">30 menit</option>
                             <option value="45 minutes">45 menit</option>
@@ -50,32 +49,25 @@
                             <i class="bi bi-clock"></i>
                         </span>
                     </div>
-
-                    <small class="text-muted"><i class="bi bi-question-circle"></i>
-                        Atur lama waktu kegiatan disini.
-                    </small>
+                    <small class="text-muted"><i class="bi bi-question-circle"></i> Atur lama waktu kegiatan di
+                        sini.</small>
                 </div>
-                {{-- waktu --}}
+
+                <!-- Waktu -->
                 <div class="col-md-6">
                     <label for="waktu" class="form-label fw-bold">Waktu</label>
-                    <div class="d-flex">
-                        <div class="waktu-mulai position-relative">
+                    <div class="d-flex flex-column flex-md-row">
+                        <div class="w-100 position-relative">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai"
-                                    placeholder="01:00" required>
-                                <span class="input-group-text">
-                                    <i class="bi bi-clock"></i>
-                                </span>
+                                <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai" required>
+                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
                             </div>
                         </div>
-                        <span class="align-self-center m-sm-1">s.d.</span>
-                        <div class="waktu-selesai position-relative">
+                        <span class="align-self-center mx-2">s.d.</span>
+                        <div class="w-100 position-relative">
                             <div class="input-group flex-nowrap">
-                                <input type="time" class="form-control ms-2" id="waktuSelesai" name="waktu_selesai"
-                                    placeholder="12:00" required>
-                                <span class="input-group-text">
-                                    <i class="bi bi-clock"></i>
-                                </span>
+                                <input type="text" class="form-control" id="waktuSelesai" name="waktu_selesai" required>
+                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
                             </div>
                         </div>
                     </div>
@@ -83,52 +75,92 @@
                         grup.</small>
                 </div>
             </div>
-
-            <!-- Tanggal -->
-            <div class="mb-3">
-                <label for="tanggal" class="form-label fw-bold">Tanggal</label>
-                <div class="d-flex align-items-center">
-                    <!-- Tanggal Mulai -->
-                    <div class="position-relative me-2 flex-grow-1">
-                        <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
-                            placeholder="dd/mm/yy" required>
+            {{-- <div class="position-relative w-100 mb-2 mb-md-0 me-md-2">
+                        <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai" required>
                         <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
+                    </div> --}}
+            <!-- Tanggal -->
+            <div class="mb-4">
+                <label for="tanggal" class="form-label fw-bold">Tanggal</label>
+                <div class="row gx-2">
+                    <!-- Tanggal Mulai -->
+                    <div class="col-5">
+                        <div class="input-group flex-nowrap">
+                            <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
+                                placeholder="dd/mm/yy" value="" required>
+                            <span class="input-group-text">`
+                                <i class="bi bi-calendar"></i>
+                            </span>
+                        </div>
                     </div>
 
-                    <span class="align-self-center me-2">s.d.</span>
+                    <div class="col-2 text-center align-self-center">s.d.</div>
 
                     <!-- Tanggal Selesai -->
-                    <div class="position-relative flex-grow-1">
-                        <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
-                            placeholder="dd/mm/yy" required>
-                        <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
+                    <div class="col-5">
+                        <div class="input-group flex-nowrap">
+                            <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
+                                placeholder="dd/mm/yy" value="" required>
+                            <span class="input-group-text">
+                                <i class="bi bi-calendar"></i>
+                            </span>
+                        </div>
                     </div>
+                    <small class="text-muted d-block mt-1">
+                        <i class="bi bi-question-circle"></i>
+                        Tentukan rentang tanggal untuk kegiatan grup.
+                    </small>
                 </div>
 
-                <small class="text-muted d-block mt-1">
-                    <i class="bi bi-question-circle"></i>
-                    Tentukan rentang tanggal untuk kegiatan grup, misalnya dari 1 Januari hingga 3 Januari 2025.
-                </small>
+                <!-- Deskripsi -->
+                <div class="mb-4">
+                    <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
+                    <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi" placeholder="Masukkan deskripsi kegiatan"></textarea>
+                </div>
             </div>
 
-
-            <!-- Deskripsi -->
-            <div class="mb-3">
-                <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
-                <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi" placeholder="Masukkan deskripsi kegiatan"></textarea>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
+                <a href="/grup" class="btn btn-secondary m-1">
+                    <i class="bi bi-chevron-compact-left"></i> Kembali
+                </a>
+                <button type="submit" class="btn btn-success m-1" style="border:none">
+                    <i class="bi bi-save me-2"></i> Simpan Grup
+                </button>
             </div>
-        </div>
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
-            <a href="/grup" type="button" class="btn btn-secondary m-1"><i
-                    class="bi bi-chevron-compact-left"></i>Kembali</a>
-            <button type="submit" class="btn btn-success m-1" style="border:none">
-                <i class="bi bi-save me-2"></i>Simpan Group
-            </button>
+
     </form>
 
-    </div>
 
     <script>
+        $('#modalanggota').on('shown.bs.modal', function() {
+            $('#searchAjax').select2({
+                placeholder: "Cari produk...",
+                allowClear: true,
+                minimumInputLength: 1,
+                dropdownParent: $('#modalanggota'), // Tambahkan ini agar dropdown muncul di modal
+                ajax: {
+                    url: '/cari',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.items.map(item => ({
+                                id: item.id,
+                                text: item.text
+                            }))
+                        };
+                    }
+                }
+            });
+        });
+
+
+
         /* tanggal */
         let startDatePicker = flatpickr("#tanggalMulai", {
             dateFormat: "d-m-Y",
