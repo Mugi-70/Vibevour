@@ -74,12 +74,6 @@ textarea {
     transform: translateY(-50%);
 }
 
-.anggota-grup {
-    height: 40px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
 #kustomGrup.hide {
     display: none !important;
 }
@@ -255,6 +249,10 @@ textarea {
     max-width: 100%;
 }
 
+.tanggal-list {
+    width: 10em;
+}
+
 @media (max-width: 768px) {
     .d-flex {
         flex-wrap: wrap !important;
@@ -265,10 +263,8 @@ textarea {
         width: 100% !important;
     }
 
-    /* .me-2,
-    .mx-2 {
-        margin: 5px 0 !important;
-        Mengatur jarak agar tidak terlalu mepet
-    } */
+    .tanggal-list {
+        width: 20px;
+    }
 }
 

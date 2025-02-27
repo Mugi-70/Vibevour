@@ -65,14 +65,11 @@
     </div>
 
     <script>
-        // document.getElementById("toggleSidebar").addEventListener("click", function() {
-        //     document.getElementById("sidebar").classList.toggle("sidebar-hidden");
-        //     document.getElementById("content").classList.toggle("content-expanded");
-        // });
+        document.getElementById("toggleSidebar").addEventListener("click", function() {
+            document.getElementById("sidebar").classList.toggle("sidebar-hidden");
+            document.getElementById("content").classList.toggle("content");
+        });
 
-        // document.getElementById("toggleSidebar").addEventListener("click", function() {
-        //     document.getElementById("sidebar").classList.toggle("d-none");
-        // });
 
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll(".menu-item[data-bs-toggle='collapse']").forEach(function(item) {
