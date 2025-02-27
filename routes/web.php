@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\VoteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -53,5 +53,13 @@ Route::get('/hasilvote', function () {
     return view('voting.hasilvote');
 });
 
-Route::post('/simpanvote', [App\Http\Controllers\VoteController::class, 'store'])->name('vote.store');
-Route::get('/vote', [App\Http\Controllers\VoteController::class, 'index'])->name('vote.index');
+Route::get('/vote_saya', [VoteController::class, 'index'])->name('vote.index');
+Route::get('/hapus_vote', [VoteController::class, 'destroy'])->name('vote.destroy');
+Route::get('/detail_vote_{slug}', [VoteController::class, 'show'])->name('vote.show');
+Route::get('/detail_vote_{slug}/chart-data', [VoteController::class, 'getChartData']);
+
+Route::get('/vote_{slug}_data', [VoteController::class, 'getVoteData']);
+Route::post('/vote_{slug}_submit', [VoteController::class, 'submitVote'])->name('vote.submit');
+
+
+Route::post('/simpanvote', [VoteController::class, 'store'])->name('vote.store');

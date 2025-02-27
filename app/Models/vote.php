@@ -20,8 +20,13 @@ class vote extends Model
         'code',
         'slug'
     ];
-    public function question()
+    public function questions()
     {
         return $this->hasMany(question::class);
+    }
+
+    public function results()
+    {
+        return $this->hasMany(result::class);
     }
 }

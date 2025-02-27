@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\vote;
 use App\Models\question;
 use App\Models\option;
+use App\Models\result;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
@@ -17,8 +18,55 @@ class VoteController extends Controller
     {
         $vote = Vote::all();
         return view('voting.vote', compact('vote'));
-
     }
+
+    public function getChartData($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options')->firstOrFail();
+
+        $chartData = [];
+
+        foreach ($vote->questions as $question) {
+            $options = $question->options->map(function ($option) {
+                return [
+                    'label' => $option->option,
+                    'count' => Result::where('option_id', $option->id)->count(),
+                ];
+            });
+
+            $chartData[] = [
+                'question' => $question->question,
+                'options' => $options,
+            ];
+        }
+
+        return response()->json($chartData);
+    }
+
+    public function getVoteData($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options')->firstOrFail();
+        return response()->json([
+            'vote' => $vote
+        ]);
+    }
+
+    public function submitVote(Request $request, $slug)
+    {
+        $vote = Vote::where('slug', $slug)->firstOrFail();
+
+        foreach ($request->votes as $questionId => $optionId) {
+            Result::create([
+                'user_id' => auth()->id(),
+                'vote_id' => $vote->id,
+                'question_id' => $questionId,
+                'option_id' => $optionId
+            ]);
+        }
+
+        return response()->json(['message' => 'Vote berhasil disimpan!']);
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -33,8 +81,8 @@ class VoteController extends Controller
      */
     public function store(Request $request)
     {
-            try {
-                $request->validate([
+        try {
+            $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'visibility' => 'required|in:public,private',
@@ -45,17 +93,17 @@ class VoteController extends Controller
             $vote->slug = Str::slug($request->title);
             $vote->description = $request->description;
             $vote->close_date = $request->close_date;
-            $vote->result_visibility = $request->visibility; 
+            $vote->result_visibility = $request->visibility;
             $vote->status = 'open';
 
             if ($request->has('require_name') && $request->require_name) {
-                $vote->name = 'required'; 
+                $vote->name = 'required';
             }
-            
+
             if ($request->has('is_protected') && $request->is_protected) {
-                $vote->code = $request->access_code; 
+                $vote->code = $request->access_code;
             }
-            
+
             $vote->save();
 
             if (!empty($request->questions)) {
@@ -64,14 +112,13 @@ class VoteController extends Controller
                     $question->vote_id = $vote->id;
                     $question->question = $questionText;
                     $question->save();
-                    
+
                     if (isset($request->choices[$questionKey]) && is_array($request->choices[$questionKey])) {
                         foreach ($request->choices[$questionKey] as $index => $optionText) {
                             $option = new Option();
                             $option->question_id = $question->id;
                             $option->option = $optionText;
                             $option->save();
-                            
                         }
                     }
                 }
@@ -86,9 +133,11 @@ class VoteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(vote $vote)
+    public function show(string $slug)
     {
-        //
+        $vote = Vote::where('slug', $slug)->with('questions.options')->firstOrFail();
+
+        return view('voting.detailvote', compact('vote'));
     }
 
     /**
@@ -110,8 +159,10 @@ class VoteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(vote $vote)
+    public function destroy(string $slug)
     {
-        //
+        $vote = vote::findOrFail($slug);
+        $vote->delete();
+        return redirect()->route('voting.vote')->with('success', 'Vote deleted successfully.');
     }
 }

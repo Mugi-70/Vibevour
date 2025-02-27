@@ -1,16 +1,21 @@
     @extends('sidebar')
 
     @section('content')
-    <div class="header" style="margin-top: 5%;">
-        <h3>Tambah Vote</h3>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body pt-3 pb-3 pe-3 border-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Tambah Vote</h5>
+
+            </div>
+        </div>
     </div>
-    <div class="line"></div>
+
     <div class="container mt-4">
 
         <form id="voteForm" method="POST" action="{{ route('vote.store') }}">
             @csrf
             <div class="card p-4">
-                <h4>Info</h4>
+                <h4>Detail</h4>
                 <hr class="my-3" style="height: 2px; background-color: black;">
                 <h5>Judul</h5>
                 <input type="text" class="form-control mb-3" name="title" id="vote_title" required>
@@ -23,11 +28,10 @@
 
             <div class="text-end mt-3">
                 <button type="button" class="btn btn-primary" id="addQuestionBtn">
-                    <i class="bi bi-plus"></i> Tambah Pertanyaan
+                    <i class="bi bi-plus-circle"></i> Tambah Pertanyaan
                 </button>
             </div>
 
-            <!-- Settings Card -->
             <div class="card p-4 mt-3">
                 <h4>Pengaturan</h4>
                 <hr style="height: 2px; background-color: black;">
@@ -90,11 +94,11 @@
             </div>
 
             <div class="text-end mt-3">
-                <a href="/vote" class="btn btn-secondary m-1">
-                    Kembali <i class="bi bi-chevron-compact-right"></i>
+                <a href="/vote_saya" class="btn btn-secondary m-1">
+                    <i class="bi bi-chevron-left"></i>Kembali
                 </a>
                 <button type="submit" class="btn btn-success m-1">
-                    Simpan Vote <i class="bi bi-save"></i>
+                    <i class="bi bi-save"></i> Simpan Vote
                 </button>
             </div>
         </form>
@@ -181,7 +185,8 @@
                         </button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-primary d-flex align-items-center open-upload-modal" 
+                        <button type="button" class="btn btn-outline-primary d-flex align-items-center open-upload-modal" 
+                                style="text-decoration: none;"
                                 data-bs-toggle="modal" 
                                 data-bs-target="#uploadFotoModal" 
                                 data-target="img_${choiceId}">
@@ -221,7 +226,7 @@
                 <h5>Pilihan</h5>
                 <div class="choices" id="choices_${questionId}"></div>
                 <div class="text-start mt-2">
-                    <button type="button" class="btn btn-link add-choice-btn" 
+                    <button type="button" class="btn btn-primary add-choice-btn" 
                             style="text-decoration: none;" 
                             data-question-id="${questionId}">
                         <i class="bi bi-plus-circle"></i> Tambah Pilihan
@@ -421,7 +426,6 @@
             });
 
             $("#voteForm").on('submit', function(e) {
-                // Client-side validation
                 let isValid = true;
                 let errorMessage = '';
 
@@ -462,14 +466,10 @@
 
                 if (!isValid) {
                     alert(errorMessage);
-                    e.preventDefault(); // Prevent form submission
+                    e.preventDefault();
                     return false;
                 }
 
-                // Regular form submission continues if validation passes
-                // No need to prevent default event
-
-                // Make sure the access code is included if the vote is protected
                 if ($('#protectVote').is(':checked')) {
                     $('#randomCode').prop('disabled', false);
                 }

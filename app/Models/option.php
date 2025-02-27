@@ -11,8 +11,13 @@ class option extends Model
 
     protected $fillable = ['question_id', 'option'];
     
-    public function question()
+    public function questions()
     {
         return $this->belongsTo(question::class);
+    }
+
+    public function results()
+    {
+        return $this->hasMany(result::class);
     }
 }
