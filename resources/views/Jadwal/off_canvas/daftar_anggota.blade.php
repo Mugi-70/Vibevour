@@ -7,7 +7,7 @@
     </div>
     <hr>
     <div class="offcanvas-body">
-        <div class="input-group shadow-sm">
+        <div class="input-group flex-nowrap shadow-sm">
             <span class="input-group-text" style="background-color: #ffffff;">
                 <i class="bi bi-search"></i>
             </span>

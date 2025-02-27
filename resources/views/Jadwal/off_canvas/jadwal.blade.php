@@ -7,7 +7,7 @@
     </div>
     <div class="offcanvas-body">
         <div class="tanggal">
-            <h5><strong>Tanggal Pertemuan</strong></h5>
+            <h5><strong>Tanggal Jadwal</strong></h5>
             <div class="tanggal-1 d-flex">
                 <i class="bi bi-calendar"></i>
                 <p class="ms-2">Januari 2025</p>
@@ -15,7 +15,7 @@
         </div>
         <hr>
         <div class="wktu">
-            <h5><strong>Waktu Pertemuan</strong></h5>
+            <h5><strong>Waktu Jadwal</strong></h5>
             <h6 class="d-flex"><i class="bi bi-dot"></i>
                 <p>Waktu Mulai</p>
             </h6>
@@ -63,7 +63,7 @@
     <div class="card h-25 d-flex flex-row align-items-center justify-content-center p-1"
         style="background-color: #F0F3F8; border-radius: 0px">
         <button type="button" class="btn btn-danger w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
-            data-bs-target="#cancel">Batalkan Pertemuan <i class="bi bi-trash3"></i></button>
+            data-bs-target="#cancel"><i class="bi bi-trash3"></i> Batalkan Jadwal</button>
         {{-- <button type="button" class="hu btn btn-primary w-50 m-1" data-bs-toggle="modal" data-bs-target="#hadiri"
             style="font-size: 14px">Setujui Jadwal <i class="bi bi-clipboard-check"></i></button> --}}
     </div>

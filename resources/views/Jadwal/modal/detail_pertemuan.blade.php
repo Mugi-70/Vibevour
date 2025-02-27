@@ -7,7 +7,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div> --}}
             <div class="modal-body">
-                <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close float-end d-none" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
 
                 <div class="row">
                     <!-- Kiri -->

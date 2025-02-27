@@ -12,8 +12,8 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4>Membuat Jadwal Pertemuan</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h4>Membuat Jadwal</h4>
+                    <button type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <table class="table table-borderless">
@@ -52,7 +52,9 @@
                                 :
                             </td>
                             <td>
-                                {{ $durasi }}
+                                {{-- {{ $durasi }} --}}
+                                {{ str_replace('minutes', 'menit', $durasi) }}
+
                             </td>
                         </tr>
                     </table>
@@ -62,7 +64,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary" onclick="saveSchedule()">Buat Pertemuan</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSchedule()">Buat Jadwal</button>
                 </div>
             </div>
         </div>
