@@ -1,14 +1,19 @@
 @extends('Jadwal.sidebar')
 
-@section('content')
+@section('header')
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body pt-3 pb-3 pe-3 border-0">
-            <div class="d-flex justify-content-center align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn me-2" id="toggleSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
                 <h5 class="mb-0">Pembuatan Grup</h5>
             </div>
         </div>
     </div>
+@endsection
 
+@section('content')
     <form action="{{ route('coba_bikin') }}" method="POST">
         @csrf
         <div class="card p-3 justify-content-center" style="overflow: hidden; max-width: 100%;">
@@ -20,23 +25,30 @@
             </div>
 
             <!-- Anggota -->
-            <div class="mb-4 d-flex align-items-center">
-                <div class="flex-grow-1 me-2">
-                    <label for="anggota" class="form-label fw-bold">Anggota</label>
-                    <div class="anggota-grup">
-                        <p>Anggota</p>
-                    </div>
+            <div class="mb-4 flex-column flex-md-row align-items-md-center">
+                <label for="anggota" class="form-label fw-bold">Anggota</label>
+                <div class="col d-flex">
+                    {{-- <div class="card" id="anggotaList" style="height: 40px; padding: 10px; flex-wrap: wrap;">
+                    </div> --}}
+                    <select id="searchAjax" class="form-select" style="width: 100%; height: 100%">
+                    </select>
+                    <!-- Tombol di Bawah Saat Mobile -->
+                    <button type="button"
+                        class="btnTambah btn btn-outline-secondary btn-sm mt-2 mt-md-0 align-self-md-end d-none">
+                        <i class="bi bi-person-plus"></i>
+                    </button>
                 </div>
-                <button type="button" class="btn btn-outline-secondary align-self-end" data-bs-toggle="modal"
-                    data-bs-target="#modalanggota">
-                    <i class="bi bi-person-plus"></i> Anggota
-                </button>
-                @include('Jadwal.modal.tambah_anggota')
+                <label for="anggotalist" class="form-label mt-1">Daftar Anggota :</label>
+                <div class="card" id="anggotaList" style="height: auto; padding: 10px;">
+                </div>
             </div>
+
+
+            @include('Jadwal.modal.tambah_anggota')
 
             <!-- Durasi dan Waktu -->
             <div class="row mb-4">
-                <div class="col-md-6 mb-4">
+                <div class="col-md-6">
                     <label for="durasi" class="form-label fw-bold">Durasi</label>
                     <div class="input-group">
                         <select class="form-select" id="durasi" name="durasi" required>
@@ -56,18 +68,26 @@
                 <!-- Waktu -->
                 <div class="col-md-6">
                     <label for="waktu" class="form-label fw-bold">Waktu</label>
-                    <div class="d-flex flex-column flex-md-row">
-                        <div class="w-100 position-relative">
+                    <div class="d-flex">
+                        {{-- mulai --}}
+                        <div class="col-5">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai" required>
-                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai"
+                                    placeholder="01:00" value="">
+                                <span class="input-group-text">
+                                    <i class="bi bi-clock"></i>
+                                </span>
                             </div>
                         </div>
-                        <span class="align-self-center mx-2">s.d.</span>
-                        <div class="w-100 position-relative">
+                        <span class="col-1 align-self-center mx-2">s.d.</span>
+                        {{-- selesai --}}
+                        <div class="col-5">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control" id="waktuSelesai" name="waktu_selesai" required>
-                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                <input type="text" class="form-control" id="waktuSelesai" name="waktu_selesai"
+                                    placeholder="23:00">
+                                <span class="input-group-text">
+                                    <i class="bi bi-clock"></i>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -83,40 +103,37 @@
             <div class="mb-4">
                 <label for="tanggal" class="form-label fw-bold">Tanggal</label>
                 <div class="row gx-2">
-                    <!-- Tanggal Mulai -->
-                    <div class="col-5">
+                    <!-- Tanggal Mulai (dengan ikon di kiri) -->
+                    <div class="col-6">
                         <div class="input-group flex-nowrap">
-                            <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
-                                placeholder="dd/mm/yy" value="" required>
-                            <span class="input-group-text">`
-                                <i class="bi bi-calendar"></i>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="col-2 text-center align-self-center">s.d.</div>
-
-                    <!-- Tanggal Selesai -->
-                    <div class="col-5">
-                        <div class="input-group flex-nowrap">
-                            <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
-                                placeholder="dd/mm/yy" value="" required>
                             <span class="input-group-text">
                                 <i class="bi bi-calendar"></i>
                             </span>
+                            <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
+                                placeholder="dd/mm/yy" required>
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-1">
-                        <i class="bi bi-question-circle"></i>
-                        Tentukan rentang tanggal untuk kegiatan grup.
-                    </small>
+
+                    <div class="col-1 text-center align-self-center">s.d</div>
+
+                    <!-- Tanggal Selesai (tanpa ikon) -->
+                    <div class="col-5">
+                        <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
+                            placeholder="dd/mm/yy" required>
+                    </div>
                 </div>
 
-                <!-- Deskripsi -->
-                <div class="mb-4">
-                    <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
-                    <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi" placeholder="Masukkan deskripsi kegiatan"></textarea>
-                </div>
+                <small class="text-muted d-block mt-1">
+                    <i class="bi bi-question-circle"></i>
+                    Tentukan rentang tanggal untuk kegiatan grup.
+                </small>
+            </div>
+
+            <!-- Deskripsi -->
+            <div class="mb-4">
+                <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
+                <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi"
+                    placeholder="Masukkan deskripsi kegiatan"></textarea>
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
@@ -132,12 +149,12 @@
 
 
     <script>
-        $('#modalanggota').on('shown.bs.modal', function() {
+        $(document).ready(function() {
             $('#searchAjax').select2({
-                placeholder: "Cari produk...",
+                placeholder: "Cari...",
                 allowClear: true,
                 minimumInputLength: 1,
-                dropdownParent: $('#modalanggota'), // Tambahkan ini agar dropdown muncul di modal
+                // dropdownParent: $('#modalanggota'), // Agar dropdown tidak tersembunyi dalam modal
                 ajax: {
                     url: '/cari',
                     dataType: 'json',
@@ -151,13 +168,90 @@
                         return {
                             results: data.items.map(item => ({
                                 id: item.id,
-                                text: item.text
+                                text: item.text,
+                                description: "Mengundang Anggota", // Tambahan teks deskripsi
+                                icon: item.text.charAt(0)
+                                    .toUpperCase() // Huruf pertama sebagai ikon
                             }))
                         };
                     }
+                },
+                templateResult: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+
+                    let $result = $(`
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
+                        ${data.icon}
+                    </div>
+                    <div>
+                        <div style="font-weight: bold;">${data.text}</div>
+                        <div style="color: gray; font-size: 12px;">${data.description}</div>
+                    </div>
+                </div>
+            `);
+
+                    return $result;
+                },
+                templateSelection: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+
+                    let $selected = $(`
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
+                        ${data.icon}
+                    </div>
+                    <div>${data.text}</div>
+                </div>
+            `);
+
+                    return $selected;
                 }
             });
+        }).on('select2:select', function(e) {
+            var data = e.params.data;
+            console.log(data);
         });
+
+
+        $('#btnTambah').on('click', function() {
+            let selectedData = $('#searchAjax').select2('data'); // Ambil data yang dipilih
+
+            if (selectedData.length > 0) {
+                let anggota = selectedData[0]; // Ambil item pertama (karena hanya satu yang dipilih)
+                let anggotaId = anggota.id;
+
+                // Cek apakah anggota sudah ada di daftar
+                if ($(`#anggota-${anggotaId}`).length === 0) {
+                    // Tambahkan ke dalam card anggota (horizontal)
+                    let anggotaHtml = `
+                <div id="anggota-${anggotaId}" style="display: flex; align-items: center; gap: 5px;">
+                    <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; position: relative;">
+                        ${anggota.text.charAt(0).toUpperCase()}
+                        <span class="remove-anggota" data-id="${anggotaId}" style="position: absolute; top: -5px; right: -5px; background: black; color: white; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer;">x</span>
+                    </div>
+                    <span>${anggota.text}</span>
+                </div>
+            `;
+
+                    $('#anggotaList').append(anggotaHtml); // Tambahkan anggota ke dalam card
+                }
+
+                $('#searchAjax').val(null).trigger('change'); // Reset Select2
+                $('#modalanggota').modal('hide'); // Tutup modal
+            }
+        });
+
+        // Event untuk menghapus anggota
+        $(document).on('click', '.remove-anggota', function() {
+            let anggotaId = $(this).data('id');
+            $(`#anggota-${anggotaId}`).remove(); // Hapus elemen anggota dari daftar
+        });
+
 
 
 
