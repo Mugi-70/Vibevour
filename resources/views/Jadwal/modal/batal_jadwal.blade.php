@@ -9,7 +9,7 @@
             <div class="modal-body">
                 <center>
                     <i class="bi bi-exclamation-triangle"></i>
-                    Apakah anda yakin ingin membatalkan pertemuan ini?
+                    Apakah anda yakin ingin membatalkan jadwal ini?
                 </center>
             </div>
             <div class="modal-footer">

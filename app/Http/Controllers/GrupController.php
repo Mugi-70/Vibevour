@@ -162,7 +162,8 @@ class GrupController extends Controller
             'items' => $products->map(function ($product) {
                 return [
                     'id' => $product->id,
-                    'text' => $product->name
+                    'text' => $product->name,
+                    'email' => $product->email
                 ];
             })
         ]);

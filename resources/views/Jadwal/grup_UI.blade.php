@@ -168,7 +168,7 @@
                                     <td class="item" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}"
                                         style="height: 50px; max-width:20px; cursor: pointer;  color: #6c747e; vertical-align: middle;">
-                                        <p id="lebel" style="font-size: 100%">+Jadwal</p>
+                                        <p class="lebel" style="font-size: 100%">+Jadwal</p>
                                     </td>
                                 @endforeach
                             </tr>
@@ -246,11 +246,11 @@
             if (selectedCell) {
                 // cek apakah tombol sudah ada dalam cell
                 let existingButton = selectedCell.find("button");
+                $(document).ready(function() {
+                    $(".lebel").hide();
+                });
 
                 if (existingButton.length === 0) {
-                    $(document).ready(function() {
-                        $('#lebel').hide();
-                    });
                     //  <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
                     // <div class="d-flex justify-content-between align-items-center mb-1">
                     // <p class="m-0 fw-bold">+2 anggota</p>
