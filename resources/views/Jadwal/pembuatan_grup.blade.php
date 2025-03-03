@@ -39,8 +39,10 @@
                     </button>
                 </div>
                 <label for="anggotalist" class="form-label mt-1">Daftar Anggota :</label>
-                <div class="card" id="anggotaList" style="height: auto; padding: 10px;">
+                <div class="card" id="anggotaList" style="height: auto; padding: 5px;">
+                    <p id="emptyMessage" style="text-align: center; color: gray;">Belum menambahkan anggota</p>
                 </div>
+
             </div>
 
 
@@ -61,7 +63,7 @@
                             <i class="bi bi-clock"></i>
                         </span>
                     </div>
-                    <small class="text-muted"><i class="bi bi-question-circle"></i> Atur lama waktu kegiatan di
+                    <small class="text-muted"><i class="bi bi-question-circle"></i> Atur lama waktu jadwal di
                         sini.</small>
                 </div>
 
@@ -91,7 +93,7 @@
                             </div>
                         </div>
                     </div>
-                    <small class="text-muted"><i class="bi bi-question-circle"></i> Tentukan waktu operasional kegiatan
+                    <small class="text-muted"><i class="bi bi-question-circle"></i> Tentukan waktu operasional jadwal
                         grup.</small>
                 </div>
             </div>
@@ -132,8 +134,7 @@
             <!-- Deskripsi -->
             <div class="mb-4">
                 <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
-                <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi"
-                    placeholder="Masukkan deskripsi kegiatan"></textarea>
+                <textarea class="form-control" id="deskripsi" rows="3" name="deskripsi" placeholder="Masukkan deskripsi"></textarea>
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
@@ -149,12 +150,21 @@
 
 
     <script>
+        //mengecek isi card daftar anggota
         $(document).ready(function() {
+            function checkEmptyMessage() {
+                if ($('#anggotaList .anggota-item').length === 0) {
+                    $('#emptyMessage').show();
+                } else {
+                    $('#emptyMessage').hide();
+                }
+            }
+
+            //cari anggota
             $('#searchAjax').select2({
-                placeholder: "Cari...",
+                placeholder: "Cari anggota",
                 allowClear: true,
                 minimumInputLength: 1,
-                // dropdownParent: $('#modalanggota'), // Agar dropdown tidak tersembunyi dalam modal
                 ajax: {
                     url: '/cari',
                     dataType: 'json',
@@ -169,9 +179,9 @@
                             results: data.items.map(item => ({
                                 id: item.id,
                                 text: item.text,
-                                description: "Mengundang Anggota", // Tambahan teks deskripsi
-                                icon: item.text.charAt(0)
-                                    .toUpperCase() // Huruf pertama sebagai ikon
+                                // description: "Mengundang Anggota",
+                                email: item.email,
+                                icon: item.text.charAt(0).toUpperCase()
                             }))
                         };
                     }
@@ -181,77 +191,56 @@
                         return data.text;
                     }
 
-                    let $result = $(`
+                    return $(`
                 <div style="display: flex; align-items: center;">
                     <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
                         ${data.icon}
                     </div>
                     <div>
                         <div style="font-weight: bold;">${data.text}</div>
-                        <div style="color: gray; font-size: 12px;">${data.description}</div>
+                        <div style="color: gray; font-size: 12px;">${data.email}</div>
                     </div>
                 </div>
             `);
-
-                    return $result;
                 },
-                templateSelection: function(data) {
-                    if (!data.id) {
-                        return data.text;
-                    }
+            });
 
-                    let $selected = $(`
-                <div style="display: flex; align-items: center;">
+            $('#searchAjax').on('select2:select', function(e) {
+                var data = e.params.data;
+                var anggotaList = $('#anggotaList');
+
+                if ($(`#anggota-${data.id}`).length === 0) {
+                    var anggotaItem = $(`
+                <div id="anggota-${data.id}" class="anggota-item" style="display: flex; align-items: center; margin-bottom: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
                     <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
                         ${data.icon}
                     </div>
-                    <div>${data.text}</div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: bold;">${data.text}</div>
+                        <div style="color: gray; font-size: 12px;">${data.email}</div>
+                    </div>
+                    <button class="remove-anggota" data-id="${data.id}" style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
                 </div>
             `);
 
-                    return $selected;
+                    anggotaList.append(anggotaItem);
+                    checkEmptyMessage();
                 }
+
+                // Kosongkan input setelah memilih
+                $(this).val(null).trigger('change');
             });
-        }).on('select2:select', function(e) {
-            var data = e.params.data;
-            console.log(data);
+
+            // Hapus anggota dari daftar
+            $(document).on('click', '.remove-anggota', function() {
+                var anggotaId = $(this).data('id');
+                $(`#anggota-${anggotaId}`).remove();
+                checkEmptyMessage();
+            });
+
+            // Cek awal jika belum ada anggota
+            checkEmptyMessage();
         });
-
-
-        $('#btnTambah').on('click', function() {
-            let selectedData = $('#searchAjax').select2('data'); // Ambil data yang dipilih
-
-            if (selectedData.length > 0) {
-                let anggota = selectedData[0]; // Ambil item pertama (karena hanya satu yang dipilih)
-                let anggotaId = anggota.id;
-
-                // Cek apakah anggota sudah ada di daftar
-                if ($(`#anggota-${anggotaId}`).length === 0) {
-                    // Tambahkan ke dalam card anggota (horizontal)
-                    let anggotaHtml = `
-                <div id="anggota-${anggotaId}" style="display: flex; align-items: center; gap: 5px;">
-                    <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; position: relative;">
-                        ${anggota.text.charAt(0).toUpperCase()}
-                        <span class="remove-anggota" data-id="${anggotaId}" style="position: absolute; top: -5px; right: -5px; background: black; color: white; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer;">x</span>
-                    </div>
-                    <span>${anggota.text}</span>
-                </div>
-            `;
-
-                    $('#anggotaList').append(anggotaHtml); // Tambahkan anggota ke dalam card
-                }
-
-                $('#searchAjax').val(null).trigger('change'); // Reset Select2
-                $('#modalanggota').modal('hide'); // Tutup modal
-            }
-        });
-
-        // Event untuk menghapus anggota
-        $(document).on('click', '.remove-anggota', function() {
-            let anggotaId = $(this).data('id');
-            $(`#anggota-${anggotaId}`).remove(); // Hapus elemen anggota dari daftar
-        });
-
 
 
 
