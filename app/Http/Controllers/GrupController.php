@@ -6,7 +6,9 @@ use Carbon\Carbon;
 use App\Models\Grup;
 use App\Models\User;
 use Carbon\CarbonPeriod;
+use App\Models\AnggotaGrup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class GrupController extends Controller
 {
@@ -19,26 +21,17 @@ class GrupController extends Controller
 
         $grup = Grup::all();
         return view('Jadwal.grup', compact('grup'));
+    }
 
-        // $nama_grup = "Jual-Beli";
-        // $durasi = "30 menit";
-        // $wtku_mulai = "07:00";
-        // $wtku_selesai = "09:00";
-        // $tnggl_mulai = "01 Januari 2025";
-        // $tnggl_selesai = "03 Januari 2025";
-        // $desk = "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        //         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
-
-        // $tgl = ["1 Januari 2025", "2 Januari 2025", "3 Januari 2025"];
-        // $times = ["07:00 - 07:30", "07:30 - 08:00", "08:00 - 08:30", "08:30 - 09:00"];
-
-        // $hadir = ["Penjual", "Notaris"];
-
-        // return view('Jadwal.grup_UI', compact('hadir', 'nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
+    public function list_anggota()
+    {
+        $anggota_list2 = Grup::with('anggota.user')->get();
+        return view('Jadwal.grup_UI', compact('anggota_list2'));
     }
 
     public function anggota()
     {
+        $grup = Grup::with('anggota.user')->get();
         $nama_grup = "Jual-Beli";
         $durasi = "30 menit";
         $wtku_mulai = "07:00";
@@ -53,7 +46,7 @@ class GrupController extends Controller
 
         $hadir = ["Penjual", "Notaris"];
 
-        return view('Jadwal.grup_UI_anggota', compact('hadir', 'nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
+        return view('Jadwal.grup_UI_anggota', compact('grup', 'hadir', 'nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
     }
 
     public function pertemuan()
@@ -64,7 +57,9 @@ class GrupController extends Controller
 
     public function showGroup(string $id)
     {
-        $grup = Grup::findOrFail($id);
+        // $grup = Grup::with('anggota.user')->get();
+
+        $grup = Grup::with('anggota.user')->findOrFail($id);
         //? Data dari database
         $input_tanggal_mulai = $grup->tanggal_mulai;
         $input_tanggal_selesai = $grup->tanggal_selesai;
@@ -100,26 +95,51 @@ class GrupController extends Controller
             'desk' => $grup->deskripsi,
             'waktu_list' => $waktu_list,
             'tanggal_list' => $tanggal_list,
-            'grup' => $grup
+            'grup' => $grup,
+            // 'list_anggota' => $list_anggota
         ]);
     }
 
     //todo Membuat Grup baru
     public function store(Request $request)
     {
+        try {
+            // Buat grup baru
+            $grup = new Grup();
+            $grup->nama_grup = $request->nama_grup;
+            $grup->deskripsi = $request->deskripsi;
+            $grup->tanggal_mulai = $request->tanggal_mulai;
+            $grup->tanggal_selesai = $request->tanggal_selesai;
+            $grup->waktu_mulai = $request->waktu_mulai;
+            $grup->waktu_selesai = $request->waktu_selesai;
+            $grup->durasi = $request->durasi;
+            $grup->save();
 
-        $grup = new Grup;
-        $grup->nama_grup = $request->nama_grup;
-        $grup->deskripsi = $request->deskripsi;
-        $grup->tanggal_mulai = $request->tanggal_mulai;
-        $grup->tanggal_selesai = $request->tanggal_selesai;
-        $grup->waktu_mulai = $request->waktu_mulai;
-        $grup->waktu_selesai = $request->waktu_selesai;
-        $grup->durasi = $request->durasi;
-        $grup->save();
+            // Debugging: Pastikan data anggota ada
+            if (!$request->has('anggota') || empty($request->anggota)) {
+                return response()->json(['error' => 'Tidak ada anggota yang ditambahkan!'], 400);
+            }
 
-        return redirect('/grup')->with('success', 'Grup berhasil dibuat!');
+            AnggotaGrup::create([
+                'grup_id' => $grup->id_grup,
+                'role' => 'admin',
+            ]);
+
+            // Simpan anggota ke grup
+            foreach ($request->anggota as $userId) {
+                AnggotaGrup::create([
+                    'grup_id' => $grup->id_grup,
+                    'user_id' => $userId,
+                    'role' => 'member'
+                ]);
+            }
+
+            return redirect('/grup')->with('success', 'Grup berhasil dibuat dan anggota ditambahkan!');
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+
 
     //todo Mengedit grup
     public function update(string $id, Request $request)
@@ -134,7 +154,7 @@ class GrupController extends Controller
         $grup->durasi = $request->durasi;
         $grup->save();
 
-        return redirect('/grup_UI')->with('success', 'Grup berhasil dibuat!');
+        return redirect('/grup')->with('success', 'Grup berhasil dibuat!');
     }
 
     //todo 

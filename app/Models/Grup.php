@@ -20,4 +20,9 @@ class Grup extends Model
         'tanggal_mulai',
         'tanggal_selesai'
     ];
+
+    public function anggota()
+    {
+        return $this->hasMany(AnggotaGrup::class, 'grup_id', 'id_grup');
+    }
 }
