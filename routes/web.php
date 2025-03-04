@@ -37,6 +37,7 @@ Route::delete('/hapus_grup/{id}', [GrupController::class, 'delete'])->name('coba
 
 //menampilkan grup sesuai yang dipilih
 Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.detail');
+// Route::get('/grup_UI', [GrupController::class, 'list_anggota'])->name('list.anggota');
 
 
 // Route::get('/grup_UI', [GrupController::class, 'index']);

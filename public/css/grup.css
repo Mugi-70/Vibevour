@@ -268,3 +268,30 @@ textarea {
     }
 }
 
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.item {
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.item:hover {
+    background-color: #e3f2fd;
+    animation: bounce 0.5s;
+    /* Biru muda */
+    transform: scale(1.05);
+}
+
+/* Menghilangkan tombol silang (X) pada opsi yang dipilih di Select2 */
+.select2-selection__choice__remove {
+    display: none !important;
+}

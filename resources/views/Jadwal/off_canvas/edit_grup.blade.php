@@ -43,36 +43,18 @@
                     <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal"
                         data-bs-target="#modalanggota" style="font-size: 14px">+ Anggota</button>
                 </h6>
-                <div class="box-item-1 d-flex align-items-center mt-3">
-                    <div class="avatar-search">p</div>
-                    <div class="nama-user mt-2">
-                        <h6>Penjual</h6>
+                @foreach ($grup->anggota as $item)
+                    <div class="box-item-1 d-flex align-items-center mt-3">
+                        <div class="avatar-search">p</div>
+                        <div class="nama-user mt-2">
+                            <h6>{{ $item->user->name }}</h6>
+                        </div>
+                        <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
+                            style="font-size: 14px; border-radius: 50%">
+                            X
+                        </button>
                     </div>
-                    <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
-                        style="font-size: 14px; border-radius: 50%">
-                        X
-                    </button>
-                </div>
-                <div class="box-item d-flex align-items-center mt-3">
-                    <div class="avatar-search">p</div>
-                    <div class="nama-user mt-2">
-                        <h6>Notaris</h6>
-                    </div>
-                    <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
-                        style="font-size: 14px; border-radius: 50%">
-                        X
-                    </button>
-                </div>
-                <div class="box-item d-flex align-items-center mt-3">
-                    <div class="avatar-search">p</div>
-                    <div class="nama-user mt-2">
-                        <h6>Pembeli</h6>
-                    </div>
-                    <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
-                        style="font-size: 14px; border-radius: 50%">
-                        X
-                    </button>
-                </div>
+                @endforeach
             </div>
             <hr>
             <div class="durasi">
@@ -140,9 +122,8 @@
                         <!-- Tanggal Selesai -->
                         <div class="col-5">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control" id="tanggalSelesai"
-                                    name="tanggal_selesai" placeholder="dd/mm/yy" value="{{ $tnggl_selesai }}"
-                                    required>
+                                <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
+                                    placeholder="dd/mm/yy" value="{{ $tnggl_selesai }}" required>
                                 <span class="input-group-text">
                                     <i class="bi bi-calendar"></i>
                                 </span>

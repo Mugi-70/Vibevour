@@ -5,8 +5,9 @@
         <div class="card-body pt-3 pb-3 pe-3 border-0">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <button class="btn me-2" id="toggleSidebar">
-                        <i class="bi bi-list"></i> <!-- Ikon Menu -->
+                    <button class="btn me-2 d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                        data-bs-target="#mobileSidebar">
+                        <i class="bi bi-list"></i>
                     </button>
                     <h5 class="mb-0">Grup</h5>
                 </div>
@@ -36,33 +37,39 @@
             </ul>
         </div>
 
-        @foreach ($grup as $item)
-            <div class="col-md-4">
-                <a href="{{ route('grup.detail', ['id' => $item->id_grup]) }}" style="text-decoration:none">
-                    <div class="card mt-3 border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold fs-6">{{ $item->nama_grup }}</h5>
-                            <p class="card-text" style="font-size: 14px">{{ $item->deskripsi }}</p>
-
-                            <!-- Wrapper Flex untuk Tanggal & Tombol -->
-                            <div class="d-flex justify-content-between align-items-center">
-                                <p class="mb-0 text-muted" style="font-size: 14px;">
-                                    {{ \Carbon\Carbon::parse($item->tanggal_mulai)->translatedFormat('d M Y') }} s.d
-                                    {{ \Carbon\Carbon::parse($item->tanggal_selesai)->translatedFormat('d M Y') }}
-                                </p>
-
-                                <button type="button" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-share me-1"></i>Bagikan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </a>
+        @if ($grup->isEmpty())
+            <div class="d-flex align-items-center justify-content-center" style="min-height: 70vh">
+                <p class="text-muted">Kamu Belum Mempunyai Grup</p>
             </div>
-        @endforeach
-    </div>
+        @else
+            <div class="row">
+                @foreach ($grup as $item)
+                    <div class="col-md-4">
+                        <a href="{{ route('grup.detail', ['id' => $item->id_grup]) }}" style="text-decoration:none">
+                            <div class="card mt-3 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold fs-6">{{ $item->nama_grup }}</h5>
+                                    <p class="card-text" style="font-size: 14px">{{ $item->deskripsi }}</p>
 
-    <div class="d-flex align-items-center justify-content-center d-none" style="min-height: 70vh">
-        <p class="text-muted">Kamu Belum Mempunyai Grup</p>
-    </div>
-@endsection
+                                    <!-- Wrapper Flex untuk Tanggal & Tombol -->
+                                    <div class="d-flex flex-nowrap justify-content-between align-items-center">
+                                        <p class="mb-0 text-muted" style="font-size: 14px;">
+                                            {{ \Carbon\Carbon::parse($item->tanggal_mulai)->translatedFormat('d M Y') }} s.d
+                                            {{ \Carbon\Carbon::parse($item->tanggal_selesai)->translatedFormat('d M Y') }}
+                                        </p>
+
+                                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-share me-1"></i>
+                                            <span class="d-none d-sm-inline">Bagikan</span>
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+    @endsection

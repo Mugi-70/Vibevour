@@ -55,6 +55,42 @@
         <a href="/logout" class="menu-item"><i class="bi bi-box-arrow-right"></i> Keluar Akun</a>
     </div>
 
+    <!-- Offcanvas Sidebar untuk Mobile -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+        <div class="offcanvas-header">
+            <div class="logo" style="font-size: 24px">Vibe<span style="color:blueviolet;">Four</span></div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+
+            <a href="#" class="menu-item"><i class="bi bi-house-door"></i> Beranda</a>
+
+            <!-- Dropdown Voting -->
+            <a class="menu-item" data-bs-toggle="collapse" href="#menu_vote" role="button" aria-expanded="false"
+                data-target="#menu_vote">
+                <i class="bi bi-check-circle"></i> Voting
+                <i class="bi bi-chevron-down ms-auto rotate" id="arrow_vote"></i>
+            </a>
+            <div class="collapse" id="menu_vote">
+                <a href="/vote" class="menu-sub-item">Vote Saya</a>
+            </div>
+
+            <!-- Dropdown Penjadwalan -->
+            <a class="menu-item" data-bs-toggle="collapse" href="#menu_penjadwalan" role="button" aria-expanded="false"
+                data-target="#menu_penjadwalan">
+                <i class="bi bi-calendar-event"></i> Penjadwalan
+                <i class="bi bi-chevron-down ms-auto rotate" id="arrow_penjadwalan"></i>
+            </a>
+            <div class="collapse" id="menu_penjadwalan">
+                <a href="/grup" class="menu-sub-item">Grup</a>
+                <a href="/pertemuan" class="menu-sub-item">Pertemuan</a>
+            </div>
+
+            <a href="/logout" class="menu-item"><i class="bi bi-box-arrow-right"></i> Keluar Akun</a>
+        </div>
+    </div>
+    </div>
+
     <div class="content" id="content">
         <div class="hai">
             @yield('header')
@@ -66,9 +102,16 @@
 
     <script>
         document.getElementById("toggleSidebar").addEventListener("click", function() {
-            document.getElementById("sidebar").classList.toggle("sidebar-hidden");
-            document.getElementById("content").classList.toggle("content");
+            let content = document.querySelector(".content");
+            if (document.body.classList.contains("offcanvas-open")) {
+                document.body.classList.remove("offcanvas-open");
+                content.style.marginLeft = "0"; // Atur ke posisi default saat offcanvas terbuka
+            } else {
+                document.body.classList.add("offcanvas-open");
+                content.style.marginLeft = "250px"; // Pastikan padding kembali seperti awal
+            }
         });
+
 
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -77,11 +120,11 @@
                 let target = document.querySelector(item.dataset.target);
 
                 target.addEventListener("show.bs.collapse", function() {
-                    arrow.classList.add("open");
+                    arrow.classList.add("open-collapse");
                 });
 
                 target.addEventListener("hide.bs.collapse", function() {
-                    arrow.classList.remove("open");
+                    arrow.classList.remove("open-collapse");
                 });
             });
         });

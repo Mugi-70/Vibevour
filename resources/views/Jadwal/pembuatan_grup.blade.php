@@ -4,10 +4,15 @@
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body pt-3 pb-3 pe-3 border-0">
             <div class="d-flex align-items-center">
-                <button class="btn me-2" id="toggleSidebar">
+                <button class="btn me-2 d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                    data-bs-target="#mobileSidebar">
                     <i class="bi bi-list"></i>
                 </button>
                 <h5 class="mb-0">Pembuatan Grup</h5>
+                <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                    title="Halaman Grup">
+                    <i class="bi bi-question-circle"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -16,7 +21,7 @@
 @section('content')
     <form action="{{ route('coba_bikin') }}" method="POST">
         @csrf
-        <div class="card p-3 justify-content-center" style="overflow: hidden; max-width: 100%;">
+        <div class="card shadow-sm border-0 p-3 justify-content-center" style="overflow: hidden; max-width: 100%;">
 
             <div class="mb-4">
                 <label for="namaGrup" class="form-label fw-bold">Nama Grup</label>
@@ -30,13 +35,9 @@
                 <div class="col d-flex">
                     {{-- <div class="card" id="anggotaList" style="height: 40px; padding: 10px; flex-wrap: wrap;">
                     </div> --}}
-                    <select id="searchAjax" class="form-select" style="width: 100%; height: 100%">
+                    <select id="searchAjax" name="anggota[]" multiple="multiple" class="form-select"
+                        style="width: 100%; height: 100%">
                     </select>
-                    <!-- Tombol di Bawah Saat Mobile -->
-                    <button type="button"
-                        class="btnTambah btn btn-outline-secondary btn-sm mt-2 mt-md-0 align-self-md-end d-none">
-                        <i class="bi bi-person-plus"></i>
-                    </button>
                 </div>
                 <label for="anggotalist" class="form-label mt-1">Daftar Anggota :</label>
                 <div class="card" id="anggotaList" style="height: auto; padding: 5px;">
@@ -112,7 +113,7 @@
                                 <i class="bi bi-calendar"></i>
                             </span>
                             <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
-                                placeholder="dd/mm/yy" required>
+                                placeholder="dd/mm/yy">
                         </div>
                     </div>
 
@@ -121,7 +122,7 @@
                     <!-- Tanggal Selesai (tanpa ikon) -->
                     <div class="col-5">
                         <input type="text" class="form-control" id="tanggalSelesai" name="tanggal_selesai"
-                            placeholder="dd/mm/yy" required>
+                            placeholder="dd/mm/yy">
                     </div>
                 </div>
 
@@ -150,6 +151,40 @@
 
 
     <script>
+        /* tanggal */
+        let startDatePicker = flatpickr("#tanggalMulai", {
+            dateFormat: "d-m-Y",
+            minDate: "today",
+            onChange: function(selectedDates, dateStr) {
+                endDatePicker.set("minDate", dateStr);
+            }
+        });
+
+        let endDatePicker = flatpickr("#tanggalSelesai", {
+            dateFormat: "d-m-Y",
+            minDate: "today",
+        });
+        /* tanggal */
+
+        /* waktu */
+        let startPicker = flatpickr("#waktuMulai", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            onChange: function(selectedDates, dateStr) {
+                endPicker.set("minTime", dateStr);
+            }
+        });
+
+        let endPicker = flatpickr("#waktuSelesai", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true
+        });
+        /* waktu */
+
         //mengecek isi card daftar anggota
         $(document).ready(function() {
             function checkEmptyMessage() {
@@ -205,77 +240,61 @@
                 },
             });
 
+            //select2 onChange
             $('#searchAjax').on('select2:select', function(e) {
                 var data = e.params.data;
                 var anggotaList = $('#anggotaList');
 
                 if ($(`#anggota-${data.id}`).length === 0) {
                     var anggotaItem = $(`
-                <div id="anggota-${data.id}" class="anggota-item" style="display: flex; align-items: center; margin-bottom: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
-                    <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
-                        ${data.icon}
-                    </div>
-                    <div style="flex-grow: 1;">
-                        <div style="font-weight: bold;">${data.text}</div>
-                        <div style="color: gray; font-size: 12px;">${data.email}</div>
-                    </div>
-                    <button class="remove-anggota" data-id="${data.id}" style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
+            <div id="anggota-${data.id}" class="anggota-item" 
+                 style="display: flex; align-items: center; margin-bottom: 10px; 
+                        padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
+                <div style="width: 30px; height: 30px; background-color: red; color: white; 
+                            display: flex; align-items: center; justify-content: center; 
+                            border-radius: 50%; font-weight: bold; margin-right: 10px;">
+                    ${data.icon}
                 </div>
-            `);
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: bold;">${data.text}</div>
+                    <div style="color: gray; font-size: 12px;">${data.email}</div>
+                </div>
+                <button class="remove-anggota" data-id="${data.id}" 
+                        style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+        `);
 
                     anggotaList.append(anggotaItem);
                     checkEmptyMessage();
                 }
-
-                // Kosongkan input setelah memilih
-                $(this).val(null).trigger('change');
             });
 
-            // Hapus anggota dari daftar
+            // Hapus anggota dari daftar jika tombol "X" ditekan
             $(document).on('click', '.remove-anggota', function() {
                 var anggotaId = $(this).data('id');
+
+                // Hapus dari tampilan
                 $(`#anggota-${anggotaId}`).remove();
+
+                // Hapus dari Select2
+                var selectedValues = $('#searchAjax').val();
+                selectedValues = selectedValues.filter(value => value !== anggotaId.toString());
+                $('#searchAjax').val(selectedValues).trigger('change');
+
                 checkEmptyMessage();
             });
 
-            // Cek awal jika belum ada anggota
+            // Cek apakah daftar anggota kosong
+            function checkEmptyMessage() {
+                if ($('#anggotaList .anggota-item').length === 0) {
+                    $('#emptyMessage').show();
+                } else {
+                    $('#emptyMessage').hide();
+                }
+            }
+
+            // Pastikan pesan kosong sesuai kondisi awal
             checkEmptyMessage();
         });
-
-
-
-        /* tanggal */
-        let startDatePicker = flatpickr("#tanggalMulai", {
-            dateFormat: "d-m-Y",
-            minDate: "today",
-            onChange: function(selectedDates, dateStr) {
-                endDatePicker.set("minDate", dateStr);
-            }
-        });
-
-        let endDatePicker = flatpickr("#tanggalSelesai", {
-            dateFormat: "d-m-Y",
-            minDate: "today",
-        });
-        /* tanggal */
-
-        /* waktu */
-        let startPicker = flatpickr("#waktuMulai", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-            onChange: function(selectedDates, dateStr) {
-                endPicker.set("minTime", dateStr);
-            }
-        });
-
-        let endPicker = flatpickr("#waktuSelesai", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true
-        });
-        /* waktu */
     </script>
 @endsection

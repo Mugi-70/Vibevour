@@ -10,8 +10,9 @@
         <div class="card-body pt-3 pb-3 pe-3 border-0">
             <div class="d-flex align-items-center">
                 <!-- Tombol Toggle Sidebar di Kiri -->
-                <button class="btn me-2" id="toggleSidebar">
-                    <i class="bi bi-list"></i> <!-- Ikon Menu -->
+                <button class="btn me-2 d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                    data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list"></i>
                 </button>
 
                 <h4 class="mt-3" style="font-weight: bold">Grup</h4>
@@ -27,7 +28,7 @@
 
 @section('content')
     <div class="row position-relative">
-        <div class="card shadow w-100" style=" border:none; ">
+        <div class="card shadow-sm w-100" style=" border:none; ">
             <div class="card-body">
                 <div class="position-absolute top-0 end-0 p-1 d-md-none">
                     <button class="btn btn-outline-dark border-0" data-bs-toggle="dropdown" aria-expanded="false">
@@ -75,7 +76,9 @@
                                     <i class="bi bi-calendar me-1"></i> Tanggal
                                 </div>
                                 <div class="ps-4">
-                                    {{ $tnggl_mulai }} <strong>s.d.</strong> {{ $tnggl_selesai }}
+                                    {{ \Carbon\Carbon::parse($tnggl_mulai)->translatedFormat('d M Y') }}
+                                    <strong>s.d.</strong>
+                                    {{ \Carbon\Carbon::parse($tnggl_selesai)->translatedFormat('d M Y') }}
                                 </div>
                             </div>
 
@@ -133,7 +136,7 @@
         </div>
 
         {{-- kalender --}}
-        <div class="card shadow w-100 mt-5" style=" border:none;">
+        <div class="card shadow-sm w-100 mt-5" style=" border:none;">
             <div class="header-kalender d-flex justify-content-between">
                 <h4 class="p-3"><i class="bi bi-clipboard"></i> Jam/Tanggal</h4>
                 <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
@@ -162,13 +165,13 @@
                             <tr>
                                 <td class="tanggal-list"
                                     style="vertical-align: middle; left: 0; position: sticky; z-index: 2">
-                                    {{ $t }}
+                                    {{ \Carbon\Carbon::parse($t)->translatedFormat('d M Y') }}
                                 </td>
                                 @foreach ($waktu_list as $ts)
                                     <td class="item" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}"
-                                        style="height: 50px; max-width:20px; cursor: pointer;  color: #6c747e; vertical-align: middle;">
-                                        <p class="lebel" style="font-size: 100%">+Jadwal</p>
+                                        style="height: 50px; max-width:20px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
+                                        <i class="lebel bi bi-plus-circle" style="font-size: 18px; color: #007bff;"></i>
                                     </td>
                                 @endforeach
                             </tr>
@@ -207,12 +210,6 @@
                 },
             });
         });
-
-
-        // function setDeleteFormAction(id) {
-        //     let form = document.getElementById('deleteGrupForm');
-        //     form.action = "/hapus" + "/grup" + /id;
-        // }
 
         /* fungsi memunculkan modal dengan klik */
         $(".item").click(function() {
@@ -321,7 +318,7 @@
                 // Pastikan body tidak terkunci
                 $("body").removeClass("modal-open").css("overflow", "");
 
-                $("#lebel").show();
+                $(".lebel").show();
 
                 // Reset elemen offcanvas agar bisa ditampilkan lagi
                 setTimeout(function() {

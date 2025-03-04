@@ -27,20 +27,20 @@
                             </td>
                             <td>
                                 <p id="selectedDate">
-                                    2 Januari 2025
+
                                 </p>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <i class="bi bi-clock-history"></i>
-                                <strong>Jam</strong>
+                                <strong>Waktu</strong>
                             </td>
                             <td>
                                 :
                             </td>
                             <td>
-                                <p id="selectedTime">07:30 - 08:00</p>
+                                <p id="selectedTime"></p>
                             </td>
                         </tr>
                         <tr>
@@ -59,7 +59,7 @@
                         </tr>
                     </table>
                     <hr>
-                    <label for="scheduleInput">Catatan:</label>
+                    <label for="scheduleInput">Judul :</label>
                     <input type="text" id="scheduleInput" class="form-control">
                 </div>
                 <div class="modal-footer">
