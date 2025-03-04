@@ -14,9 +14,25 @@ class VoteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(request $request)
     {
-        $vote = Vote::all();
+        $sortOrder = $request->query('sort', 'desc');
+        $filter = $request->query('filter', '');
+
+        $query = Vote::orderBy('created_at', $sortOrder);
+
+        if ($filter == 'berjalan') {
+            $query->where('status', 'open');
+        } elseif ($filter == 'selesai') {
+            $query->where('status', 'closed');
+        }
+
+        $vote = $query->get();
+
+        if ($request->ajax()) {
+            return response()->json(['vote' => $vote]);
+        }
+
         return view('voting.vote', compact('vote'));
     }
 
@@ -41,30 +57,6 @@ class VoteController extends Controller
         }
 
         return response()->json($chartData);
-    }
-
-    public function getVoteData($slug)
-    {
-        $vote = Vote::where('slug', $slug)->with('questions.options')->firstOrFail();
-        return response()->json([
-            'vote' => $vote
-        ]);
-    }
-
-    public function submitVote(Request $request, $slug)
-    {
-        $vote = Vote::where('slug', $slug)->firstOrFail();
-
-        foreach ($request->votes as $questionId => $optionId) {
-            Result::create([
-                'user_id' => auth()->id(),
-                'vote_id' => $vote->id,
-                'question_id' => $questionId,
-                'option_id' => $optionId
-            ]);
-        }
-
-        return response()->json(['message' => 'Vote berhasil disimpan!']);
     }
 
 
@@ -143,26 +135,97 @@ class VoteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(vote $vote)
+    public function edit($slug)
     {
-        //
+        $vote = Vote::where('slug', $slug)->with(['questions.options'])->firstOrFail();
+        return view('voting.editvote', compact('vote'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, vote $vote)
+    public function update(Request $request, $slug)
     {
-        //
+        $vote = Vote::where('slug', $slug)->firstOrFail();
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'close_date' => 'required|date',
+            'visibility' => 'required|in:public,private',
+        ]);
+
+        $vote->title = $request->title;
+        $vote->description = $request->description;
+        $vote->close_date = $request->close_date;
+        $vote->result_visibility = $request->visibility;
+
+        if ($request->has('is_protected') && $request->is_protected == 'on') {
+            $vote->code = $request->access_code;
+        } else {
+            $vote->code = null;
+        }
+
+        $vote->name = $request->has('require_name') && $request->require_name == 'on' ? 'required' : null;
+
+        $vote->save();
+
+        if ($request->has('deleted_questions')) {
+            Question::whereIn('id', $request->deleted_questions)->delete();
+        }
+
+        foreach ($request->questions as $key => $questionText) {
+            preg_match('/question_\d+_(\d+)/', $key, $matches);
+            $questionId = $matches[1] ?? null;
+
+            if ($questionId) {
+                $question = Question::find($questionId);
+                if ($question) {
+                    $question->question = $questionText;
+                    $question->save();
+
+                    Option::where('question_id', $questionId)->delete();
+                } else {
+                    $question = new Question();
+                    $question->vote_id = $vote->id;
+                    $question->question = $questionText;
+                    $question->save();
+                    $questionId = $question->id;
+                }
+            } else {
+                $question = new Question();
+                $question->vote_id = $vote->id;
+                $question->question = $questionText;
+                $question->save();
+                $questionId = $question->id;
+            }
+
+            if (isset($request->choices[$key])) {
+                $choices = $request->choices[$key];
+                $images = $request->choice_images[$key] ?? [];
+
+                foreach ($choices as $index => $optionText) {
+                    $option = new Option();
+                    $option->question_id = $questionId;
+                    $option->option = $optionText;
+                    $option->image = $images[$index] ?? null;
+                    $option->save();
+                }
+            }
+        }
+
+        return redirect()->route('vote.detail', ['slug' => $vote->slug])->with('success', 'Vote berhasil diperbarui');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $slug)
+    public function destroy($slug)
     {
-        $vote = vote::findOrFail($slug);
+        $vote = Vote::where('slug', $slug)->firstOrFail();
         $vote->delete();
-        return redirect()->route('voting.vote')->with('success', 'Vote deleted successfully.');
+
+        return redirect()->route('vote.index')->with('success', 'Vote berhasil dihapus');
     }
 }

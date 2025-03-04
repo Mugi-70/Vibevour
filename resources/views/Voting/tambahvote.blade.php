@@ -5,7 +5,6 @@
         <div class="card-body pt-3 pb-3 pe-3 border-0">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Tambah Vote</h5>
-
             </div>
         </div>
     </div>
@@ -20,6 +19,7 @@
                 <h5>Judul</h5>
                 <input type="text" class="form-control mb-3" name="title" id="vote_title" required>
                 <h5>Deskripsi</h5>
+
                 <textarea class="form-control mb-3" rows="3" name="description" id="vote_description" required></textarea>
             </div>
 

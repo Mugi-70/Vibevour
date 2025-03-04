@@ -54,12 +54,10 @@ Route::get('/hasilvote', function () {
 });
 
 Route::get('/vote_saya', [VoteController::class, 'index'])->name('vote.index');
-Route::get('/hapus_vote', [VoteController::class, 'destroy'])->name('vote.destroy');
 Route::get('/detail_vote_{slug}', [VoteController::class, 'show'])->name('vote.show');
 Route::get('/detail_vote_{slug}/chart-data', [VoteController::class, 'getChartData']);
 
-Route::get('/vote_{slug}_data', [VoteController::class, 'getVoteData']);
-Route::post('/vote_{slug}_submit', [VoteController::class, 'submitVote'])->name('vote.submit');
-
-
 Route::post('/simpanvote', [VoteController::class, 'store'])->name('vote.store');
+Route::get('/edit_vote_{slug}', [VoteController::class, 'edit'])->name('vote.edit');
+Route::put('/update_vote_{slug}', [VoteController::class, 'update'])->name('vote.update');
+Route::delete('/hapus_vote_{slug}', [VoteController::class, 'destroy'])->name('vote.destroy');
