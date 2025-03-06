@@ -19,6 +19,18 @@
 @endsection
 
 @section('content')
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="inviteToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    <!-- Pesan sukses akan masuk sini -->
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <form action="{{ route('coba_bikin') }}" method="POST">
         @csrf
         <div class="card shadow-sm border-0 p-3 justify-content-center" style="overflow: hidden; max-width: 100%;">
@@ -40,15 +52,16 @@
                     </select>
                 </div>
                 <label for="anggotalist" class="form-label mt-1">Daftar Anggota :</label>
+                <button class="btn btn-primary" id="openModalButton" type="button" data-bs-toggle="modal"
+                    data-bs-target="#inviteForm">
+                    Undang via Email
+                </button>
+
                 <div class="card" id="anggotaList" style="height: auto; padding: 5px;">
                     <p id="emptyMessage" style="text-align: center; color: gray;">Belum menambahkan anggota</p>
                 </div>
 
             </div>
-
-
-            @include('Jadwal.modal.tambah_anggota')
-
             <!-- Durasi dan Waktu -->
             <div class="row mb-4">
                 <div class="col-md-6">
@@ -149,8 +162,71 @@
 
     </form>
 
+    @include('Jadwal.modal.tambah_anggota')
+
 
     <script>
+        $('#inviteForm').on('hidden.bs.modal', function() {
+            // Pindahkan fokus ke tombol yang membuka modal
+            $('#openModalButton').focus();
+        });
+
+        $(document).ready(function() {
+            $('#inviteForm').submit(function(e) {
+                e.preventDefault();
+
+                var email = $('#email').val();
+                if (email === "") {
+                    alert("Email harus diisi!");
+                    return;
+                }
+
+                $.ajax({
+                    url: '/undang',
+                    type: 'POST',
+                    data: {
+                        _token: $('input[name="_token"]').val(),
+                        email: email
+                    },
+                    success: function(response) {
+                        // Tampilkan pesan di dalam toast
+                        $('#toastMessage').text(response.message);
+
+                        // Tampilkan toast Bootstrap
+                        var inviteToast = new bootstrap.Toast($('#inviteToast'));
+                        inviteToast.show();
+
+                        // Tutup modal setelah sukses
+                        $('#inviteModal').modal('hide');
+
+                        // Reset input
+                        $('#email').val('');
+                    },
+                    error: function(xhr) {
+                        $('#toastMessage').text('Gagal mengirim undangan: ' + xhr.responseJSON
+                            .message);
+                        var inviteToast = new bootstrap.Toast($('#inviteToast'));
+                        inviteToast.show();
+                    }
+                });
+            });
+        });
+
+
+        $(document).ready(function() {
+            $("#sendInvitation").click(function() {
+                let email = $("#emailInput").val();
+
+                if (email === "") {
+                    alert("Email harus diisi!");
+                    return;
+                }
+
+                $("#inviteForm").submit(); // Kirim hanya form modal
+            });
+        });
+
+
         /* tanggal */
         let startDatePicker = flatpickr("#tanggalMulai", {
             dateFormat: "d-m-Y",
@@ -188,16 +264,19 @@
         //mengecek isi card daftar anggota
         $(document).ready(function() {
             function checkEmptyMessage() {
-                if ($('#anggotaList .anggota-item').length === 0) {
-                    $('#emptyMessage').show();
+                if ($('#anggotaList .anggota-item').length > 0) {
+                    $('#emptyMessage').remove(); // Hapus elemen dari DOM
                 } else {
-                    $('#emptyMessage').hide();
+                    if ($('#emptyMessage').length === 0) {
+                        $('#anggotaList').append(
+                            '<p id="emptyMessage" class="text-muted">Belum menambahkan anggota</p>');
+                    }
                 }
             }
 
-            //cari anggota
             $('#searchAjax').select2({
                 placeholder: "Cari anggota",
+                tags: true,
                 allowClear: true,
                 minimumInputLength: 1,
                 ajax: {
@@ -209,14 +288,24 @@
                             search: params.term
                         };
                     },
-                    processResults: function(data) {
+                    processResults: function(data, params) {
+                        if (data.items.length === 0) {
+                            return {
+                                results: [{
+                                    id: 'invite',
+                                    text: params.term,
+                                    email: '',
+                                    isInvite: true
+                                }]
+                            };
+                        }
+
                         return {
                             results: data.items.map(item => ({
                                 id: item.id,
                                 text: item.text,
-                                // description: "Mengundang Anggota",
                                 email: item.email,
-                                icon: item.text.charAt(0).toUpperCase()
+                                icon: item.text ? item.text.charAt(0).toUpperCase() : "?"
                             }))
                         };
                     }
@@ -228,7 +317,9 @@
 
                     return $(`
                 <div style="display: flex; align-items: center;">
-                    <div style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
+                    <div style="width: 30px; height: 30px; background-color: red; color: white; 
+                                display: flex; align-items: center; justify-content: center; 
+                                border-radius: 50%; font-weight: bold; margin-right: 10px;">
                         ${data.icon}
                     </div>
                     <div>
@@ -237,64 +328,61 @@
                     </div>
                 </div>
             `);
-                },
+                }
+
             });
 
-            //select2 onChange
+            checkEmptyMessage();
+
             $('#searchAjax').on('select2:select', function(e) {
                 var data = e.params.data;
                 var anggotaList = $('#anggotaList');
 
                 if ($(`#anggota-${data.id}`).length === 0) {
+                    var icon = data.icon ? data.icon : '?';
+                    var emailText = data.email ? data.email : 'Email tidak tersedia';
+
                     var anggotaItem = $(`
-            <div id="anggota-${data.id}" class="anggota-item" 
-                 style="display: flex; align-items: center; margin-bottom: 10px; 
-                        padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
-                <div style="width: 30px; height: 30px; background-color: red; color: white; 
-                            display: flex; align-items: center; justify-content: center; 
-                            border-radius: 50%; font-weight: bold; margin-right: 10px;">
-                    ${data.icon}
+                <div id="anggota-${data.id}" class="anggota-item" 
+                     style="display: flex; align-items: center; margin-bottom: 10px; 
+                            padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
+                    <div style="width: 30px; height: 30px; background-color: red; color: white; 
+                                display: flex; align-items: center; justify-content: center; 
+                                border-radius: 50%; font-weight: bold; margin-right: 10px;">
+                        ${icon}
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: bold;">${data.text}</div>
+                        <div style="color: gray; font-size: 12px;">${emailText}</div>
+                    </div>
+                    <button class="remove-anggota" data-id="${data.id}" 
+                            style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
                 </div>
-                <div style="flex-grow: 1;">
-                    <div style="font-weight: bold;">${data.text}</div>
-                    <div style="color: gray; font-size: 12px;">${data.email}</div>
-                </div>
-                <button class="remove-anggota" data-id="${data.id}" 
-                        style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
-            </div>
-        `);
+            `);
 
                     anggotaList.append(anggotaItem);
-                    checkEmptyMessage();
                 }
             });
 
-            // Hapus anggota dari daftar jika tombol "X" ditekan
             $(document).on('click', '.remove-anggota', function() {
                 var anggotaId = $(this).data('id');
 
-                // Hapus dari tampilan
                 $(`#anggota-${anggotaId}`).remove();
 
-                // Hapus dari Select2
-                var selectedValues = $('#searchAjax').val();
+                var selectedValues = $('#searchAjax').val() || [];
                 selectedValues = selectedValues.filter(value => value !== anggotaId.toString());
                 $('#searchAjax').val(selectedValues).trigger('change');
 
                 checkEmptyMessage();
             });
 
-            // Cek apakah daftar anggota kosong
-            function checkEmptyMessage() {
-                if ($('#anggotaList .anggota-item').length === 0) {
-                    $('#emptyMessage').show();
-                } else {
-                    $('#emptyMessage').hide();
-                }
-            }
-
-            // Pastikan pesan kosong sesuai kondisi awal
             checkEmptyMessage();
+        });
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
         });
     </script>
 @endsection

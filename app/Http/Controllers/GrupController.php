@@ -7,6 +7,8 @@ use App\Models\Grup;
 use App\Models\User;
 use Carbon\CarbonPeriod;
 use App\Models\AnggotaGrup;
+use App\Models\AnggotaGrupPending;
+use App\Models\Ketersediaan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,10 +25,16 @@ class GrupController extends Controller
         return view('Jadwal.grup', compact('grup'));
     }
 
-    public function list_anggota()
+    public function setRoleAdmin()
     {
-        $anggota_list2 = Grup::with('anggota.user')->get();
-        return view('Jadwal.grup_UI', compact('anggota_list2'));
+        session(['role' => 'admin']); // Simpan role sebagai admin
+        return redirect()->back()->with('success', 'Role diset sebagai Admin!');
+    }
+
+    public function setRoleAnggota()
+    {
+        session(['role' => 'anggota']); // Simpan role sebagai anggota
+        return redirect()->back()->with('success', 'Role diset sebagai Anggota!');
     }
 
     public function anggota()
@@ -57,9 +65,11 @@ class GrupController extends Controller
 
     public function showGroup(string $id)
     {
-        // $grup = Grup::with('anggota.user')->get();
-
         $grup = Grup::with('anggota.user')->findOrFail($id);
+
+        $role = 'admin';
+        // $role = 'anggota';
+
         //? Data dari database
         $input_tanggal_mulai = $grup->tanggal_mulai;
         $input_tanggal_selesai = $grup->tanggal_selesai;
@@ -96,7 +106,7 @@ class GrupController extends Controller
             'waktu_list' => $waktu_list,
             'tanggal_list' => $tanggal_list,
             'grup' => $grup,
-            // 'list_anggota' => $list_anggota
+            'role' => $role
         ]);
     }
 
@@ -120,10 +130,11 @@ class GrupController extends Controller
                 return response()->json(['error' => 'Tidak ada anggota yang ditambahkan!'], 400);
             }
 
-            AnggotaGrup::create([
-                'grup_id' => $grup->id_grup,
-                'role' => 'admin',
-            ]);
+            // AnggotaGrup::create([
+            //     'grup_id' => $grup->id_grup,
+            //     'user_id' => $grup->user_id,
+            //     'role' => 'admin',
+            // ]);
 
             // Simpan anggota ke grup
             foreach ($request->anggota as $userId) {
@@ -134,11 +145,33 @@ class GrupController extends Controller
                 ]);
             }
 
+            AnggotaGrupPending::whereNull('grup_id')->update(['grup_id' => $grup->id_grup]);
+
             return redirect('/grup')->with('success', 'Grup berhasil dibuat dan anggota ditambahkan!');
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function undang(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|unique:anggota_grup_pending,email'
+        ]);
+
+        // Simpan ke tabel sementara
+        $undangan = AnggotaGrupPending::create([
+            'email' => $request->email,
+            'grup_id' => null,
+            'status' => "Pending"
+        ]);
+
+        // Kirim email undangan
+        // Mail::to($request->email)->send(new UndanganGrup($undangan));
+
+        return response()->json(['message' => 'Undangan berhasil dikirim!']);
+    }
+
 
 
     //todo Mengedit grup
@@ -187,5 +220,31 @@ class GrupController extends Controller
                 ];
             })
         ]);
+    }
+
+    public function simpanAvai(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer',
+            'tanggal' => 'required',
+            'waktu' => 'required',
+        ]);
+
+        $jadwal = Ketersediaan::create([
+            'tanggal' => $request->tanggal,
+            'waktu'   => $request->waktu,
+            'grup_id' => $request->grup_id,
+            'user_id' => $request->user_id,
+        ]);
+
+        $jadwals = Ketersediaan::where('tanggal', $request->tanggal)
+            ->where('waktu', $request->waktu)
+            ->with('user')
+            ->get();
+
+        return response()->json([
+            'message' => 'Jadwal berhasil disimpan',
+            'users' => $jadwals->map(fn ($jadwal) => $jadwal->user->name)
+        ], 200);
     }
 }

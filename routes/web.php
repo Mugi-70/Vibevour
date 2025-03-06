@@ -37,10 +37,11 @@ Route::delete('/hapus_grup/{id}', [GrupController::class, 'delete'])->name('coba
 
 //menampilkan grup sesuai yang dipilih
 Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.detail');
-// Route::get('/grup_UI', [GrupController::class, 'list_anggota'])->name('list.anggota');
 
+Route::post('/schedules', [GrupController::class, 'simpanAvai']);
 
-// Route::get('/grup_UI', [GrupController::class, 'index']);
+Route::post('/undang', [GrupController::class, 'undang']);
+
 Route::get('/grup_UI_anggota', [GrupController::class, 'anggota']);
 Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 
