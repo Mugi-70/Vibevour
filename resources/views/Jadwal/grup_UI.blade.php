@@ -47,12 +47,14 @@
                                 <i class="bi bi-pencil"></i> Edit Grup
                             </button>
                         </li>
-                        <li>
-                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
-                                <i class="bi bi-trash"></i> Hapus Grup
-                            </button>
-                        </li>
-                    </ul>
+                        @unless ($role == 'admin')
+                            <li>
+                                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
+                                    <i class="bi bi-trash"></i> Hapus Grup
+                                </button>
+                            </li>
+                        </ul>
+                    @endunless
                 </div>
 
                 <div class="row w-100">
@@ -61,9 +63,17 @@
                         <div class="d-flex flex-column align-items-center">
                             <i class="bi bi-people-fill fs-1"></i>
                             <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
-                            <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#leave_grup">
-                                <i class="bi bi-box-arrow-left"></i> Keluar Grup
-                            </button>
+                            @if ($role === 'admin')
+                                <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal"
+                                    data-bs-target="#leave_grup">
+                                    <i class="bi bi-trash"></i> Hapus Grup
+                                </button>
+                            @elseif ($role === 'anggota')
+                                <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal"
+                                    data-bs-target="#leave_grup">
+                                    <i class="bi bi-box-arrow-left"></i> Keluar Grup
+                                </button>
+                            @endif
                         </div>
                     </div>
 
@@ -126,10 +136,13 @@
                             aria-controls="offcanvasRight">
                             <i class="bi bi-pencil"></i> Edit Grup
                         </button>
-                        <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup"
-                            id="hapus_grup{{ $grup->id_grup }}">
-                            <i class="bi bi-trash"></i> Hapus Grup
-                        </button>
+                        @unless ($role == 'admin')
+                            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup"
+                                id="hapus_grup{{ $grup->id_grup }}">
+                                <i class="bi bi-trash"></i> Hapus Grup
+                            </button>
+                        @endunless
+
                     </div>
                 </div>
             </div>
@@ -168,132 +181,160 @@
                                     {{ \Carbon\Carbon::parse($t)->translatedFormat('d M Y') }}
                                 </td>
                                 @foreach ($waktu_list as $ts)
+                                    @php
+                                        $jadwals = App\Models\Ketersediaan::where('tanggal', $t)
+                                            ->where('waktu', $ts)
+                                            ->get();
+                                    @endphp
+
                                     <td class="item" data-tanggal="{{ $t }}"
-                                        data-waktu="{{ $ts }}"
+                                        data-waktu="{{ $ts }}" data-role="{{ $role }}"
                                         style="height: 50px; max-width:20px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
-                                        <i class="lebel bi bi-plus-circle" style="font-size: 18px; color: #007bff;"></i>
+
+                                        @if ($jadwals->isNotEmpty())
+                                            <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
+                                                @foreach ($jadwals as $jadwal)
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <p class="m-0 fw-bold">
+                                                            {{ $jadwal->user->name ?? 'Tidak Diketahui' }}</p>
+                                                        <i class="bi bi-check-square fs-4"></i>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <i class="lebel bi bi-plus-circle"
+                                                style="font-size: 18px; color: #007bff;"></i>
+                                        @endif
                                     </td>
                                 @endforeach
+
                             </tr>
                         @endforeach
                     </table>
                 </div>
             </div>
         </div>
+        {{-- modal --}}
+        @include('Jadwal.modal.keluar_grup')
+        @include('Jadwal.modal.buat_jadwal')
+        @include('Jadwal.modal.hapus_grup')
+        @include('Jadwal.modal.anggota_free')
+        @include('Jadwal.modal.ketersediaan')
+        {{-- modal --}}
+
+        {{-- offcanvas --}}
+        @include('Jadwal.off_canvas.edit_grup')
+        @include('jadwal.off_canvas.daftar_anggota')
+        {{-- offcanvas --}}
     </div>
 
 
-
-
-    {{-- modal --}}
-    @include('Jadwal.modal.keluar_grup')
-    @include('Jadwal.modal.buat_jadwal')
-    @include('Jadwal.modal.hapus_grup')
-    @include('Jadwal.modal.anggota_free')
-    {{-- modal --}}
-
-    {{-- offcanvas --}}
-    @include('Jadwal.off_canvas.edit_grup')
-    @include('jadwal.off_canvas.daftar_anggota')
-    {{-- offcanvas --}}
-
-
     <script>
-        $(document).on('click', '.hapus_grup', function() {
-            var id = $(this).attr('id');
-
-            $.ajax({
-                type: 'delete',
-                url: "/hapus_grup/${id}",
-                data: {
-                    id: id
-                },
-            });
-        });
-
         /* fungsi memunculkan modal dengan klik */
         $(".item").click(function() {
             openModal($(this))
         })
-        /* fungsi memunculkan modal dengan klik */
 
         /* membuka modal saat kolom di klik */
-        let selectedCell;
-
         function openModal(cell) {
-            selectedCell = cell;
+            selectedCell = $(cell);
 
-            // mengambil data tanggal & waktu
-            let tanggal = cell.attr("data-tanggal");
-            let waktu = cell.attr("data-waktu");
+            // Mengambil data tanggal, waktu, dan role dari atribut data
+            let tanggal = selectedCell.data("tanggal");
+            let waktu = selectedCell.data("waktu");
+            let role = selectedCell.data("role");
 
-            // memanggil tanggal & waktu ke modal
+            // Menampilkan tanggal & waktu di modal
+            $("#selectedDate").val(tanggal);
+            $("#selectedTime").val(waktu);
+
             $("#selectedDate").text(tanggal);
             $("#selectedTime").text(waktu);
 
-            // menampikan modal
-            $("#scheduleModal").modal("show");
+            // Menampilkan modal sesuai role
+            if (role === "admin") {
+                $("#scheduleModal").modal("show"); // Modal untuk Admin
+            } else if (role === "anggota") {
+                $("#availability").modal("show"); // Modal untuk Anggota
+            } else {
+                alert("Role tidak dikenali!");
+            }
         }
         /* membuka modal */
 
         /* saving jadwal */
-        function saveSchedule() {
-            let text = $("#scheduleInput").val();
+        // function saveSchedule() {
+        //     let text = $("#scheduleInput").val(); // Ambil input dari modal
+        //     let role = selectedCell.data("role"); // Ambil role dari cell yang diklik
 
-            if (selectedCell) {
-                // cek apakah tombol sudah ada dalam cell
-                let existingButton = selectedCell.find("button");
-                $(document).ready(function() {
-                    $(".lebel").hide();
-                });
+        //     if (selectedCell) {
+        //         // Cek apakah cell sudah memiliki elemen
+        //         let existingButton = selectedCell.find("button");
+        //         let existingContent = selectedCell.find(".schedule-content");
 
-                if (existingButton.length === 0) {
-                    //  <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
-                    // <div class="d-flex justify-content-between align-items-center mb-1">
-                    // <p class="m-0 fw-bold">+2 anggota</p>
-                    // <button type="button" class="btn btn-warning"  data-bs-toggle="modal" data-bs-target="#availability_member">lihat</button>
-                    // </div>
-                    // <button type="button" class="btn btn-primary"  data-bs-toggle="modal" data-bs-target="#scheduleModal">Buat Pertemuan</button>
-                    // </div>
+        //         $(document).ready(function() {
+        //             $(".lebel").hide();
+        //         });
 
-                    // jika belum ada tombol yang dibuat, buat tombol baru
-                    let button = $(`
-                    <button class="bjadwal btn btn-primary custom w-100 h-100"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#jadwal">
-                        <div class="d-flex flex-column text-center">
-                        <div class="title">${text || "Lihat"}</div>
-                        <div class="subtitle d-flex align-items-center">
-                            <i class="bi bi-person icon me-2"></i>
-                            <p class="m-0">1 Anggota</p>
-                        </div>
-                        </div>
-                    </button>
-                    `);
-                    // mencegah modal terbuka saat klik tombol
-                    button.click(function(event) {
-                        event.stopPropagation();
-                    });
+        //         if (role === "admin") {
+        //             // Jika admin, gunakan tombol jadwal
+        //             if (existingButton.length === 0) {
+        //                 let button = $(`
+    //         <button class="bjadwal btn btn-primary custom w-100 h-100"
+    //             data-bs-toggle="offcanvas"
+    //             data-bs-target="#jadwal">
+    //             <div class="d-flex flex-column text-center">
+    //                 <div class="title">${text || "Lihat"}</div>
+    //                 <div class="subtitle d-flex align-items-center">
+    //                     <i class="bi bi-person icon me-2"></i>
+    //                     <p class="m-0">1 Anggota</p>
+    //                 </div>
+    //             </div>
+    //         </button>
+    //     `);
+        //                 button.click(function(event) {
+        //                     event.stopPropagation(); // Mencegah modal terbuka saat tombol diklik
+        //                 });
+        //                 selectedCell.append(button);
+        //             } else {
+        //                 existingButton.html(`
+    //         <div class="d-flex flex-column text-center">
+    //             <div class="title">${text || "Lihat"}</div>
+    //             <div class="subtitle d-flex align-items-center">
+    //                 <i class="bi bi-person icon me-2"></i>
+    //                 <p class="m-0">1 Anggota</p>
+    //             </div>
+    //         </div>
+    //     `);
+        //             }
+        //         } else {
+        //             // Jika anggota, tampilkan schedule-content
+        //             if (existingContent.length === 0) {
+        //                 let content = $(`
+    //         <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
+    //             <div class="d-flex justify-content-between align-items-center">
+    //                 <p class="m-0 fw-bold">${text || "Notaris"}</p>
+    //                 <i class="bi bi-check-square fs-4"></i>
+    //             </div>
+    //         </div>
+    //     `);
+        //                 selectedCell.append(content);
+        //             } else {
+        //                 existingContent.html(`
+    //         <div class="d-flex justify-content-between align-items-center">
+    //             <p class="m-0 fw-bold">${text || "Notaris"}</p>
+    //             <i class="bi bi-check-square fs-4"></i>
+    //         </div>
+    //     `);
+        //             }
+        //         }
+        //     }
 
-                    // tambahkan tombol ke dalam cell
-                    selectedCell.append(button);
-                } else {
-                    // jika tombol sudah ada, ubah isinya
-                    existingButton.html(`
-                <div class="d-flex flex-column text-center">
-                    <div class="title">${text || "Lihat"}</div>
-                    <div class="subtitle d-flex align-items-center">
-                        <i class="bi bi-person icon me-2"></i>
-                        <p class="m-0">1 Anggota</p>
-                    </div>
-                </div>
-            `);
-                }
-            }
+        //     // Tutup modal
+        //     $("#scheduleModal").modal("hide");
+        //     $("#availability").modal("hide");
+        // }
 
-            // menutup modal
-            $("#scheduleModal").modal("hide");
-        }
         /* saving jadwal */
 
         /* tooltips */
@@ -327,32 +368,66 @@
                 }, 500);
             });
 
-            // Ketika tombol yang memunculkan offcanvas diklik lagi
-            // $("[data-bs-target='#jadwal']").click(function() {
-            //     setTimeout(function() {
-            //         $("#jadwal").addClass("show");
-            //     }, 100);
-            // });
         });
 
-        $(document).ready(function() {
-            $(".hadiri").click(function() {
-                let subtitle = $(".bjadwal .subtitle p"); // ambil tag p
-                let jumlahAnggota = parseInt(subtitle.text()) || 1; // Ambil angka dari teks
+        //kkonfirmasi anggota untuk memberi jadwal
+        $(document).on("click", "#confirmAvailability", function() {
+            let userId = 2;
+            let grup_id = 1;
+            let tanggal = $("#selectedDate").text(); // Gunakan `.text()` 
+            let waktu = $("#selectedTime").text();
 
-                jumlahAnggota++; // Tambah jumlah anggota
+            // Pilih elemen yang diklik sebelumnya
+            let cell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
 
-                $("#hadiri").remove();
-                $(".modal-backdrop").remove();
-                $(".hu").hide();
-                $(".box-item").removeClass("d-none");
+            // Debugging untuk memastikan nilai benar
+            console.log("Tanggal yang dikirim:", tanggal);
+            console.log("Waktu yang dikirim:", waktu);
 
-                // Perbarui teks
-                subtitle.text(jumlahAnggota + " Anggota");
+            $.ajax({
+                url: "/schedules",
+                type: "POST",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr("content"),
+                    user_id: userId,
+                    grup_id: grup_id,
+                    tanggal: tanggal,
+                    waktu: waktu,
+                },
+                success: function(response) {
+                    console.log("Response dari server:", response);
+
+                    let userListHTML = response.users.map(user => `
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="m-0 fw-bold">${user}</p>
+            <i class="bi bi-check-square fs-4"></i>
+        </div>
+        `).join('');
+                    // elemen yang sesuai dengan tanggal dan waktu
+                    let cell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
+
+                    // Update tampilan tanpa reload
+                    cell.html(`
+        <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
+            ${userListHTML}
+        </div>
+        `);
+                    // **Tutup modal setelah berhasil menyimpan**
+                    $("#availability").modal("hide");
+                },
+
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                    alert("Terjadi kesalahan, coba lagi.");
+                }
             });
-            $(document).on("click", ".bjadwal", function() {
-                $(".hu").show();
-            });
+        });
+
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
         });
     </script>
     @include('Jadwal.off_canvas.jadwal')

@@ -210,19 +210,34 @@
         let selectedCell;
 
         function openModal(cell) {
-            selectedCell = cell;
+            selectedCell = $(cell); // Gunakan jQuery untuk memilih elemen
 
-            // mengambil data tanggal & waktu
-            let tanggal = cell.attr("data-tanggal");
-            let waktu = cell.attr("data-waktu");
+            // Mengambil data tanggal, waktu, dan role dari atribut data
+            let tanggal = selectedCell.data("tanggal");
+            let waktu = selectedCell.data("waktu");
+            let role = selectedCell.data("role"); // Ambil role
 
-            // memanggil tanggal & waktu ke modal
+            // Menampilkan tanggal & waktu di modal
             $("#selectedDate").text(tanggal);
             $("#selectedTime").text(waktu);
 
-            // menampikan modal
-            $("#availability").modal("show");
+            // Menampilkan modal sesuai role
+            if (role === "admin") {
+                $("#scheduleModal").modal("show"); // Modal untuk Admin
+            } else if (role === "anggota") {
+                $("#availability").modal("show"); // Modal untuk Anggota
+            } else {
+                alert("Role tidak dikenali!");
+            }
         }
+
+        // Event listener untuk klik pada elemen .item
+        $(document).ready(function() {
+            $(".item").on("click", function() {
+                openModal(this);
+            });
+        });
+
         /* membuka modal */
 
 
@@ -322,9 +337,9 @@
                 // Perbarui teks
                 subtitle.text(jumlahAnggota + " Anggota");
             });
-            // $(document).on("click", ".bjadwal", function() {
-            //     $(".hu").show();
-            // });
+            $(document).on("click", ".bjadwal", function() {
+                $(".hu").show();
+            });
         });
     </script>
     @include('Jadwal.off_canvas.jadwal')

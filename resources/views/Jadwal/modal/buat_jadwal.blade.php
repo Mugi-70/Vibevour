@@ -27,7 +27,6 @@
                             </td>
                             <td>
                                 <p id="selectedDate">
-
                                 </p>
                             </td>
                         </tr>

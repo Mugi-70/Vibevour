@@ -1,60 +1,38 @@
-{{-- <style>
-    .input-group .input-group-text,
-    .input-group select {
-        height: 100%;
-        align-items: center;
-    } --}}
+<style>
+    /* Jangan sembunyikan elemen yang divalidasi */
+    #email {
+        display: block;
+    }
 </style>
 
-<div class="modal fade" id="modalanggota" tabindex="-1" data-bs-backdrop="static" aria-labelledby="modalanggotaLabel">
+<div class="modal fade" id="inviteForm" aria-hidden="false" tabindex="-1" data-bs-backdrop="static"
+    aria-labelledby="modalanggotaLabel">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header border-0">
                 {{-- <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close"></button> --}}
             </div>
             <div class="modal-body">
-                <h5 class="modal-title text-center" id="modalanggotaLabel">Tambahkan anggota ke dalam grup Anda</h5>
-                <div class="input-group flex-nowrap mt-3">
+                <h5 class="modal-title text-center" id="modalanggotaLabel">Undang anggota ke grup anda lewat email </h5>
+                {{-- <div class="input-group flex-nowrap mt-3">
                     <span class="input-group-text">
                         <i class="bi bi-search"></i>
-                    </span>
-                    {{-- <select id="searchAjax" class="form-select" style="width: 100%; height: 100%">
-                    </select> --}}
-
-                </div>
+                </div> --}}
+                <form id="inviteForm">
+                    {{-- <label for="email" class="form-label">Masukkan Email</label> --}}
+                    <div class="input-group flex-nowrap mt-3">
+                        <span class="input-group-text">
+                            <i class="bi bi-envelope-fill"></i>
+                        </span>
+                        <input type="email" class="form-control" id="email" name="email"
+                            placeholder="Masukkan email disini" required>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
-                <button type="button" id="btnTambah" class="btn btn-primary">Tambahkan Ke grup</button>
+                <button type="button" id="sendInvitation" class="btn btn-success">Kirim Undangan</button>
             </div>
         </div>
     </div>
 </div>
-
-<script></script>
-{{-- <div id="searchResults" class="dropdown-menu d-flex flex-column show w-100 position-relative">
-                        <div class="box-item d-flex">
-                            <div class="avatar-search">p</div>
-                            <div class="nama-user mt-1">
-                                <h6>Notaris</h6>
-                                <p style="margin-top: -10px">Notaris@gmail.com</p>
-                            </div>
-                        </div>
-
-                        <div class="box-item d-flex">
-                            <div class="avatar-search">p</div>
-                            <div class="nama-user mt-1">
-                                <h6>Notaris</h6>
-                                <p style="margin-top: -10px">Notaris@gmail.com</p>
-                            </div>
-                        </div>
-
-                        <div class="box-item d-flex">
-                            <div class="avatar-search">p</div>
-                            <div class="nama-user mt-1">
-                                <h6>Notaris</h6>
-                                <p style="margin-top: -10px">Notaris@gmail.com</p>
-                            </div>
-                        </div>
-
-                    </div> --}}

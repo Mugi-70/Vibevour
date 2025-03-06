@@ -254,9 +254,9 @@ textarea {
 }
 
 @media (max-width: 768px) {
-    .d-flex {
+    /* .d-flex {
         flex-wrap: wrap !important;
-    }
+    } */
 
     .form-control,
     .input-group {
