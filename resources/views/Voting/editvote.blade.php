@@ -10,7 +10,7 @@
 </div>
 
 <div class="container mt-4">
-    <form id="voteForm" method="POST" action="{{ route('vote.update', ['slug' => $vote->slug]) }}">
+    <form action="{{ route('vote.update', $vote->slug) }}" method="POST" enctype="multipart/form-data" id="updateVoteForm">
         @csrf
         @method('PUT')
         <div class="card p-4">
@@ -19,12 +19,70 @@
             <h5>Judul</h5>
             <input type="text" class="form-control mb-3" name="title" id="vote_title" value="{{ $vote->title }}" required>
             <h5>Deskripsi</h5>
-            <textarea class="form-control mb-3" rows="3" name="description" id="vote_description" required>{{ trim($vote->description) }}</textarea>
+            <textarea class="form-control mb-3" rows="3" name="description" id="vote_description" required>{{ $vote->description }}</textarea>
         </div>
 
-        <div id="questionContainer">
-        </div>
+        <div id="questionsContainer">
+            @foreach($vote->questions as $index => $question)
+            <div class="card p-3 mt-3 question-card" data-index="{{ $index }}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4>Pertanyaan {{ $index + 1 }}</h4>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-question" data-question-id="{{ $question->id }}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <input type="hidden" name="questions[{{ $index }}][id]" value="{{ $question->id }}">
+                <textarea class="form-control mb-3" name="questions[{{ $index }}][text]" required>{{ $question->question }}</textarea>
 
+                <div class="optionsContainer">
+                    @foreach($question->options as $optIndex => $option)
+                    <div class="row mb-2 align-items-center choice-item">
+                        <div class="col">
+                            <input type="hidden" name="questions[{{ $index }}][options][{{ $optIndex }}][id]" value="{{ $option->id }}">
+                            <input type="text" class="form-control me-2" name="questions[{{ $index }}][options][{{ $optIndex }}][text]" value="{{ $option->option }}" required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-danger remove-option">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button"
+                                class="btn btn-outline-primary d-flex align-items-center open-upload-modal"
+                                data-bs-toggle="modal"
+                                data-bs-target="#uploadFotoModal"
+                                data-target="img_{{ $option->id }}">
+                                <i class="bi bi-image me-2"></i> Tambah Gambar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-2 position-relative image-container {{ $option->image ? '' : 'd-none' }}">
+                        <img id="img_{{ $option->id }}"
+                            src="{{ $option->image ? asset($option->image) : '' }}"
+                            class="img-thumbnail"
+                            style="width: 70%; height: auto;">
+
+                        <input type="hidden"
+                            name="choice_images[{{ $question->id }}][]"
+                            id="image_input_{{ $option->id }}"
+                            value="{{ $option->image }}">
+
+                        <button type="button"
+                            class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn"
+                            data-option-id="{{ $option->id }}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    @endforeach
+                </div>
+                <div class="text-start mt-2">
+                    <button type="button" class="btn btn-primary add-option" style="text-decoration: none;">
+                        <i class="bi bi-plus-circle"></i> Tambah Pilihan
+                    </button>
+                </div>
+            </div>
+            @endforeach
+        </div>
         <div class="text-end mt-3">
             <button type="button" class="btn btn-primary" id="addQuestionBtn">
                 <i class="bi bi-plus-circle"></i> Tambah Pertanyaan
@@ -36,7 +94,14 @@
             <hr style="height: 2px; background-color: black;">
             <div class="row">
                 <div class="col-md-5">
-                    <div class="row">
+                    <div>
+                        <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
+                        <select class="form-select" id="voteVisibility" name="visibility" required>
+                            <option value="private" {{ $vote->visibility == 'private' ? 'selected' : '' }}>Private</option>
+                            <option value="public" {{ $vote->visibility == 'public' ? 'selected' : '' }}>Public</option>
+                        </select>
+                    </div>
+                    <div class="row mt-3">
                         <div class="col-md-8">
                             <div class="form-check form-switch mb-2">
                                 <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
@@ -44,13 +109,16 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="protectVote" name="is_protected" {{ $vote->code ? 'checked' : '' }}>
+                                <input class="form-check-input" type="checkbox" id="protectVote" name="is_protected"
+                                    {{ $vote->is_protected ? 'checked' : '' }}>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-10">
-                            <input type="text" id="randomCode" name="access_code" class="form-control mb-2 {{ $vote->code ? '' : 'd-none' }}" value="{{ $vote->code }}" readonly>
+                        <div class="row">
+                            <div class="col-md-10">
+                                <input type="text" id="randomCode" name="access_code" class="form-control mb-2 
+                                    {{ $vote->is_protected ? '' : 'd-none' }}"
+                                    value="{{ $vote->access_code ?? '' }}" readonly>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -61,7 +129,8 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="includeName" name="require_name" {{ $vote->name ? 'checked' : '' }}>
+                                <input class="form-check-input" type="checkbox" id="includeName" name="require_name" readonly
+                                    {{ $vote->require_name ? 'checked' : '' }}>
                             </div>
                         </div>
                     </div>
@@ -72,56 +141,96 @@
                 </div>
 
                 <div class="col-md-5">
+                    <label for="datetimePicker" class="form-label">Buka vote pada</label>
+                    <div class="mb-2 input-group">
+                        <input type="text" class="form-control" id="datetimePicker" name="open_date"
+                            value="{{ $vote->open_date ? \Carbon\Carbon::parse($vote->open_date)->format('Y-m-d H:i') : '' }}"
+                            placeholder="Pilih Tanggal & Jam" required>
+                        <span class="input-group-text">
+                            <i class="bi bi-calendar-event"></i>
+                        </span>
+                    </div>
                     <label for="datetimePicker" class="form-label">Tutup vote pada</label>
                     <div class="mb-2 input-group">
                         <input type="text" class="form-control" id="datetimePicker" name="close_date"
-                            placeholder="Pilih Tanggal & Jam" value="{{ $vote->close_date }}" required>
+                            value="{{ $vote->close_date ? \Carbon\Carbon::parse($vote->close_date)->format('Y-m-d H:i') : '' }}"
+                            placeholder="Pilih Tanggal & Jam" required>
                         <span class="input-group-text">
                             <i class="bi bi-calendar-event"></i>
                         </span>
                     </div>
 
-                    <div>
-                        <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
-                        <select class="form-select" id="voteVisibility" name="visibility" required>
-                            <option value="private" {{ $vote->result_visibility == 'private' ? 'selected' : '' }}>Private</option>
-                            <option value="public" {{ $vote->result_visibility == 'public' ? 'selected' : '' }}>Public</option>
-                        </select>
+
+                </div>
+            </div>
+        </div>
+        <div class="text-end mt-3">
+            <a href="{{ route('vote.show', ['slug' => $vote->slug]) }}" class="btn btn-secondary m-1">
+                <i class="bi bi-chevron-left"></i>Kembali
+            </a>
+            <button type="button" class="btn btn-success m-1" data-bs-toggle="modal" data-bs-target="#confirmUpdateModal">
+                <i class="bi bi-save"></i> Simpan Perubahan
+            </button>
+        </div>
+
+        <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmUpdateLabel">Konfirmasi Perubahan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Apakah Anda yakin ingin menyimpan perubahan ini?
+                            Setelah disimpan, hasil vote ini akan di reset
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success" id="confirmUpdateButton">Ya, Simpan</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="text-end mt-3">
-            <a href="{{ route('vote.show', ['slug' => $vote->slug]) }}" class="btn btn-secondary m-1">
-                <i class="bi bi-chevron-left"></i>Kembali
-            </a>
-            <button type="submit" class="btn btn-success m-1">
-                <i class="bi bi-save"></i> Simpan Vote
-            </button>
-        </div>
-    </form>
-
-    <div class="modal fade" id="uploadFotoModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Upload Foto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <div id="uploadContainer" class="border rounded p-4 d-flex flex-column align-items-center justify-content-center"
-                        style="border-style: dashed; cursor: pointer; width: 100%; height: 200px;">
-                        <i id="uploadIcon" class="bi bi-upload" style="font-size: 2rem;"></i>
-                        <p id="uploadText">Klik untuk upload foto</p>
-                        <p id="uploadHint" class="text-muted">JPG, PNG, Max 3MB</p>
-                        <img id="previewImage" src="" class="d-none" style="max-width: 100%; height: auto;">
-                        <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
+        <div class="modal fade" id="uploadFotoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Upload Foto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div id="uploadContainer" class="border rounded p-4 d-flex flex-column align-items-center justify-content-center"
+                            style="border-style: dashed; cursor: pointer; width: 100%; height: 200px;">
+                            <i id="uploadIcon" class="bi bi-upload" style="font-size: 2rem;"></i>
+                            <p id="uploadText">Klik untuk upload foto</p>
+                            <p id="uploadHint" class="text-muted">JPG, PNG, Max 3MB</p>
+                            <img id="previewImage" src="" class="d-none" style="max-width: 100%; height: auto;">
+                            <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="confirmUpload" data-bs-dismiss="modal">OK</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="confirmUpload" data-bs-dismiss="modal">OK</button>
-                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Peringatan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="errorModalContent">
+                Setiap pertanyaan harus memiliki minimal 2 opsi.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
     </div>
@@ -129,9 +238,7 @@
 
 <script>
     $(document).ready(function() {
-        let questionCounter = 0;
-
-        //Tanggal
+        // Tanggal
         flatpickr("#datetimePicker", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
@@ -139,11 +246,11 @@
             minDate: "today"
         });
 
-        //Kode vote
+        // Kode vote
         $('#protectVote').on('change', function() {
             let textbox = $('#randomCode');
             if ($(this).is(':checked')) {
-                textbox.val(textbox.val() || generateRandomCode()).removeClass('d-none');
+                textbox.val(generateRandomCode()).removeClass('d-none');
             } else {
                 textbox.addClass('d-none').val('');
             }
@@ -158,361 +265,247 @@
             return code;
         }
 
-        //Pilihan
-        function createChoiceElement(questionId, text = '', image = '') {
-            const $choicesContainer = $(`#choices_${questionId}`);
-            const choiceCount = $choicesContainer.find('.choice-group').length + 1;
+        //Pertanyaan
+        let questionCount = $('.question-card').length;
 
-            const choiceId = `choice_${questionId}_${choiceCount}`;
-            const $choice = $(`
-            <div class="choice-group" id="${choiceId}">
-                <div class="row mb-2 align-items-center choice-item">
-                    <div class="col-auto">
-                        <span class="choice-number fw-bold"></span>
-                    </div>
-                    <div class="col">
-                        <input type="text" 
-                            class="form-control" 
-                            placeholder="Pilihan"
-                            name="choices[${questionId}][]"
-                            id="input_${choiceId}"
-                            value="${text}"
-                            required>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-danger remove-choice-btn">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-primary d-flex align-items-center open-upload-modal" 
-                                style="text-decoration: none;"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#uploadFotoModal" 
-                                data-target="img_${choiceId}">
-                            <i class="bi bi-image me-2"></i> Tambah Gambar
-                        </button>
-                    </div>
-                </div>
-                <div class="mb-2 position-relative image-container ${!image ? 'd-none' : ''}">
-                    <img id="img_${choiceId}" src="${image}" class="img-thumbnail" style="width: 70%; height: 20%;">
-                    <input type="hidden" 
-                        name="choice_images[${questionId}][]" 
-                        id="image_input_${choiceId}"
-                        value="${image}">
-                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn">
+        function updateQuestionNumbers() {
+            $('.question-card').each(function(index) {
+                $(this).data('index', index);
+                $(this).find('h4:first').text('Pertanyaan ' + (index + 1));
+                $(this).find('input[name^="questions"][name$="[id]"]').attr('name', 'questions[' + index + '][id]');
+                $(this).find('textarea[name^="questions"][name$="[text]"]').attr('name', 'questions[' + index + '][text]');
+
+                // Update option indices
+                $(this).find('.optionsContainer .row').each(function(optIndex) {
+                    $(this).find('input[name$="[id]"]').attr('name', 'questions[' + index + '][options][' + optIndex + '][id]');
+                    $(this).find('input[name$="[text]"]').attr('name', 'questions[' + index + '][options][' + optIndex + '][text]');
+                });
+            });
+        }
+
+        $('#addQuestionBtn').click(function() {
+            let newQuestionHtml = `
+            <div class="card p-3 mt-3 question-card" data-index="${questionCount}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4>Pertanyaan ${questionCount + 1}</h4>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-question">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-            </div>
-        `);
+                <input type="hidden" name="questions[${questionCount}][id]" value="">
+                <textarea class="form-control mb-3" name="questions[${questionCount}][text]" required></textarea>
 
-            return $choice;
-        }
+                <div class="optionsContainer">
+                    <!-- Option 1 -->
+                    <div class="row mb-2 align-items-center choice-item">
+                        <div class="col">
+                            <input type="hidden" name="questions[${questionCount}][options][0][id]" value="">
+                            <input type="text" class="form-control me-2" name="questions[${questionCount}][options][0][text]" placeholder="Opsi 1" required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-danger remove-option">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary d-flex align-items-center open-upload-modal"
+                                data-bs-toggle="modal" data-bs-target="#uploadFotoModal">
+                                <i class="bi bi-image me-2"></i> Tambah Gambar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Option 2 -->
+                    <div class="row mb-2 align-items-center choice-item">
+                        <div class="col">
+                            <input type="hidden" name="questions[${questionCount}][options][1][id]" value="">
+                            <input type="text" class="form-control me-2" name="questions[${questionCount}][options][1][text]" placeholder="Opsi 2" required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-danger remove-option">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary d-flex align-items-center open-upload-modal"
+                                data-bs-toggle="modal" data-bs-target="#uploadFotoModal">
+                                <i class="bi bi-image me-2"></i> Tambah Gambar
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-        //Pertanyaan
-        function createQuestionCard(questionData = null) {
-            questionCounter++;
-            const questionId = questionData ? `question_${questionCounter}_${questionData.id}` : `question_${questionCounter}`;
-            const questionText = questionData ? questionData.question : '';
-
-            const $card = $(`
-            <div class="card p-4 mt-3 position-relative card-question" id="${questionId}" ${questionData ? 'data-question-id="'+questionData.id+'"' : ''}>
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
-                <h4>Daftar Pertanyaan ${questionCounter}</h4>
-                <hr class="my-3" style="height: 2px; background-color: black;">
-                <h5>Pertanyaan</h5>
-                <textarea class="form-control mb-3" 
-                        rows="3" 
-                        placeholder="Masukkan pertanyaan"
-                        name="questions[${questionId}]"
-                        id="question_text_${questionId}"
-                        required>${questionText}</textarea>
-                <h5>Pilihan</h5>
-                <div class="choices" id="choices_${questionId}"></div>
                 <div class="text-start mt-2">
-                    <button type="button" class="btn btn-primary add-choice-btn" 
-                            style="text-decoration: none;" 
-                            data-question-id="${questionId}">
+                    <button type="button" class="btn btn-primary add-option">
                         <i class="bi bi-plus-circle"></i> Tambah Pilihan
                     </button>
                 </div>
             </div>
-        `);
+        `;
 
-            const $choicesContainer = $card.find('.choices');
-
-            if (questionData && questionData.options && questionData.options.length > 0) {
-                questionData.options.forEach(option => {
-                    $choicesContainer.append(createChoiceElement(questionId, option.option, option.image));
-                });
-            } else {
-                $choicesContainer.append(createChoiceElement(questionId));
-                $choicesContainer.append(createChoiceElement(questionId));
-            }
-
-            $("#questionContainer").append($card);
-            updateDeleteButtons();
-            updateChoiceNumbers($choicesContainer);
-
-            $card.find(".add-choice-btn").on('click', function(e) {
-                e.preventDefault();
-                const questionId = $(this).data('question-id');
-                const $choices = $(`#choices_${questionId}`);
-                $choices.append(createChoiceElement(questionId));
-                updateChoiceNumbers($choices);
-            });
-
-            return $card;
-        }
-
-        function resequenceQuestions() {
-            questionCounter = 0;
-            $('.card-question').each(function(index) {
-                questionCounter++;
-                const originalId = $(this).attr('id');
-                const questionDbId = $(this).data('question-id') || null;
-                const newId = questionDbId ? `question_${questionCounter}_${questionDbId}` : `question_${questionCounter}`;
-
-                $(this).attr('id', newId);
-                $(this).find('textarea')
-                    .attr('name', `questions[${newId}]`)
-                    .attr('id', `question_text_${newId}`);
-
-                $(this).find('h4').text(`Daftar Pertanyaan ${questionCounter}`);
-
-                const $choicesContainer = $(this).find('.choices');
-                $choicesContainer.attr('id', `choices_${newId}`);
-
-                $choicesContainer.find('.choice-group').each(function(choiceIndex) {
-                    const choiceNumber = choiceIndex + 1;
-                    const newChoiceId = `choice_${newId}_${choiceNumber}`;
-                    $(this).attr('id', newChoiceId);
-
-                    $(this).find('input[type="text"]')
-                        .attr('name', `choices[${newId}][]`)
-                        .attr('id', `input_${newChoiceId}`);
-
-                    $(this).find('input[type="hidden"]')
-                        .attr('name', `choice_images[${newId}][]`)
-                        .attr('id', `image_input_${newChoiceId}`);
-
-                    $(this).find('img').attr('id', `img_${newChoiceId}`);
-                    $(this).find('.open-upload-modal').attr('data-target', `img_${newChoiceId}`);
-                });
-
-                $(this).find('.add-choice-btn').attr('data-question-id', newId);
-            });
-        }
-
-        function updateChoiceNumbers($choicesContainer) {
-            $choicesContainer.find('.choice-item').each(function(index) {
-                $(this).find('.choice-number').text(`${index + 1}.`);
-                $(this).find('input[type="text"]').attr('placeholder', `Pilihan ${index + 1}`);
-            });
-            updateDeleteChoiceButtons($choicesContainer);
-        }
-
-        function updateDeleteChoiceButtons($choicesContainer) {
-            const $choices = $choicesContainer.find('.choice-item');
-            const $deleteButtons = $choicesContainer.find('.remove-choice-btn');
-            $deleteButtons.toggle($choices.length > 2);
-        }
-
-        function updateDeleteButtons() {
-            const $questionCards = $(".card-question");
-            $questionCards.each(function() {
-                const $deleteBtn = $(this).find(".delete-question-btn");
-                $deleteBtn.toggle($questionCards.length > 1);
-            });
-        }
-
-        let currentImageTarget = null;
-        let currentImageInput = null;
-
-        //Gambar
-        const $uploadContainer = $("#uploadContainer");
-        const $uploadInput = $("#uploadInput");
-        const $previewImage = $("#previewImage");
-        const $uploadIcon = $("#uploadIcon");
-        const $uploadText = $("#uploadText");
-        const $uploadHint = $("#uploadHint");
-
-        $uploadContainer.on('click', function(e) {
-            e.preventDefault();
-            $uploadInput.click();
+            $('#questionsContainer').append(newQuestionHtml);
+            questionCount++;
         });
 
-        $uploadInput.on('change', function() {
+        $(document).on("click", ".remove-question", function() {
+            $(this).closest('.question-card').remove();
+            updateQuestionNumbers();
+            questionCount = $('.question-card').length;
+        });
+
+        $(document).on("click", ".remove-option", function() {
+            const questionCard = $(this).closest('.question-card');
+            const optionsContainer = questionCard.find(".optionsContainer");
+
+            if (optionsContainer.children(".row").length <= 2) {
+                $("#errorModalContent").text("Setiap pertanyaan harus memiliki minimal 2 opsi.");
+                new bootstrap.Modal(document.getElementById('errorModal')).show();
+                return;
+            }
+
+            $(this).closest('.row').remove();
+
+            let optionIndex = 0;
+            let questionIndex = questionCard.data('index');
+
+            optionsContainer.find('.row').each(function() {
+                $(this).find('input[name$="[id]"]').attr('name', 'questions[' + questionIndex + '][options][' + optionIndex + '][id]');
+                $(this).find('input[name$="[text]"]').attr('name', 'questions[' + questionIndex + '][options][' + optionIndex + '][text]');
+                optionIndex++;
+            });
+        });
+
+        $(document).on("click", ".add-option", function() {
+            let questionCard = $(this).closest('.question-card');
+            let optionsContainer = questionCard.find(".optionsContainer");
+            let questionIndex = questionCard.data("index");
+            let optionIndex = optionsContainer.children(".row").length;
+
+            let newOption = `
+            <div class="row mb-2 align-items-center">
+                <div class="col">
+                    <input type="hidden" name="questions[${questionIndex}][options][${optionIndex}][id]" value="">
+                    <input type="text" class="form-control me-2" name="questions[${questionIndex}][options][${optionIndex}][text]" placeholder="Opsi ${optionIndex + 1}" required>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-danger remove-option">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-primary d-flex align-items-center open-upload-modal"
+                        data-bs-toggle="modal"
+                        data-bs-target="#uploadFotoModal">
+                        <i class="bi bi-image me-2"></i> Tambah Gambar
+                    </button>
+                </div>
+            </div>
+        `;
+
+            optionsContainer.append(newOption);
+        });
+
+        let currentImageTarget, currentImageInput;
+
+        $(document).on("click", ".open-upload-modal", function() {
+            let targetId = $(this).data("target") || "new_image_" + Math.random().toString(36).substring(7);
+            $(this).data("target", targetId);
+
+            let parentRow = $(this).closest('.row');
+            let imageContainer = parentRow.next('.image-container');
+
+            if (imageContainer.length === 0) {
+                imageContainer = $(`
+                <div class="mb-2 position-relative image-container d-none">
+                    <img id="${targetId}" class="img-thumbnail" style="width: 70%; height: auto;">
+                    <input type="hidden" class="image-input" id="image_input_${targetId}">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-option-id="${targetId}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            `);
+                parentRow.after(imageContainer);
+            }
+
+            currentImageTarget = $("#" + targetId);
+            currentImageInput = $("#image_input_" + targetId);
+        });
+
+        $("#uploadContainer").on("click", function() {
+            $("#uploadInput").click();
+        });
+
+        $("#uploadInput").on("change", function() {
             const file = this.files[0];
+
             if (file) {
                 if (file.size > 3 * 1024 * 1024) {
-                    alert('File terlalu besar. Maksimal ukuran file adalah 3MB.');
+                    alert("Ukuran file terlalu besar. Maksimal 3MB.");
                     return;
                 }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    $previewImage
-                        .attr('src', e.target.result)
-                        .removeClass('d-none');
-
-                    $uploadIcon.hide();
-                    $uploadText.hide();
-                    $uploadHint.hide();
+                    $("#previewImage").attr("src", e.target.result).removeClass("d-none");
+                    $("#uploadIcon, #uploadText, #uploadHint").hide();
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        $('#uploadFotoModal').on('hidden.bs.modal', function() {
-            $uploadInput.val('');
-            $previewImage
-                .attr('src', '')
-                .addClass('d-none');
-            $uploadIcon.show();
-            $uploadText.show();
-            $uploadHint.show();
-        });
-
-        $(document).on('click', '.open-upload-modal', function() {
-            currentImageTarget = $("#" + $(this).data("target"));
-            const $imageInput = $("#image_input_" + $(this).data("target").replace('img_', ''));
-            currentImageInput = $imageInput;
-        });
-
-        $(document).on('click', '#confirmUpload', function() {
-            if (currentImageTarget && $previewImage.attr('src')) {
+        $("#confirmUpload").on("click", function() {
+            if (currentImageTarget && $("#previewImage").attr("src")) {
                 currentImageTarget
-                    .attr('src', $previewImage.attr('src'))
+                    .attr("src", $("#previewImage").attr("src"))
                     .closest(".image-container")
-                    .removeClass('d-none');
-                currentImageInput.val($previewImage.attr('src'));
+                    .removeClass("d-none");
+
+                currentImageInput.val($("#previewImage").attr("src"));
             }
         });
 
-        $(document).on('click', '.remove-image-btn', function(e) {
-            e.stopPropagation();
-            const $container = $(this).closest('.image-container');
-            $container.addClass('d-none');
-            $container.find('img').attr('src', '');
-            $container.find('input[type="hidden"]').val('');
+        $("#uploadFotoModal").on("hidden.bs.modal", function() {
+            $("#uploadInput").val("");
+            $("#previewImage").attr("src", "").addClass("d-none");
+            $("#uploadIcon, #uploadText, #uploadHint").show();
         });
 
-        $(document).on('click', '.remove-choice-btn', function() {
-            const $choiceGroup = $(this).closest('.choice-group');
-            const $choicesContainer = $choiceGroup.closest('.choices');
-            const totalChoices = $choicesContainer.find('.choice-group').length;
-
-            if (totalChoices > 2) {
-                $choiceGroup.remove();
-
-                const questionId = $choicesContainer.closest('.card-question').attr('id');
-                $choicesContainer.find('.choice-group').each(function(choiceIndex) {
-                    const choiceNumber = choiceIndex + 1;
-                    const newChoiceId = `choice_${questionId}_${choiceNumber}`;
-                    const oldId = $(this).attr('id');
-
-                    $(this).attr('id', newChoiceId);
-                    $(this).find('input[type="text"]')
-                        .attr('name', `choices[${questionId}][]`)
-                        .attr('id', `input_${newChoiceId}`);
-
-                    $(this).find('input[type="hidden"]')
-                        .attr('name', `choice_images[${questionId}][]`)
-                        .attr('id', `image_input_${newChoiceId}`);
-
-                    $(this).find('img').attr('id', `img_${newChoiceId}`);
-                    $(this).find('.open-upload-modal').attr('data-target', `img_${newChoiceId}`);
-                });
-
-                updateChoiceNumbers($choicesContainer);
-                updateDeleteChoiceButtons($choicesContainer);
-            }
+        $(document).on("click", ".remove-image-btn", function() {
+            const imageContainer = $(this).closest(".image-container");
+            imageContainer.addClass("d-none");
+            imageContainer.find("img").attr("src", "");
+            imageContainer.find("input").val("");
         });
 
-        $(document).on('click', '.delete-question-btn', function() {
-            const $questionCard = $(this).closest(".card-question");
-            const questionDbId = $questionCard.data('question-id');
-
-            if (questionDbId) {
-                $('#voteForm').append(`<input type="hidden" name="deleted_questions[]" value="${questionDbId}">`);
-            }
-
-            $questionCard.remove();
-            resequenceQuestions();
-            updateDeleteButtons();
-        });
-
-        $("#voteForm").on('submit', function(e) {
+        $('#updateVoteForm').on('submit', function(e) {
             let isValid = true;
-            let errorMessage = '';
+            let errorMessage = "";
 
-            if (!$('#vote_title').val().trim()) {
-                errorMessage += 'Judul voting harus diisi.\n';
+            if ($('.question-card').length === 0) {
                 isValid = false;
+                errorMessage = "Vote harus memiliki minimal satu pertanyaan.";
             }
 
-            if (!$('#vote_description').val().trim()) {
-                errorMessage += 'Deskripsi voting harus diisi.\n';
-                isValid = false;
-            }
-
-            $('.card-question').each(function() {
-                const questionId = $(this).attr('id');
-                const questionText = $(`#question_text_${questionId}`).val().trim();
-
-                if (!questionText) {
-                    errorMessage += 'Semua pertanyaan harus diisi.\n';
+            $('.question-card').each(function(index) {
+                const optionCount = $(this).find('.optionsContainer .row').length;
+                if (optionCount < 2) {
                     isValid = false;
-                    return false;
-                }
-
-                let hasEmptyChoice = false;
-                $(this).find('input[type="text"]').each(function() {
-                    if (!$(this).val().trim()) {
-                        hasEmptyChoice = true;
-                        return false;
-                    }
-                });
-
-                if (hasEmptyChoice) {
-                    errorMessage += `Semua pilihan untuk pertanyaan harus diisi.\n`;
-                    isValid = false;
+                    errorMessage = "Pertanyaan " + (index + 1) + " harus memiliki minimal 2 opsi.";
                     return false;
                 }
             });
 
             if (!isValid) {
-                alert(errorMessage);
                 e.preventDefault();
+                $("#errorModalContent").text(errorMessage);
+                new bootstrap.Modal(document.getElementById('errorModal')).show();
                 return false;
-            }
-
-            if ($('#protectVote').is(':checked')) {
-                $('#randomCode').prop('disabled', false);
             }
 
             return true;
         });
 
-        $("#addQuestionBtn").on('click', function() {
-            createQuestionCard();
-        });
-
-        const voteData = {
-            !!json_encode($vote) !!
-        };
-
-        if (voteData.questions && voteData.questions.length > 0) {
-            voteData.questions.forEach(question => {
-                createQuestionCard(question);
-            });
-        } else {
-            createQuestionCard();
-        }
-
-        console.log('Vote data:', voteData);
-        console.log('Questions:', voteData.questions);
+        $('#confirmUpdateButton').click(function() {});
     });
 </script>
 @endsection

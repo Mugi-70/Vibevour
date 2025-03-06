@@ -42,12 +42,12 @@ Route::get('/grup_UI', function () {
 // });
 
 Route::get('/tambahvote', function () {
-    return view('voting.tambahvote');
+    return view('voting.tambahvote');   
 });
 
-Route::get('/tampilanvote', function () {
-    return view('voting.tampilanvote');
-});
+// Route::get('/tampilanvote', function () {
+//     return view('voting.tampilanvote');
+// });
 
 Route::get('/hasilvote', function () {
     return view('voting.hasilvote');

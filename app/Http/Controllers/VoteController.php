@@ -6,6 +6,7 @@ use App\Models\vote;
 use App\Models\question;
 use App\Models\option;
 use App\Models\result;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
@@ -14,17 +15,31 @@ class VoteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(request $request)
+    public function index(Request $request)
     {
-        $sortOrder = $request->query('sort', 'desc');
+        $sortOrder = $request->query('sort', 'asc');
         $filter = $request->query('filter', '');
+        $startDate = $request->query('start_date', '');
+        $endDate = $request->query('end_date', '');
 
-        $query = Vote::orderBy('created_at', $sortOrder);
+        $query = Vote::query();
+
+        if ($sortOrder == 'a-z') {
+            $query->orderBy('title', 'asc');
+        } elseif ($sortOrder == 'z-a') {
+            $query->orderBy('title', 'desc');
+        } else {
+            $query->orderBy('created_at', $sortOrder);
+        }
 
         if ($filter == 'berjalan') {
             $query->where('status', 'open');
         } elseif ($filter == 'selesai') {
             $query->where('status', 'closed');
+        }
+
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         }
 
         $vote = $query->get();
@@ -35,6 +50,7 @@ class VoteController extends Controller
 
         return view('voting.vote', compact('vote'));
     }
+
 
     public function getChartData($slug)
     {
@@ -74,16 +90,29 @@ class VoteController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
+            $validationRules = [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
+                'open_date' => 'required|date',
                 'visibility' => 'required|in:public,private',
-            ]);
+            ];
+
+            if ($request->filled('close_date')) {
+                $validationRules['close_date'] = 'date|after:open_date';
+            }
+
+            $validationMessages = [
+                'open_date.before' => 'Tanggal buka vote harus lebih awal dari tanggal tutup vote.',
+                'close_date.after' => 'Tanggal tutup vote harus lebih akhir dari tanggal buka vote.'
+            ];
+
+            $request->validate($validationRules, $validationMessages);
 
             $vote = new Vote();
             $vote->title = $request->title;
             $vote->slug = Str::slug($request->title);
             $vote->description = $request->description;
+            $vote->open_date = $request->open_date;
             $vote->close_date = $request->close_date;
             $vote->result_visibility = $request->visibility;
             $vote->status = 'open';
@@ -93,9 +122,10 @@ class VoteController extends Controller
             }
 
             if ($request->has('is_protected') && $request->is_protected) {
-                $vote->code = $request->access_code;
+                $vote->access_code = $request->access_code;
             }
 
+            // dd($vote);
             $vote->save();
 
             if (!empty($request->questions)) {
@@ -149,74 +179,110 @@ class VoteController extends Controller
     {
         $vote = Vote::where('slug', $slug)->firstOrFail();
 
-        $validated = $request->validate([
+        $validationRules = ([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'close_date' => 'required|date',
             'visibility' => 'required|in:public,private',
+            'questions' => 'required|array',
+            'questions.*.text' => 'required|string|max:1000',
+            'questions.*.options.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
+            'open_date' => 'nullable|date',
+            'close_date' => 'nullable|date',
+            'is_protected' => 'boolean',
+            'access_code' => 'nullable|string|max:6',
         ]);
+
+        if ($request->filled('close_date')) {
+            $validationRules['close_date'] = 'date|after:open_date';
+        }
+
+        
+        // dd($validationRules);
+        // dd($request->all());
+        // dd($request->is_protected);
+
+        $validationMessages = [
+            'open_date.before' => 'Tanggal buka vote harus lebih awal dari tanggal tutup vote.',
+            'close_date.after' => 'Tanggal tutup vote harus lebih akhir dari tanggal buka vote.'
+        ];
+
+        $request->validate($validationRules, $validationMessages);
 
         $vote->title = $request->title;
         $vote->description = $request->description;
-        $vote->close_date = $request->close_date;
+        $vote->open_date = $request->open_date;
+        $vote->close_date = $request->close_date ?: null;
         $vote->result_visibility = $request->visibility;
-
-        if ($request->has('is_protected') && $request->is_protected == 'on') {
-            $vote->code = $request->access_code;
-        } else {
-            $vote->code = null;
-        }
-
-        $vote->name = $request->has('require_name') && $request->require_name == 'on' ? 'required' : null;
-
+        $vote->is_protected = $request->is_protected ? 1 : 0;
+        $vote->access_code = $request->is_protected ? $request->access_code : null;
         $vote->save();
 
-        if ($request->has('deleted_questions')) {
-            Question::whereIn('id', $request->deleted_questions)->delete();
-        }
-
-        foreach ($request->questions as $key => $questionText) {
-            preg_match('/question_\d+_(\d+)/', $key, $matches);
-            $questionId = $matches[1] ?? null;
+        foreach ($request->questions as $qIndex => $qData) {
+            $questionId = $qData['id'] ?? null;
 
             if ($questionId) {
                 $question = Question::find($questionId);
                 if ($question) {
-                    $question->question = $questionText;
+                    $question->question = $qData['text'];
                     $question->save();
-
-                    Option::where('question_id', $questionId)->delete();
-                } else {
-                    $question = new Question();
-                    $question->vote_id = $vote->id;
-                    $question->question = $questionText;
-                    $question->save();
-                    $questionId = $question->id;
                 }
             } else {
                 $question = new Question();
                 $question->vote_id = $vote->id;
-                $question->question = $questionText;
+                $question->question = $qData['text'];
                 $question->save();
-                $questionId = $question->id;
             }
 
-            if (isset($request->choices[$key])) {
-                $choices = $request->choices[$key];
-                $images = $request->choice_images[$key] ?? [];
+            $existingOptions = $question->options->pluck('id')->toArray();
 
-                foreach ($choices as $index => $optionText) {
-                    $option = new Option();
-                    $option->question_id = $questionId;
-                    $option->option = $optionText;
-                    $option->image = $images[$index] ?? null;
-                    $option->save();
+            if (isset($qData['options'])) {
+                foreach ($qData['options'] as $oIndex => $oData) {
+                    if (!isset($oData['text'])) continue;
+
+                    $optionId = $oData['id'] ?? null;
+
+                    if ($optionId && in_array($optionId, $existingOptions)) {
+                        $option = Option::find($optionId);
+                        if ($option) {
+                            $option->option = $oData['text'];
+
+                            if (isset($oData['image']) && $oData['image']->isValid()) {
+                                if ($option->image) {
+                                    Storage::delete(str_replace('storage/', 'public/', $option->image));
+                                }
+
+                                $imagePath = $oData['image']->store('public/images');
+                                $option->image = str_replace('public/', 'storage/', $imagePath);
+                            }
+
+                            $option->save();
+                        }
+                    } else {
+                        $option = new Option();
+                        $option->question_id = $question->id;
+                        $option->option = $oData['text'];
+
+                        if (isset($oData['image']) && $oData['image']->isValid()) {
+                            $imagePath = $oData['image']->store('public/images');
+                            $option->image = str_replace('public/', 'storage/', $imagePath);
+                        }
+
+                        $option->save();
+                    }
                 }
             }
+
+            Option::where('question_id', $question->id)
+                ->whereNotIn('id', array_column($qData['options'] ?? [], 'id'))
+                ->delete();
         }
 
-        return redirect()->route('vote.detail', ['slug' => $vote->slug])->with('success', 'Vote berhasil diperbarui');
+        return redirect()->route('vote.show', ['slug' => $vote->slug])
+            ->with('success', 'Vote berhasil diperbarui.');
     }
+
+
+
 
     /**
      * Remove the specified resource from storage.

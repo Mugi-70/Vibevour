@@ -14,10 +14,12 @@ class vote extends Model
         'description',
         'image',
         'name',
+        'open_date',
         'close_date',
         'status',
         'result_visibility',
-        'code',
+        'is_protected',
+        'access_code',
         'slug'
     ];
     public function questions()

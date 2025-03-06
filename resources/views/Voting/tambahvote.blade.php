@@ -37,7 +37,14 @@
                 <hr style="height: 2px; background-color: black;">
                 <div class="row">
                     <div class="col-md-5">
-                        <div class="row">
+                        <div>
+                            <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
+                            <select class="form-select" id="voteVisibility" name="visibility" required>
+                                <option value="private">Private</option>
+                                <option value="public">Public</option>
+                            </select>
+                        </div>
+                        <div class="row mt-3">
                             <div class="col-md-8">
                                 <div class="form-check form-switch mb-2">
                                     <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
@@ -73,6 +80,14 @@
                     </div>
 
                     <div class="col-md-5">
+                        <label for="datetimePicker" class="form-label">Buka vote pada</label>
+                        <div class="mb-2 input-group">
+                            <input type="text" class="form-control" id="datetimePicker" name="open_date"
+                                placeholder="Pilih Tanggal & Jam" required>
+                            <span class="input-group-text">
+                                <i class="bi bi-calendar-event"></i>
+                            </span>
+                        </div>
                         <label for="datetimePicker" class="form-label">Tutup vote pada</label>
                         <div class="mb-2 input-group">
                             <input type="text" class="form-control" id="datetimePicker" name="close_date"
@@ -80,14 +95,6 @@
                             <span class="input-group-text">
                                 <i class="bi bi-calendar-event"></i>
                             </span>
-                        </div>
-
-                        <div>
-                            <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
-                            <select class="form-select" id="voteVisibility" name="visibility" required>
-                                <option value="private">Private</option>
-                                <option value="public">Public</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -135,7 +142,7 @@
             //Tanggal
             flatpickr("#datetimePicker", {
                 enableTime: true,
-                dateFormat: "Y-m-d H:i",
+                dateFormat: "d-m-Y H:i",
                 time_24hr: true,
                 minDate: "today"
             });

@@ -19,12 +19,10 @@
         </p>
         <div class="line"></div>
 
-        <div class="row">
-            <div class="col-lg-6">
-                <h5 class="my-4"> Daftar Pertanyaan</h5>
-
-
-                @foreach ($vote->questions as $index => $question)
+        <h5 class="my-4">Daftar Pertanyaan</h5>
+        @foreach ($vote->questions as $index => $question)
+        <div class="row ">
+            <div class="col-md-6">
                 <p class="fw-bold">{{ $question->question }}</p>
 
                 @php
@@ -51,111 +49,105 @@
                 @endforeach
 
                 <p class="mt-3 fw-bold">Total vote untuk pertanyaan ini: {{ $totalVotes }}</p>
-
-                @if (!$loop->last)
-                <hr class="my-4 line">
-                @endif
-                @endforeach
             </div>
 
-
-            <div class="col-lg-2">
-            </div>
-
-            <div class="col-lg-4">
+            <div class="col-md-6">
                 <h5 class="my-4">Hasil Voting</h5>
-                @foreach ($vote->questions as $index => $question)
-                <h6>{{ $question->question }}</h6>
-                <hr>
-                <canvas id="pieChart-{{ $index }}" style="max-width: 400px; max-height: 300px"></canvas>
-                @if (!$loop->last)
-                <div class="line"></div>
-                @endif
-                @endforeach
+                <canvas id="pieChart-{{ $index }}" style="max-width: 100%; max-height: 300px;"></canvas>
+            </div>
+        </div>
 
+        @if (!$loop->last)
+        <hr class="my-4 line">
+        @endif
+        @endforeach
+
+        <script>
+            $(document).ready(function() {
+                $.ajax({
+                    url: "{{ route('vote.show', $vote->slug) }}/chart-data",
+                    method: "GET",
+                    success: function(data) {
+                        if (data.length > 0) {
+                            let defaultColor = '#D3D3D3';
+                            let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF1493', '#39FF14', '#00FFFF', '#FFD700'];
+
+                            data.forEach((question, index) => {
+                                let ctx = document.getElementById(`pieChart-${index}`).getContext('2d');
+
+                                let labels = [];
+                                let counts = [];
+                                let chartColors = [];
+
+                                question.options.forEach((option, optionIndex) => {
+                                    labels.push(option.label);
+                                    counts.push(option.count);
+                                });
+
+                                let totalVotes = counts.reduce((a, b) => a + b, 0);
+
+                                if (totalVotes === 0) {
+                                    labels = ["Belum ada yang melakukan voting"];
+                                    counts = [1];
+                                    chartColors = [defaultColor];
+                                } else {
+                                    chartColors = colors.slice(0, labels.length);
+                                }
+
+                                new Chart(ctx, {
+                                    type: 'pie',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [{
+                                            data: counts,
+                                            backgroundColor: chartColors,
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    error: function(error) {
+                        console.log("Error fetching chart data: ", error);
+                    }
+                });
+            });
+        </script>
+
+        <div class="row">
+            <p class="mt-3 fw-bold">Total orang yang sudah melakukan vote: {{ $vote->questions->flatMap->options->flatMap->results->count() }}</p>
+            @if ($vote->access_code != null)
+            <p>Kode akses untuk vote ini adalah: {{ $vote->access_code }}</p>
+            @endif
+            <div class="col-md-9 mt-3">
+                <a href="/vote_saya" class="btn btn-secondary btn-sm"><i class="bi bi-chevron-left"></i>Kembali </a>
+                <a href="javascript:void(0);" class="btn btn-warning btn-sm edit-vote-btn" data-slug="{{ $vote->slug }}" style="color: white">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
                 <script>
                     $(document).ready(function() {
-                        $.ajax({
-                            url: "{{ route('vote.show', $vote->slug) }}/chart-data",
-                            method: "GET",
-                            success: function(data) {
-                                if (data.length > 0) {
-                                    let defaultColor = '#D3D3D3';
-                                    let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF1493', '#39FF14', '#00FFFF', '#FFD700'];
-
-                                    data.forEach((question, index) => {
-                                        let ctx = document.getElementById(`pieChart-${index}`).getContext('2d');
-
-                                        let labels = [];
-                                        let counts = [];
-                                        let chartColors = [];
-
-                                        question.options.forEach((option, optionIndex) => {
-                                            labels.push(option.label);
-                                            counts.push(option.count);
-                                        });
-
-                                        let totalVotes = counts.reduce((a, b) => a + b, 0);
-
-                                        if (totalVotes === 0) {
-                                            labels = ["Belum ada yang melakukan voting"];
-                                            counts = [1];
-                                            chartColors = [defaultColor];
-                                        } else {
-                                            chartColors = colors.slice(0, labels.length);
-                                        }
-
-                                        new Chart(ctx, {
-                                            type: 'pie',
-                                            data: {
-                                                labels: labels,
-                                                datasets: [{
-                                                    data: counts,
-                                                    backgroundColor: chartColors,
-                                                }]
-                                            },
-                                            options: {
-                                                responsive: true,
-                                                maintainAspectRatio: false,
-                                            }
-                                        });
-                                    });
-                                }
-                            },
-                            error: function(error) {
-                                console.log("Error fetching chart data: ", error);
-                            }
+                        $(".edit-vote-btn").on("click", function() {
+                            var slug = $(this).data("slug");
+                            window.location.href = "/edit_vote_" + slug;
                         });
                     });
                 </script>
+                <button class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ $vote->slug }}">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
             </div>
-            <div class="row">
-                <p class="mt-3 fw-bold">Total orang yang sudah melakukan vote: {{ $vote->questions->flatMap->options->flatMap->results->count() }}</p>
-                <div class="col-md-9 mt-3">
-                    <a href="/vote_saya" class="btn btn-secondary btn-sm"><i class="bi bi-chevron-left"></i>Kembali </a>
-                    <a href="javascript:void(0);" class="btn btn-warning btn-sm edit-vote-btn" data-slug="{{ $vote->slug }}" style="color: white">
-                        <i class="bi bi-pencil"></i> Edit
-                    </a>
-                    <script>
-                        $(document).ready(function() {
-                            $(".edit-vote-btn").on("click", function() {
-                                var slug = $(this).data("slug"); 
-                                window.location.href = "/edit_vote_" + slug; 
-                            });
-                        });
-                    </script>
-                    <button class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ $vote->slug }}">
-                        <i class="bi bi-trash"></i> Hapus
-                    </button>
-                </div>
-                <div class="col-md-3 text-end mt-3">
-                    <button href="#" class="btn btn-outline-secondary btn-sm float-end">
-                        <i class="bi bi-share"></i> Bagikan
-                    </button>
-                </div>
+            <div class="col-md-3 text-end mt-3">
+                <button href="#" class="btn btn-outline-secondary btn-sm float-end">
+                    <i class="bi bi-share"></i> Bagikan
+                </button>
             </div>
         </div>
     </div>
+</div>
 </div>
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
