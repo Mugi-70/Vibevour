@@ -39,6 +39,7 @@ Route::delete('/hapus_grup/{id}', [GrupController::class, 'delete'])->name('coba
 Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.detail');
 
 Route::post('/schedules', [GrupController::class, 'simpanAvai']);
+Route::post('/saveSchedules', [GrupController::class, 'saveSchedules']);
 
 Route::post('/undang', [GrupController::class, 'undang']);
 

@@ -19,18 +19,6 @@
 @endsection
 
 @section('content')
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="inviteToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
-            aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body" id="toastMessage">
-                    <!-- Pesan sukses akan masuk sini -->
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-
     <form action="{{ route('coba_bikin') }}" method="POST">
         @csrf
         <div class="card shadow-sm border-0 p-3 justify-content-center" style="overflow: hidden; max-width: 100%;">
@@ -45,18 +33,12 @@
             <div class="mb-4 flex-column flex-md-row align-items-md-center">
                 <label for="anggota" class="form-label fw-bold">Anggota</label>
                 <div class="col d-flex">
-                    {{-- <div class="card" id="anggotaList" style="height: 40px; padding: 10px; flex-wrap: wrap;">
-                    </div> --}}
                     <select id="searchAjax" name="anggota[]" multiple="multiple" class="form-select"
                         style="width: 100%; height: 100%">
                     </select>
+                    <input type="hidden" name="email" id="selectedEmail">
                 </div>
                 <label for="anggotalist" class="form-label mt-1">Daftar Anggota :</label>
-                <button class="btn btn-primary" id="openModalButton" type="button" data-bs-toggle="modal"
-                    data-bs-target="#inviteForm">
-                    Undang via Email
-                </button>
-
                 <div class="card" id="anggotaList" style="height: auto; padding: 5px;">
                     <p id="emptyMessage" style="text-align: center; color: gray;">Belum menambahkan anggota</p>
                 </div>
@@ -111,10 +93,7 @@
                         grup.</small>
                 </div>
             </div>
-            {{-- <div class="position-relative w-100 mb-2 mb-md-0 me-md-2">
-                        <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai" required>
-                        <i class="bi bi-calendar position-absolute top-50 end-0 translate-middle-y me-2"></i>
-                    </div> --}}
+
             <!-- Tanggal -->
             <div class="mb-4">
                 <label for="tanggal" class="form-label fw-bold">Tanggal</label>
@@ -166,67 +145,6 @@
 
 
     <script>
-        $('#inviteForm').on('hidden.bs.modal', function() {
-            // Pindahkan fokus ke tombol yang membuka modal
-            $('#openModalButton').focus();
-        });
-
-        $(document).ready(function() {
-            $('#inviteForm').submit(function(e) {
-                e.preventDefault();
-
-                var email = $('#email').val();
-                if (email === "") {
-                    alert("Email harus diisi!");
-                    return;
-                }
-
-                $.ajax({
-                    url: '/undang',
-                    type: 'POST',
-                    data: {
-                        _token: $('input[name="_token"]').val(),
-                        email: email
-                    },
-                    success: function(response) {
-                        // Tampilkan pesan di dalam toast
-                        $('#toastMessage').text(response.message);
-
-                        // Tampilkan toast Bootstrap
-                        var inviteToast = new bootstrap.Toast($('#inviteToast'));
-                        inviteToast.show();
-
-                        // Tutup modal setelah sukses
-                        $('#inviteModal').modal('hide');
-
-                        // Reset input
-                        $('#email').val('');
-                    },
-                    error: function(xhr) {
-                        $('#toastMessage').text('Gagal mengirim undangan: ' + xhr.responseJSON
-                            .message);
-                        var inviteToast = new bootstrap.Toast($('#inviteToast'));
-                        inviteToast.show();
-                    }
-                });
-            });
-        });
-
-
-        $(document).ready(function() {
-            $("#sendInvitation").click(function() {
-                let email = $("#emailInput").val();
-
-                if (email === "") {
-                    alert("Email harus diisi!");
-                    return;
-                }
-
-                $("#inviteForm").submit(); // Kirim hanya form modal
-            });
-        });
-
-
         /* tanggal */
         let startDatePicker = flatpickr("#tanggalMulai", {
             dateFormat: "d-m-Y",
@@ -276,6 +194,7 @@
 
             $('#searchAjax').select2({
                 placeholder: "Cari anggota",
+                minimumInputLength: 3,
                 tags: true,
                 allowClear: true,
                 minimumInputLength: 1,
@@ -289,42 +208,48 @@
                         };
                     },
                     processResults: function(data, params) {
-                        if (data.items.length === 0) {
-                            return {
-                                results: [{
-                                    id: 'invite',
-                                    text: params.term,
-                                    email: '',
-                                    isInvite: true
-                                }]
-                            };
+                        let results = data.items.map(item => ({
+                            id: item.id,
+                            text: item.text,
+                            email: item.email || "", // Pastikan email ada
+                            icon: item.text ? item.text.charAt(0).toUpperCase() : "?",
+                            isInvite: false
+                        }));
+
+                        // Jika pengguna mengetik email baru yang tidak ditemukan
+                        if (results.length === 0 && params.term.includes('@')) {
+                            results.push({
+                                id: 'invite',
+                                text: params.term, // Menampilkan email yang diketik
+                                email: params.term, // Mengirim email ke backend
+                                isInvite: true
+                            });
                         }
 
                         return {
-                            results: data.items.map(item => ({
-                                id: item.id,
-                                text: item.text,
-                                email: item.email,
-                                icon: item.text ? item.text.charAt(0).toUpperCase() : "?"
-                            }))
+                            results
                         };
                     }
                 },
+
                 templateResult: function(data) {
                     if (!data.id) {
                         return data.text;
                     }
+
+                    let icon = data.icon ? data.icon : "?";
+                    let email = data.email ? data.email : "Email tidak tersedia";
 
                     return $(`
                 <div style="display: flex; align-items: center;">
                     <div style="width: 30px; height: 30px; background-color: red; color: white; 
                                 display: flex; align-items: center; justify-content: center; 
                                 border-radius: 50%; font-weight: bold; margin-right: 10px;">
-                        ${data.icon}
+                        ${icon}
                     </div>
                     <div>
                         <div style="font-weight: bold;">${data.text}</div>
-                        <div style="color: gray; font-size: 12px;">${data.email}</div>
+                        <div style="color: gray; font-size: 12px;">${email}</div>
                     </div>
                 </div>
             `);
@@ -334,35 +259,63 @@
 
             checkEmptyMessage();
 
+            //onchange
             $('#searchAjax').on('select2:select', function(e) {
                 var data = e.params.data;
                 var anggotaList = $('#anggotaList');
+
+                let selectedData = e.params.data;
+                if (selectedData.isInvite) {
+                    $('#selectedEmail').val(selectedData.email);
+                }
 
                 if ($(`#anggota-${data.id}`).length === 0) {
                     var icon = data.icon ? data.icon : '?';
                     var emailText = data.email ? data.email : 'Email tidak tersedia';
 
                     var anggotaItem = $(`
-                <div id="anggota-${data.id}" class="anggota-item" 
-                     style="display: flex; align-items: center; margin-bottom: 10px; 
-                            padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
-                    <div style="width: 30px; height: 30px; background-color: red; color: white; 
-                                display: flex; align-items: center; justify-content: center; 
-                                border-radius: 50%; font-weight: bold; margin-right: 10px;">
-                        ${icon}
-                    </div>
-                    <div style="flex-grow: 1;">
-                        <div style="font-weight: bold;">${data.text}</div>
-                        <div style="color: gray; font-size: 12px;">${emailText}</div>
-                    </div>
-                    <button class="remove-anggota" data-id="${data.id}" 
-                            style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
+            <div id="anggota-${data.id}" class="anggota-item"
+                 style="display: flex; align-items: center; margin-bottom: 10px;
+                        padding: 8px; background-color: #f8f9fa; border-radius: 8px;">
+                <div style="width: 30px; height: 30px; background-color: red; color: white; 
+                            display: flex; align-items: center; justify-content: center; 
+                            border-radius: 50%; font-weight: bold; margin-right: 10px;">
+                    ${icon}
                 </div>
-            `);
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: bold;">${data.text}</div>
+                    <div style="color: gray; font-size: 12px;">${emailText}</div>
+                </div>
+                <button class="remove-anggota" data-id="${data.id}" 
+                        style="background: none; border: none; color: red; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+        `);
 
                     anggotaList.append(anggotaItem);
+
+                    // Kirim data ke server
+                    $.ajax({
+                        url: '/create/grup',
+                        method: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            anggota: [{
+                                id: data.id,
+                                nama: data.text,
+                                email: data.email ? data.email : null,
+                                isInvite: data.isInvite ? 1 : 0
+                            }]
+                        },
+                        success: function(response) {
+                            showToast("Anggota berhasil ditambahkan!", "success");
+                        },
+                        error: function(xhr) {
+                            showToast("Gagal menambahkan anggota!", "danger");
+                        }
+                    });
                 }
             });
+
 
             $(document).on('click', '.remove-anggota', function() {
                 var anggotaId = $(this).data('id');
