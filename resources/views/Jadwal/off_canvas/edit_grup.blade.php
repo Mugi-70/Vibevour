@@ -141,8 +141,7 @@
                 </div>
             </div>
     </div>
-    <div class="card h-25 justify-content-center align-items-center"
-        style="background-color: #F0F3F8; border-radius: 0px">
+    <div class="card h-25 justify-content-center align-items-center border-0 bg-transparent border-top">
         <div class="b-grup d-flex">
             <button type="button" class="btn btn-secondary m-2" data-bs-dismiss="offcanvas"
                 style="font-size: 14px">Batal</button>

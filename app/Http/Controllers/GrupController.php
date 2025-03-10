@@ -7,9 +7,11 @@ use App\Models\Grup;
 use App\Models\User;
 use Carbon\CarbonPeriod;
 use App\Models\AnggotaGrup;
-use App\Models\AnggotaGrupPending;
 use App\Models\Ketersediaan;
 use Illuminate\Http\Request;
+use App\Models\AnggotaGrupPending;
+use App\Models\JadwalPertemuan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class GrupController extends Controller
@@ -35,26 +37,6 @@ class GrupController extends Controller
     {
         session(['role' => 'anggota']); // Simpan role sebagai anggota
         return redirect()->back()->with('success', 'Role diset sebagai Anggota!');
-    }
-
-    public function anggota()
-    {
-        $grup = Grup::with('anggota.user')->get();
-        $nama_grup = "Jual-Beli";
-        $durasi = "30 menit";
-        $wtku_mulai = "07:00";
-        $wtku_selesai = "09:00";
-        $tnggl_mulai = "01 Januari 2025";
-        $tnggl_selesai = "03 Januari 2025";
-        $desk = "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
-
-        $tgl = ["1 Januari 2025", "2 Januari 2025", "3 Januari 2025"];
-        $times = ["07:00 - 07:30", "07:30 - 08:00", "08:00 - 08:30", "08:30 - 09:00"];
-
-        $hadir = ["Penjual", "Notaris"];
-
-        return view('Jadwal.grup_UI_anggota', compact('grup', 'hadir', 'nama_grup', 'durasi', 'wtku_mulai', 'wtku_selesai', 'tnggl_mulai', 'tnggl_selesai', 'desk', 'tgl', 'times'));
     }
 
     public function pertemuan()
@@ -83,7 +65,7 @@ class GrupController extends Controller
         $periode_tanggal = CarbonPeriod::create($tanggal_mulai, $tanggal_selesai);
         $tanggal_list = [];
         foreach ($periode_tanggal as $tanggal) {
-            $tanggal_list[] = $tanggal->format('d-m-Y');
+            $tanggal_list[] = $tanggal->format('Y-m-d'); // Format tanggal harus sesuai dengan DB
         }
 
         // *2. Buat daftar waktu*
@@ -94,6 +76,9 @@ class GrupController extends Controller
         foreach ($periode_waktu as $waktu) {
             $waktu_list[] = $waktu->format('H:i');
         }
+
+        // *3. Ambil Data Jadwal yang Sudah Dibuat*
+        $jadwal_data = JadwalPertemuan::with('peserta.user')->where('grup_id', $id)->get();
 
         return view('jadwal.grup_UI', [
             'nama_grup' => $grup->nama_grup,
@@ -106,7 +91,8 @@ class GrupController extends Controller
             'waktu_list' => $waktu_list,
             'tanggal_list' => $tanggal_list,
             'grup' => $grup,
-            'role' => $role
+            'role' => $role,
+            'jadwal_data' => $jadwal_data // Kirim data jadwal ke Blade
         ]);
     }
 
@@ -114,6 +100,8 @@ class GrupController extends Controller
     public function store(Request $request)
     {
         try {
+            DB::beginTransaction(); // Mulai transaksi database
+
             // Buat grup baru
             $grup = new Grup();
             $grup->nama_grup = $request->nama_grup;
@@ -125,54 +113,77 @@ class GrupController extends Controller
             $grup->durasi = $request->durasi;
             $grup->save();
 
-            // Debugging: Pastikan data anggota ada
-            if (!$request->has('anggota') || empty($request->anggota)) {
+            // Ambil daftar anggota, jika tidak ada, buat array kosong
+            $anggotaList = $request->input('anggota', []);
+
+            if (empty($anggotaList)) {
                 return response()->json(['error' => 'Tidak ada anggota yang ditambahkan!'], 400);
             }
 
-            // AnggotaGrup::create([
-            //     'grup_id' => $grup->id_grup,
-            //     'user_id' => $grup->user_id,
-            //     'role' => 'admin',
-            // ]);
+            // Loop untuk setiap anggota
+            foreach ($anggotaList as $anggota) {
+                if ($anggota === 'invite') {
+                    // Pastikan email dikirim dari frontend
 
-            // Simpan anggota ke grup
-            foreach ($request->anggota as $userId) {
-                AnggotaGrup::create([
-                    'grup_id' => $grup->id_grup,
-                    'user_id' => $userId,
-                    'role' => 'member'
-                ]);
+                    $email = $request->input('email', null);
+                    if (!$request->has('email')) {
+                        return response()->json(['error' => 'Email tidak ditemukan!'], 400);
+                    }
+
+                    // Masukkan ke tabel pending
+                    AnggotaGrupPending::create([
+                        'grup_id' => $grup->id, // Perbaikan penggunaan id
+                        'email' => $email,
+                        'status' => 'Pending'
+                    ]);
+                } else {
+                    // Masukkan ke tabel anggota grup dengan user_id yang valid
+                    AnggotaGrup::create([
+                        'grup_id' => $grup->id_grup,
+                        'user_id' => (int) $anggota, // Pastikan user_id dalam bentuk integer
+                        'role' => 'member'
+                    ]);
+                }
             }
 
-            AnggotaGrupPending::whereNull('grup_id')->update(['grup_id' => $grup->id_grup]);
-
-            return redirect('/grup')->with('success', 'Grup berhasil dibuat dan anggota ditambahkan!');
+            DB::commit(); // Simpan transaksi jika semua berhasil
+            return redirect()->route('coba');
         } catch (\Exception $e) {
+            DB::rollBack(); // Batalkan perubahan jika ada error
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function undang(Request $request)
+
+    public function saveSchedules(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|unique:anggota_grup_pending,email'
+            'tanggal' => 'required|date',
+            'waktu' => 'required',
+            'anggota' => 'required|array',  // Pastikan anggota dikirim sebagai array
+            'anggota.*' => 'exists:users,id', // Validasi setiap anggota harus ada di tabel users
         ]);
 
-        // Simpan ke tabel sementara
-        $undangan = AnggotaGrupPending::create([
-            'email' => $request->email,
-            'grup_id' => null,
-            'status' => "Pending"
+        // Simpan jadwal
+        $jadwal = JadwalPertemuan::create([
+            'grup_id' => $request->grup_id,
+            'judul' => $request->judul,
+            'tanggal' => $request->tanggal,
+            'waktu_mulai' => $request->waktu,
         ]);
 
-        // Kirim email undangan
-        // Mail::to($request->email)->send(new UndanganGrup($undangan));
+        // Simpan anggota yang hadir ke tabel pivot atau jadwal_anggota
+        foreach ($request->anggota as $userId) {
+            DB::table('peserta_jadwal')->insert([
+                'jadwal_id' => $jadwal->id,
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
-        return response()->json(['message' => 'Undangan berhasil dikirim!']);
+        return response()->json(['message' => 'Jadwal dan anggota berhasil disimpan']);
     }
-
-
 
     //todo Mengedit grup
     public function update(string $id, Request $request)
@@ -208,6 +219,7 @@ class GrupController extends Controller
 
         // Ambil produk jika ada pencarian, jika tidak, tampilkan semua
         $products = User::where('name', 'LIKE', "%$search%")
+            ->orWhere('email', 'LIKE', "%$search%")
             ->limit(10)
             ->get();
 

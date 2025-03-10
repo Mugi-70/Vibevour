@@ -53,8 +53,8 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // public function users()
-    // {
-    //     return $this->belongsToMany(User::class);
-    // }
+    public function jadwal()
+    {
+        return $this->belongsToMany(JadwalPertemuan::class, 'peserta_jadwal');
+    }
 }

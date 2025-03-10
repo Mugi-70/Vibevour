@@ -189,13 +189,15 @@
 
                                     <td class="item" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}" data-role="{{ $role }}"
+                                        data-grup-id="{{ $grup->id_grup }}"
                                         style="height: 50px; max-width:20px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
 
                                         @if ($jadwals->isNotEmpty())
                                             <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
                                                 @foreach ($jadwals as $jadwal)
                                                     <div class="d-flex justify-content-between align-items-center">
-                                                        <p class="m-0 fw-bold">
+                                                        <p class="m-0 fw-bold"
+                                                            data-user-id="{{ $jadwal->user->id ?? '' }}">
                                                             {{ $jadwal->user->name ?? 'Tidak Diketahui' }}</p>
                                                         <i class="bi bi-check-square fs-4"></i>
                                                     </div>
@@ -262,80 +264,7 @@
         }
         /* membuka modal */
 
-        /* saving jadwal */
-        // function saveSchedule() {
-        //     let text = $("#scheduleInput").val(); // Ambil input dari modal
-        //     let role = selectedCell.data("role"); // Ambil role dari cell yang diklik
 
-        //     if (selectedCell) {
-        //         // Cek apakah cell sudah memiliki elemen
-        //         let existingButton = selectedCell.find("button");
-        //         let existingContent = selectedCell.find(".schedule-content");
-
-        //         $(document).ready(function() {
-        //             $(".lebel").hide();
-        //         });
-
-        //         if (role === "admin") {
-        //             // Jika admin, gunakan tombol jadwal
-        //             if (existingButton.length === 0) {
-        //                 let button = $(`
-    //         <button class="bjadwal btn btn-primary custom w-100 h-100"
-    //             data-bs-toggle="offcanvas"
-    //             data-bs-target="#jadwal">
-    //             <div class="d-flex flex-column text-center">
-    //                 <div class="title">${text || "Lihat"}</div>
-    //                 <div class="subtitle d-flex align-items-center">
-    //                     <i class="bi bi-person icon me-2"></i>
-    //                     <p class="m-0">1 Anggota</p>
-    //                 </div>
-    //             </div>
-    //         </button>
-    //     `);
-        //                 button.click(function(event) {
-        //                     event.stopPropagation(); // Mencegah modal terbuka saat tombol diklik
-        //                 });
-        //                 selectedCell.append(button);
-        //             } else {
-        //                 existingButton.html(`
-    //         <div class="d-flex flex-column text-center">
-    //             <div class="title">${text || "Lihat"}</div>
-    //             <div class="subtitle d-flex align-items-center">
-    //                 <i class="bi bi-person icon me-2"></i>
-    //                 <p class="m-0">1 Anggota</p>
-    //             </div>
-    //         </div>
-    //     `);
-        //             }
-        //         } else {
-        //             // Jika anggota, tampilkan schedule-content
-        //             if (existingContent.length === 0) {
-        //                 let content = $(`
-    //         <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
-    //             <div class="d-flex justify-content-between align-items-center">
-    //                 <p class="m-0 fw-bold">${text || "Notaris"}</p>
-    //                 <i class="bi bi-check-square fs-4"></i>
-    //             </div>
-    //         </div>
-    //     `);
-        //                 selectedCell.append(content);
-        //             } else {
-        //                 existingContent.html(`
-    //         <div class="d-flex justify-content-between align-items-center">
-    //             <p class="m-0 fw-bold">${text || "Notaris"}</p>
-    //             <i class="bi bi-check-square fs-4"></i>
-    //         </div>
-    //     `);
-        //             }
-        //         }
-        //     }
-
-        //     // Tutup modal
-        //     $("#scheduleModal").modal("hide");
-        //     $("#availability").modal("hide");
-        // }
-
-        /* saving jadwal */
 
         /* tooltips */
         $(document).ready(function() {
@@ -366,6 +295,73 @@
                     $("#jadwal").removeClass("show").attr("aria-hidden", "true");
                     $(".offcanvas-backdrop").remove();
                 }, 500);
+            });
+
+        });
+
+        $(document).on("click", "#confirmSchedule", function() {
+            let tanggal = $("#selectedDate").text();
+            let waktu = $("#selectedTime").text();
+
+            // Cari elemen <td> yang sesuai dengan tanggal & waktu
+            let selectedCell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
+
+            // Ambil grup_id dari atribut data
+            let grup_id = selectedCell.data("grup-id");
+
+            if (!grup_id) {
+                alert("Gagal mendapatkan grup ID. Pastikan grup telah dibuat.");
+                return;
+            }
+
+            // Ambil anggota yang telah menyatakan hadir berdasarkan data-user-id
+            let anggota = [];
+            selectedCell.find(".schedule-content p").each(function() {
+                let userId = $(this).data("user-id"); // Ambil user_id dari data atribut
+                if (userId) {
+                    anggota.push(userId);
+                }
+            });
+
+            // Validasi: Jangan kirim jika tidak ada anggota
+            if (anggota.length === 0) {
+                alert("Tidak ada anggota yang telah menyatakan hadir.");
+                return;
+            }
+
+            $.ajax({
+                url: "/saveSchedules",
+                type: "POST",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr("content"),
+                    grup_id: grup_id,
+                    tanggal: tanggal,
+                    waktu: waktu,
+                    anggota: anggota, // Kirim daftar user_id anggota yang hadir
+                    judul: $("#scheduleInput").val(),
+                },
+                success: function(response) {
+                    alert("Jadwal berhasil disimpan dengan grup ID " + grup_id);
+
+                    // Tambahkan tombol ke dalam selectedCell tanpa reload
+                    selectedCell.html(`
+            <button class="bjadwal btn btn-primary custom w-100 h-100"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#jadwal">
+                <div class="d-flex flex-column text-center">
+                    <div class="title">${judul}</div>
+                    <div class="subtitle d-flex align-items-center">
+                        <i class="bi bi-person icon me-2"></i>
+                        <p class="m-0">${anggota.length} Anggota</p>
+                    </div>
+                </div>
+            </button>
+        `);
+                    $("#scheduleModal").modal("hide");
+                },
+                error: function(xhr) {
+                    alert("Terjadi kesalahan saat menyimpan jadwal.");
+                }
             });
 
         });

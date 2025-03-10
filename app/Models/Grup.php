@@ -25,4 +25,9 @@ class Grup extends Model
     {
         return $this->hasMany(AnggotaGrup::class, 'grup_id', 'id_grup');
     }
+
+    public function jadwal()
+    {
+        return $this->hasMany(JadwalPertemuan::class, 'grup_id');
+    }
 }

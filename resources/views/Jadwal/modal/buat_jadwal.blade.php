@@ -59,11 +59,11 @@
                     </table>
                     <hr>
                     <label for="scheduleInput">Judul :</label>
-                    <input type="text" id="scheduleInput" class="form-control">
+                    <input type="text" id="scheduleInput" class="form-control" name="judul">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary" onclick="saveSchedule()">Buat Jadwal</button>
+                    <button type="button" class="btn btn-primary" id="confirmSchedule">Buat Jadwal</button>
                 </div>
             </div>
         </div>
