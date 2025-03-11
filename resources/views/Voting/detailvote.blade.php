@@ -123,7 +123,7 @@
             @if ($vote->access_code != null)
             <p>Kode akses untuk vote ini adalah: {{ $vote->access_code }}</p>
             @endif
-            <div class="col-md-9 mt-3">
+            <div class="col-md-9 mt-3 ">
                 <a href="/vote_saya" class="btn btn-secondary btn-sm"><i class="bi bi-chevron-left"></i>Kembali </a>
                 <a href="javascript:void(0);" class="btn btn-warning btn-sm edit-vote-btn" data-slug="{{ $vote->slug }}" style="color: white">
                     <i class="bi bi-pencil"></i> Edit
@@ -139,6 +139,17 @@
                 <button class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ $vote->slug }}">
                     <i class="bi bi-trash"></i> Hapus
                 </button>
+                <a href="javascript:void(0);" class="btn btn-primary btn-sm vote-btn" data-slug="{{ $vote->slug }}" style="color: white">
+                    <i class="bi bi-check-square"></i> Vote
+                </a>
+                <script>
+                    $(document).ready(function() {
+                        $(".vote-btn").on("click", function() {
+                            var slug = $(this).data("slug");
+                            window.location.href = "/vote_" + slug;
+                        });
+                    });
+                </script>
             </div>
             <div class="col-md-3 text-end mt-3">
                 <button href="#" class="btn btn-outline-secondary btn-sm float-end">

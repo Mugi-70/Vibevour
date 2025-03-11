@@ -41,9 +41,6 @@ Route::get('/grup_UI', function () {
 //     return view('voting.vote');
 // });
 
-Route::get('/tambahvote', function () {
-    return view('voting.tambahvote');   
-});
 
 // Route::get('/tampilanvote', function () {
 //     return view('voting.tampilanvote');
@@ -53,11 +50,20 @@ Route::get('/hasilvote', function () {
     return view('voting.hasilvote');
 });
 
+Route::get('/tambahvote', function () {
+    return view('voting.tambahvote');
+});
+
 Route::get('/vote_saya', [VoteController::class, 'index'])->name('vote.index');
 Route::get('/detail_vote_{slug}', [VoteController::class, 'show'])->name('vote.show');
 Route::get('/detail_vote_{slug}/chart-data', [VoteController::class, 'getChartData']);
 
-Route::post('/simpanvote', [VoteController::class, 'store'])->name('vote.store');
+Route::post('/simpan_vote', [VoteController::class, 'store'])->name('vote.store');
 Route::get('/edit_vote_{slug}', [VoteController::class, 'edit'])->name('vote.edit');
 Route::put('/update_vote_{slug}', [VoteController::class, 'update'])->name('vote.update');
 Route::delete('/hapus_vote_{slug}', [VoteController::class, 'destroy'])->name('vote.destroy');
+
+
+Route::get('/vote_{slug}', [VoteController::class, 'vote'])->name('vote.vote');
+Route::get('/vote_{slug}/data', [VoteController::class, 'getVoteData']);
+Route::post('/vote_{slug}/submit', [VoteController::class, 'storeVoteData'])->name('vote.storeVote');

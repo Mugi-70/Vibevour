@@ -9,6 +9,7 @@ use App\Models\result;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class VoteController extends Controller
 {
@@ -28,8 +29,10 @@ class VoteController extends Controller
             $query->orderBy('title', 'asc');
         } elseif ($sortOrder == 'z-a') {
             $query->orderBy('title', 'desc');
-        } else {
-            $query->orderBy('created_at', $sortOrder);
+        } elseif ($sortOrder == 'terbaru') {
+            $query->orderBy('created_at', 'desc');
+        } elseif ($sortOrder == 'terlama') {
+            $query->orderBy('created_at', 'asc');
         }
 
         if ($filter == 'berjalan') {
@@ -75,6 +78,22 @@ class VoteController extends Controller
         return response()->json($chartData);
     }
 
+    public function vote($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with(['questions.options'])->firstOrFail();
+        return view('voting.voting', compact('vote', 'slug'));
+    }
+
+    public function getVoteData($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with(['questions.options'])->firstOrFail();
+        return response()->json(['vote' => $vote]);
+    }
+
+    public function storeVoteData(Request $request)
+    {
+        $vote = Vote::where('slug', $request->slug)->firstOrFail();
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -93,12 +112,12 @@ class VoteController extends Controller
             $validationRules = [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'open_date' => 'required|date',
+                'open_date' => 'required|date_format:d-m-Y H:i',
                 'visibility' => 'required|in:public,private',
             ];
 
             if ($request->filled('close_date')) {
-                $validationRules['close_date'] = 'date|after:open_date';
+                $validationRules['close_date'] = 'date_format:d-m-Y H:i|after:open_date';
             }
 
             $validationMessages = [
@@ -106,17 +125,21 @@ class VoteController extends Controller
                 'close_date.after' => 'Tanggal tutup vote harus lebih akhir dari tanggal buka vote.'
             ];
 
+
             $request->validate($validationRules, $validationMessages);
 
             $vote = new Vote();
             $vote->title = $request->title;
             $vote->slug = Str::slug($request->title);
             $vote->description = $request->description;
-            $vote->open_date = $request->open_date;
+            $vote->open_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->open_date))->format('Y-m-d H:i:s');
             $vote->close_date = $request->close_date;
             $vote->result_visibility = $request->visibility;
             $vote->status = 'open';
 
+            if ($request->filled('close_date')) {
+                $vote->close_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->close_date))->format('Y-m-d H:i:s');
+            }
             if ($request->has('require_name') && $request->require_name) {
                 $vote->name = 'required';
             }
@@ -196,7 +219,7 @@ class VoteController extends Controller
             $validationRules['close_date'] = 'date|after:open_date';
         }
 
-        
+
         // dd($validationRules);
         // dd($request->all());
         // dd($request->is_protected);
@@ -206,12 +229,12 @@ class VoteController extends Controller
             'close_date.after' => 'Tanggal tutup vote harus lebih akhir dari tanggal buka vote.'
         ];
 
-        $request->validate($validationRules, $validationMessages);
+        // $request->validate($validationRules, $validationMessages);
 
         $vote->title = $request->title;
         $vote->description = $request->description;
-        $vote->open_date = $request->open_date;
-        $vote->close_date = $request->close_date ?: null;
+        $vote->open_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->open_date))->format('Y-m-d H:i:s');
+        $vote->close_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->close_date ?: null))->format('Y-m-d H:i:s');
         $vote->result_visibility = $request->visibility;
         $vote->is_protected = $request->is_protected ? 1 : 0;
         $vote->access_code = $request->is_protected ? $request->access_code : null;

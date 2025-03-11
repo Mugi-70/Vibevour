@@ -143,8 +143,8 @@
                 <div class="col-md-5">
                     <label for="datetimePicker" class="form-label">Buka vote pada</label>
                     <div class="mb-2 input-group">
-                        <input type="text" class="form-control" id="datetimePicker" name="open_date"
-                            value="{{ $vote->open_date ? \Carbon\Carbon::parse($vote->open_date)->format('Y-m-d H:i') : '' }}"
+                        <input type="text" class="form-control" id="openDate" name="open_date"
+                            value="{{ $vote->open_date ? \Carbon\Carbon::parse($vote->open_date)->format('d-m-Y H:i') : '' }}"
                             placeholder="Pilih Tanggal & Jam" required>
                         <span class="input-group-text">
                             <i class="bi bi-calendar-event"></i>
@@ -152,15 +152,13 @@
                     </div>
                     <label for="datetimePicker" class="form-label">Tutup vote pada</label>
                     <div class="mb-2 input-group">
-                        <input type="text" class="form-control" id="datetimePicker" name="close_date"
-                            value="{{ $vote->close_date ? \Carbon\Carbon::parse($vote->close_date)->format('Y-m-d H:i') : '' }}"
+                        <input type="text" class="form-control" id="closeDate" name="close_date"
+                            value="{{ $vote->close_date ? \Carbon\Carbon::parse($vote->close_date)->format('d-m-Y H:i') : '' }}"
                             placeholder="Pilih Tanggal & Jam" required>
                         <span class="input-group-text">
                             <i class="bi bi-calendar-event"></i>
                         </span>
                     </div>
-
-
                 </div>
             </div>
         </div>
@@ -239,12 +237,44 @@
 <script>
     $(document).ready(function() {
         // Tanggal
-        flatpickr("#datetimePicker", {
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const day = now.getDate();
+        const today = new Date(year, month, day, 0, 0, 0);
+
+        let openDateValue = $("#openDate").val();
+        let closeDateValue = $("#closeDate").val();
+
+        let openDateInput = flatpickr("#openDate", {
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
+            dateFormat: "d-m-Y H:i",
+            time_24hr: true,
+            minDate: "today",
+            onChange: function(selectedDates, dateStr) {
+                if (selectedDates[0]) {
+                    let minCloseDate = new Date(selectedDates[0]);
+                    minCloseDate.setHours(minCloseDate.getHours() + 1);
+
+                    closeDateInput.set("minDate", minCloseDate);
+
+                    let currentCloseDate = closeDateInput.selectedDates[0];
+                    if (!currentCloseDate || currentCloseDate < minCloseDate) {
+                        closeDateInput.setDate(minCloseDate);
+                    }
+                }
+            }
+        });
+
+        let closeDateInput = flatpickr("#closeDate", {
+            enableTime: true,
+            dateFormat: "d-m-Y H:i",
             time_24hr: true,
             minDate: "today"
         });
+
+
 
         // Kode vote
         $('#protectVote').on('change', function() {
@@ -505,7 +535,10 @@
             return true;
         });
 
-        $('#confirmUpdateButton').click(function() {});
+        $('#confirmUpdateButton').click(function(e) {
+            e.preventDefault();
+            $('#updateVoteForm').submit();
+        });
     });
 </script>
 @endsection

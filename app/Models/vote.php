@@ -11,6 +11,7 @@ class vote extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'image',
         'name',
@@ -20,7 +21,6 @@ class vote extends Model
         'result_visibility',
         'is_protected',
         'access_code',
-        'slug'
     ];
     public function questions()
     {

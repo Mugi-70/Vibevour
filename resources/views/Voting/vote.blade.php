@@ -22,13 +22,15 @@
         <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item sort-option" href="#" data-value="a-z">A-Z</a></li>
             <li><a class="dropdown-item sort-option" href="#" data-value="z-a">Z-A</a></li>
-            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#dateSortModal">Berdasarkan Tanggal</a></li>
+            <li><a class="dropdown-item sort-option" href="#" data-value="terbaru">Terbaru</a></li>
+            <li><a class="dropdown-item sort-option" href="#" data-value="terlama">Terlama</a></li>
         </ul>
     </div>
     <button class="btn btn-outline-secondary btn-sm" id="filterButton">
         <i class="bi bi-sliders"></i> Filter
     </button>
     <div class="dropdown-menu dropdown-menu-end" id="filterDropdown">
+        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#dateSortModal">Berdasarkan Tanggal</a></li>
         <a class="dropdown-item filter-option" href="#" data-value="berjalan">Berjalan</a>
         <a class="dropdown-item filter-option" href="#" data-value="selesai">Selesai</a>
     </div>

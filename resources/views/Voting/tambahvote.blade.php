@@ -80,17 +80,17 @@
                     </div>
 
                     <div class="col-md-5">
-                        <label for="datetimePicker" class="form-label">Buka vote pada</label>
+                        <label for="openDate" class="form-label">Buka vote pada</label>
                         <div class="mb-2 input-group">
-                            <input type="text" class="form-control" id="datetimePicker" name="open_date"
+                            <input type="text" class="form-control" id="openDate" name="open_date"
                                 placeholder="Pilih Tanggal & Jam" required>
                             <span class="input-group-text">
                                 <i class="bi bi-calendar-event"></i>
                             </span>
                         </div>
-                        <label for="datetimePicker" class="form-label">Tutup vote pada</label>
+                        <label for="closeDate" class="form-label">Tutup vote pada</label>
                         <div class="mb-2 input-group">
-                            <input type="text" class="form-control" id="datetimePicker" name="close_date"
+                            <input type="text" class="form-control" id="closeDate" name="close_date"
                                 placeholder="Pilih Tanggal & Jam" required>
                             <span class="input-group-text">
                                 <i class="bi bi-calendar-event"></i>
@@ -140,12 +140,62 @@
             let questionCounter = 0;
 
             //Tanggal
-            flatpickr("#datetimePicker", {
+            let openDateInput = flatpickr("#openDate", {
+                enableTime: true,
+                dateFormat: "d-m-Y H:i",
+                time_24hr: true,
+                minDate: "today",
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates[0]) {
+                        let minCloseDate = new Date(selectedDates[0]);
+                        minCloseDate.setHours(minCloseDate.getHours() + 1);
+
+                        closeDateInput.set("minDate", minCloseDate);
+
+                        let currentCloseDate = closeDateInput.selectedDates[0];
+                        if (!currentCloseDate || currentCloseDate < minCloseDate) {
+                            closeDateInput.setDate(minCloseDate);
+                        }
+                    }
+                }
+            });
+
+            let closeDateInput = flatpickr("#closeDate", {
                 enableTime: true,
                 dateFormat: "d-m-Y H:i",
                 time_24hr: true,
                 minDate: "today"
             });
+
+            $(document).ready(function() {
+                if ($("#openDate").val()) {
+                    openDateInput.setDate($("#openDate").val());
+
+                    if (openDateInput.selectedDates[0]) {
+                        let minCloseDate = new Date(openDateInput.selectedDates[0]);
+                        minCloseDate.setHours(minCloseDate.getHours() + 1);
+                        closeDateInput.set("minDate", minCloseDate);
+                    }
+                }
+
+                if ($("#closeDate").val()) {
+                    closeDateInput.setDate($("#closeDate").val());
+                }
+            });
+
+            // flatpickr("#openDate", {
+            //     enableTime: true,
+            //     dateFormat: "d-m-Y H:i",
+            //     time_24hr: true,
+            //     minDate: "today"
+            // });
+
+            // flatpickr("#closeDate", {
+            //     enableTime: true,
+            //     dateFormat: "d-m-Y H:i",
+            //     time_24hr: true,
+            //     minDate: "today"
+            // });
 
             //Kode vote
             $('#protectVote').on('change', function() {

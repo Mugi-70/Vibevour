@@ -4,6 +4,8 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
     <title>Tampilan Vote</title>
 
     <style>
@@ -22,12 +24,27 @@
             width: 100%;
             margin: 10px 0;
         }
+
+
+        .card-body h5 {
+            font-size: 30px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
-    <div class="container d-flex justify-content-center align-items-center min-vh-100 p-3">
-        <div class="card shadow p-4 w-100" style="max-width: 600px;">
+    <div class="header p-lg-3">
+        <div class=" card border-0 shadow-sm">
+            <div class="card-body pt-3 pb-3 pe-3 border-0">
+                <div class=" d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Vote {{ $vote->title }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center align-items-center  p-3">
+        <div class="card shadow p-4 w-100" style="max-width: 1200px;">
             <div id="vote-content">
                 <h3 class="fw-medium" id="vote-title">Loading...</h3>
                 <p class="text-muted" id="vote-date"></p>
@@ -46,7 +63,7 @@
                         <a href="#" id="voteResults" class="btn btn-success btn-sm">Hasil</a>
                     </div>
                     <div class="col text-end">
-                        <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()">&#128279; Bagikan</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()"><i class="bi bi-share"></i> Bagikan</button>
                     </div>
                 </div>
             </div>
@@ -60,13 +77,13 @@
             let voteSlug = "{{ $slug }}";
 
             $.ajax({
-                url: "/vote/" + voteSlug + "/data", 
+                url: "/vote_" + voteSlug + "/data",
                 type: "GET",
-                success: function(response) {
+                success: function(response) { 
                     $("#vote-title").text(response.vote.title);
                     $("#vote-date").text("Vote dibuat pada " + response.vote.created_at);
                     $("#vote-description").text(response.vote.description);
-                    $("#vote-end").text(response.vote.end_date ?? "-");
+                    $("#vote-end").text(response.vote.close_date);
                     $("#voteResults").attr("href", "/vote/" + voteSlug + "/results");
 
                     let questionsHtml = "";
@@ -94,7 +111,7 @@
             });
 
             $("#submitVote").click(function() {
-                let selectedOptions = {}; 
+                let selectedOptions = {};
 
                 $("input[type=radio]:checked").each(function() {
                     selectedOptions[$(this).attr("name")] = $(this).val();
@@ -106,15 +123,15 @@
                 }
 
                 $.ajax({
-                    url: "/vote/" + voteSlug + "/submit",
+                    url: "/vote_" + voteSlug + "/submit",
                     method: "POST",
                     data: {
-                        _token: "{{ csrf_token() }}", 
+                        _token: "{{ csrf_token() }}",
                         votes: selectedOptions
                     },
                     success: function(response) {
                         alert("Vote berhasil disimpan!");
-                        window.location.href = "/vote/" + voteSlug + "/results";
+                        // window.location.href = "/vote/" + voteSlug + "/results";
                     },
                     error: function(error) {
                         console.log("Error submitting vote:", error);
@@ -134,6 +151,7 @@
             alert("Link telah disalin!");
         }
     </script>
+    </div>
 </body>
 
 </html>
