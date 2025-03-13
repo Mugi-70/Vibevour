@@ -16,6 +16,7 @@
                     <button type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <input type="hidden" id="grupId">
                     <table class="table table-borderless">
                         <tr>
                             <td style="width: 6.5em">
@@ -26,7 +27,7 @@
                                 :
                             </td>
                             <td>
-                                <p id="selectedDate">
+                                <p id="selectedDateText">
                                 </p>
                             </td>
                         </tr>
@@ -39,7 +40,7 @@
                                 :
                             </td>
                             <td>
-                                <p id="selectedTime"></p>
+                                <p id="selectedTimeText"></p>
                             </td>
                         </tr>
                         <tr>
@@ -50,10 +51,9 @@
                             <td>
                                 :
                             </td>
-                            <td>
-                                {{-- {{ $durasi }} --}}
+                            <td class="d-flex">
+                                <p id="selectDur"></p>
                                 {{ str_replace('minutes', 'menit', $durasi) }}
-
                             </td>
                         </tr>
                     </table>

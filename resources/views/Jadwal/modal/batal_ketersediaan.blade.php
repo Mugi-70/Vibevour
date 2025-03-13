@@ -1,12 +1,12 @@
 <!-- Modal -->
-<div class="modal fade" id="availability" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="cancelAvailability" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="modalLabel">Konfirmasi Kehadiran</h5>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="modalLabel">Konfirmasi Pembatalan</h5>
             </div>
             <div class="modal-body text-center">
-                <p class="mb-3 fs-5">Apakah Anda bisa menghadiri pada jadwal ini?</p>
+                <p class="mb-3 fs-5">Apakah Anda membatalkan kehadiran anda pada jadwal ini?</p>
 
                 <div class="p-3 rounded bg-light">
                     <div class="d-flex justify-content-between align-items-center">

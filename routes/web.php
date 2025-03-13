@@ -50,6 +50,9 @@ Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 Route::get('/cari', [GrupController::class, 'cari_anggota']);
 
 
+Route::get('/jadwal/{id}/anggota', [GrupController::class, 'detailJadwal']);
+
+
 // cari period dari rentang tanggal
 // cari period dari jam (sesuai dengan durasi)
 

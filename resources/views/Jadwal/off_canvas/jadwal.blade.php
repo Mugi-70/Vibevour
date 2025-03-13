@@ -1,7 +1,7 @@
 <div class="offcanvas offcanvas-end shadow" tabindex="-1" id="jadwal" aria-labelledby="offcanvasRightLabel"
     data-bs-backdrop="false" style="background-color: #F0F3F8">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasRightLabel"><strong>Judul</strong>
+        <h5 class="offcanvas-title" id=""><strong id="judul"></strong>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -16,19 +16,12 @@
         <hr>
         <div class="wktu">
             <h5><strong>Waktu Jadwal</strong></h5>
-            <h6 class="d-flex"><i class="bi bi-dot"></i>
+            {{-- <h6 class="d-flex"><i class="bi bi-dot"></i>
                 <p>Waktu Mulai</p>
-            </h6>
-            <h6 class="ms-4 d-flex">
+            </h6> --}}
+            <h6 class="d-flex">
                 <i class="bi bi-clock-history me-2"></i>
-                <p>07:00</p>
-            </h6>
-            <h6 class="d-flex"><i class="bi bi-dot"></i>
-                <p>Waktu Selesai</p>
-            </h6>
-            <h6 class="ms-4 d-flex">
-                <i class="bi bi-clock-history me-2"></i>
-                <p>07:30</p>
+                <p class="waktu-mulai">07:00</p>
             </h6>
         </div>
         <hr>
@@ -36,7 +29,7 @@
             <h5><strong>Durasi</strong></h5>
             <h6 class="d-flex">
                 <i class="bi bi-clock-history me-2"></i>
-                <p>30 menit</p>
+                <p class=""></p>
             </h6>
         </div>
         <hr>
@@ -50,22 +43,18 @@
                     <p style="margin-top: -10px">Penjual@gmail.com</p>
                 </div>
             </div>
-            <div class="box-item d-flex d-none">
-                <div class="avatar-search">p</div>
-                <div class="nama-user mt-1">
-                    <h6>Notaris</h6>
-                    <p style="margin-top: -10px">Notaris@gmail.com</p>
-                </div>
-            </div>
             {{-- @endforeach --}}
         </div>
     </div>
     <div class="card h-25 d-flex flex-row align-items-center justify-content-center p-1"
         style="background-color: #F0F3F8; border-radius: 0px">
-        <button type="button" class="btn btn-danger w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
-            data-bs-target="#cancel"><i class="bi bi-trash3"></i> Batalkan Jadwal</button>
-        {{-- <button type="button" class="hu btn btn-primary w-50 m-1" data-bs-toggle="modal" data-bs-target="#hadiri"
-            style="font-size: 14px">Setujui Jadwal <i class="bi bi-clipboard-check"></i></button> --}}
+        @if ($role === 'admin')
+            <button type="button" class="btn btn-danger w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
+                data-bs-target="#cancel"><i class="bi bi-trash3"></i> Batalkan Jadwal</button>
+        @else
+            <button type="button" class="btn btn-primary w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
+                data-bs-target="#cancel"><i class="bi bi-clipboard-check"></i> Hadiri Jadwal</button>
+        @endif
     </div>
 </div>
 @include('Jadwal.modal.batal_jadwal')

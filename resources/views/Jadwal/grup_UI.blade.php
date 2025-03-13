@@ -95,10 +95,12 @@
                             <!-- Waktu -->
                             <div class="mb-2">
                                 <div class="fw-bold">
-                                    <i class="bi bi-clock-history me-1"></i> Jam
+                                    <i class="bi bi-clock-history me-1"></i> Waktu
                                 </div>
                                 <div class="ps-4">
-                                    {{ $wtku_mulai }} <strong>s.d.</strong> {{ $wtku_selesai }}
+                                    {{ \Carbon\Carbon::parse($wtku_mulai)->translatedFormat('H:i') }}
+                                    <strong>s.d.</strong>
+                                    {{ \Carbon\Carbon::parse($wtku_selesai)->translatedFormat('H:i') }}
                                 </div>
                             </div>
 
@@ -151,7 +153,7 @@
         {{-- kalender --}}
         <div class="card shadow-sm w-100 mt-5" style=" border:none;">
             <div class="header-kalender d-flex justify-content-between">
-                <h4 class="p-3"><i class="bi bi-clipboard"></i> Jam/Tanggal</h4>
+                <h4 class="p-3"><i class="bi bi-clipboard"></i> Waktu/Tanggal</h4>
                 <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
                     title=" Klik pada kolom kosong sesuai tanggal dan waktu untuk menambahkan jadwal.">
                     <h4>
@@ -182,28 +184,54 @@
                                 </td>
                                 @foreach ($waktu_list as $ts)
                                     @php
-                                        $jadwals = App\Models\Ketersediaan::where('tanggal', $t)
+                                        // Ambil jadwal yang sudah tersimpan
+                                        $jadwal = App\Models\JadwalPertemuan::where('tanggal', $t)
+                                            ->where('waktu_mulai', $ts)
+                                            ->first();
+
+                                        // Ambil anggota yang bersedia dari tabel ketersediaan
+                                        $anggotaYangTersedia = App\Models\Ketersediaan::where('tanggal', $t)
                                             ->where('waktu', $ts)
                                             ->get();
                                     @endphp
 
                                     <td class="item" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}" data-role="{{ $role }}"
-                                        data-grup-id="{{ $grup->id_grup }}"
+                                        data-grup-id="{{ $grup->id_grup }}" data-durasi="{{ $grup->durasi }}"
                                         style="height: 50px; max-width:20px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
 
-                                        @if ($jadwals->isNotEmpty())
+                                        @if ($jadwal)
+                                            <!-- Jika jadwal sudah ada, tampilkan tombol -->
+                                            <button class="bjadwal btn btn-primary custom w-100 h-100"
+                                                data-bs-toggle="offcanvas" data-bs-target="#jadwal"
+                                                data-bs-toggle="offcanvas" data-bs-target="#jadwal"
+                                                data-jadwal-id="{{ $jadwal->id ?? '' }}"
+                                                data-judul="{{ $jadwal->judul ?? '' }}"
+                                                data-tanggal="{{ $jadwal->tanggal ?? '' }}"
+                                                data-waktu-mulai="{{ $jadwal->waktu_mulai ?? '' }}"
+                                                data-durasi="{{ $jadwal->durasi ?? '' }}">
+                                                <div class="d-flex flex-column text-center">
+                                                    <div class="title">{{ $jadwal->judul }}</div>
+                                                    <div class="subtitle d-flex align-items-center">
+                                                        <i class="bi bi-person icon me-2"></i>
+                                                        <p class="m-0">{{ $anggotaYangTersedia->count() }} Anggota</p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        @elseif ($anggotaYangTersedia->isNotEmpty())
+                                            <!-- Jika tidak ada jadwal, tapi ada anggota yang bersedia -->
                                             <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
-                                                @foreach ($jadwals as $jadwal)
+                                                @foreach ($anggotaYangTersedia as $anggota)
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <p class="m-0 fw-bold"
-                                                            data-user-id="{{ $jadwal->user->id ?? '' }}">
-                                                            {{ $jadwal->user->name ?? 'Tidak Diketahui' }}</p>
+                                                            data-user-id="{{ $anggota->user->id ?? '' }}">
+                                                            {{ $anggota->user->name ?? '' }}</p>
                                                         <i class="bi bi-check-square fs-4"></i>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         @else
+                                            <!-- Jika tidak ada jadwal maupun anggota yang bersedia, tampilkan ikon tambah -->
                                             <i class="lebel bi bi-plus-circle"
                                                 style="font-size: 18px; color: #007bff;"></i>
                                         @endif
@@ -237,6 +265,10 @@
             openModal($(this))
         })
 
+        let selected_tanggal;
+        let selected_waktu;
+        let selected_durasi;
+
         /* membuka modal saat kolom di klik */
         function openModal(cell) {
             selectedCell = $(cell);
@@ -245,13 +277,24 @@
             let tanggal = selectedCell.data("tanggal");
             let waktu = selectedCell.data("waktu");
             let role = selectedCell.data("role");
+            let idgrup = selectedCell.data("grup-id");
+            let durasi = selectedCell.data("durasi");
+            selected_tanggal = tanggal;
+            selected_waktu = waktu;
+            selected_durasi = durasi;
+
+            console.log("Tanggal:", tanggal);
+            console.log("Waktu:", waktu);
+            console.log("Role:", role);
+            console.log("idgrup:", idgrup);
+            console.log("durasi:", durasi);
 
             // Menampilkan tanggal & waktu di modal
             $("#selectedDate").val(tanggal);
             $("#selectedTime").val(waktu);
 
-            $("#selectedDate").text(tanggal);
-            $("#selectedTime").text(waktu);
+            $("#selectedDateText").text(tanggal);
+            $("#selectedTimeText").text(waktu);
 
             // Menampilkan modal sesuai role
             if (role === "admin") {
@@ -263,8 +306,6 @@
             }
         }
         /* membuka modal */
-
-
 
         /* tooltips */
         $(document).ready(function() {
@@ -299,33 +340,29 @@
 
         });
 
+        // offcanvas di buka
+        $(document).ready(function() {
+            $(".bjadwal").on("click", function(event) {
+                event.stopPropagation(); // Mencegah modal utama terbuka
+            });
+        });
+
+        //pembuatan jadwal
         $(document).on("click", "#confirmSchedule", function() {
-            let tanggal = $("#selectedDate").text();
-            let waktu = $("#selectedTime").text();
+            let tanggal = $("#selectedDate").val();
+            let waktu = $("#selectedTime").val();
+            let durasi = $("#selectDur").val();
 
             // Cari elemen <td> yang sesuai dengan tanggal & waktu
             let selectedCell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
 
-            // Ambil grup_id dari atribut data
+            // console.log("Selected Cell: ", selectedCell);
+
+            // Ambil grup_id 
             let grup_id = selectedCell.data("grup-id");
 
             if (!grup_id) {
-                alert("Gagal mendapatkan grup ID. Pastikan grup telah dibuat.");
-                return;
-            }
-
-            // Ambil anggota yang telah menyatakan hadir berdasarkan data-user-id
-            let anggota = [];
-            selectedCell.find(".schedule-content p").each(function() {
-                let userId = $(this).data("user-id"); // Ambil user_id dari data atribut
-                if (userId) {
-                    anggota.push(userId);
-                }
-            });
-
-            // Validasi: Jangan kirim jika tidak ada anggota
-            if (anggota.length === 0) {
-                alert("Tidak ada anggota yang telah menyatakan hadir.");
+                alert("Grup id tidak ada.");
                 return;
             }
 
@@ -337,27 +374,42 @@
                     grup_id: grup_id,
                     tanggal: tanggal,
                     waktu: waktu,
-                    anggota: anggota, // Kirim daftar user_id anggota yang hadir
+                    durasi: selected_durasi,
                     judul: $("#scheduleInput").val(),
                 },
                 success: function(response) {
-                    alert("Jadwal berhasil disimpan dengan grup ID " + grup_id);
+                    // console.log("Response dari server:", response);
 
-                    // Tambahkan tombol ke dalam selectedCell tanpa reload
-                    selectedCell.html(`
+                    if (!response || !response.anggota) {
+                        console.error("Response tidak memiliki properti 'anggota'.");
+                        return;
+                    }
+
+                    // Ambil judul dan jumlah anggota yang sudah tersedia
+                    let judul = $("#scheduleInput").val();
+                    let anggotaCount = response.anggota.length;
+
+                    // Ubah tampilan menjadi tombol
+                    setTimeout(() => {
+                        selectedCell.empty().append(`
             <button class="bjadwal btn btn-primary custom w-100 h-100"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#jadwal">
-                <div class="d-flex flex-column text-center">
-                    <div class="title">${judul}</div>
-                    <div class="subtitle d-flex align-items-center">
-                        <i class="bi bi-person icon me-2"></i>
-                        <p class="m-0">${anggota.length} Anggota</p>
-                    </div>
-                </div>
+            data-bs-toggle="offcanvas"
+            data-bs-target="#jadwal">
+            <div class="d-flex flex-column text-center">
+            <div class="title text-wrap">${judul}</div>
+            <div class="subtitle d-flex align-items-center justify-content-center gap-1 flex-wrap">
+            <i class="bi bi-person icon me-1"></i>
+            <p class="m-0">${anggotaCount} Anggota</p>
+            </div>
+            </div>
             </button>
-        `);
-                    $("#scheduleModal").modal("hide");
+
+            `);
+                    }, 500);
+                    setTimeout(() => {
+                        $("#scheduleModal").modal("hide");
+                    }, 500);
+
                 },
                 error: function(xhr) {
                     alert("Terjadi kesalahan saat menyimpan jadwal.");
@@ -366,17 +418,16 @@
 
         });
 
-        //kkonfirmasi anggota untuk memberi jadwal
+        //konfirmasi anggota untuk memberi jadwal
         $(document).on("click", "#confirmAvailability", function() {
-            let userId = 2;
-            let grup_id = 1;
-            let tanggal = $("#selectedDate").text(); // Gunakan `.text()` 
-            let waktu = $("#selectedTime").text();
+            let userId = 1;
+            let grup_id = selectedCell.data("grup-id");
+            let tanggal = $("#selectedDate").val();
+            let waktu = $("#selectedTime").val();
 
-            // Pilih elemen yang diklik sebelumnya
+            // data waktu dan tanggal yang dipilih
             let cell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
 
-            // Debugging untuk memastikan nilai benar
             console.log("Tanggal yang dikirim:", tanggal);
             console.log("Waktu yang dikirim:", waktu);
 
@@ -399,16 +450,16 @@
             <i class="bi bi-check-square fs-4"></i>
         </div>
         `).join('');
-                    // elemen yang sesuai dengan tanggal dan waktu
+                    // data sesuai dengan tanggal dan waktu
                     let cell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
 
-                    // Update tampilan tanpa reload
+                    // Update tampilan 
                     cell.html(`
         <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
             ${userListHTML}
         </div>
         `);
-                    // **Tutup modal setelah berhasil menyimpan**
+                    // **Tutup modal 
                     $("#availability").modal("hide");
                 },
 
@@ -424,6 +475,50 @@
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
+        });
+
+        $(document).ready(function() {
+            $(".bjadwal").on("click", function() {
+                // Ambil data dari atribut
+                let jadwalId = $(this).data("jadwal-id");
+                let judul = $(this).data("judul");
+                let tanggal = $(this).data("tanggal");
+                let waktuMulai = $(this).data("waktu-mulai");
+                let waktuSelesai = $(this).data("waktu-selesai");
+                let durasi = $(this).data("durasi");
+
+                // Masukkan data ke dalam Offcanvas
+                $("#judul").text(judul);
+                $(".tanggal-1 p").text(tanggal);
+                $(".wktu .waktu-mulai").text(waktuMulai);
+                $(".wktu .waktu-selesai").text(waktuSelesai);
+                $(".durasi p").text(durasi);
+
+                // Panggil 
+                $.ajax({
+                    url: "/jadwal/" + jadwalId + "/anggota",
+                    type: "GET",
+                    success: function(response) {
+                        let hadirList = $(".present");
+                        hadirList.html("<h5><strong>Dihadiri Oleh:</strong></h5>");
+
+                        response.forEach((user) => {
+                            let anggotaHtml = `
+                        <div class="box-item d-flex">
+                            <div class="avatar-search">${user.name.charAt(0)}</div>
+                            <div class="nama-user mt-1">
+                                <h6>${user.name}</h6>
+                                <p style="margin-top: -10px">${user.email}</p>
+                            </div>
+                        </div>`;
+                            hadirList.append(anggotaHtml);
+                        });
+                    },
+                    error: function() {
+                        console.error("Gagal mengambil data kehadiran");
+                    },
+                });
+            });
         });
     </script>
     @include('Jadwal.off_canvas.jadwal')

@@ -254,9 +254,6 @@ textarea {
 }
 
 @media (max-width: 768px) {
-    /* .d-flex {
-        flex-wrap: wrap !important;
-    } */
 
     .form-control,
     .input-group {
@@ -265,6 +262,30 @@ textarea {
 
     .tanggal-list {
         width: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    /* Mobile */
+    .bjadwal {
+        padding: 10px;
+        /* Tambahkan padding */
+        font-size: 14px;
+        /* Perkecil teks */
+    }
+
+    .bjadwal .title {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .bjadwal .subtitle {
+        font-size: 14px;
+    }
+
+    .bjadwal .icon {
+        font-size: 16px;
     }
 }
 
