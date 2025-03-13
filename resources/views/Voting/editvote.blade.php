@@ -113,12 +113,10 @@
                                     {{ $vote->is_protected ? 'checked' : '' }}>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-10">
-                                <input type="text" id="randomCode" name="access_code" class="form-control mb-2 
-                                    {{ $vote->is_protected ? '' : 'd-none' }}"
-                                    value="{{ $vote->access_code ?? '' }}" readonly>
-                            </div>
+                        <div class="div">
+                            <input type="text" id="randomCode" name="access_code" class="form-control mb-2 
+                                        {{ $vote->is_protected ? '' : 'd-none' }}"
+                                value="{{ $vote->access_code ?? '' }}" readonly>
                         </div>
                     </div>
                     <div class="row">

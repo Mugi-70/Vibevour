@@ -56,6 +56,8 @@ Route::get('/tambahvote', function () {
 
 Route::get('/vote_saya', [VoteController::class, 'index'])->name('vote.index');
 Route::get('/detail_vote_{slug}', [VoteController::class, 'show'])->name('vote.show');
+Route::get('/detail_vote_{slug}/data', [VoteController::class, 'getVoteDetail']);
+Route::get('/detail_vote_{slug}/vote-summary', [VoteController::class, 'getVoteSummary']);
 Route::get('/detail_vote_{slug}/chart-data', [VoteController::class, 'getChartData']);
 
 Route::post('/simpan_vote', [VoteController::class, 'store'])->name('vote.store');
@@ -66,4 +68,6 @@ Route::delete('/hapus_vote_{slug}', [VoteController::class, 'destroy'])->name('v
 
 Route::get('/vote_{slug}', [VoteController::class, 'vote'])->name('vote.vote');
 Route::get('/vote_{slug}/data', [VoteController::class, 'getVoteData']);
+Route::get('/vote_{slug}/check-protection', [VoteController::class, 'checkProtection']);
+Route::post('/vote_{slug}/verify-access', [VoteController::class, 'verifyAccess']);
 Route::post('/vote_{slug}/submit', [VoteController::class, 'storeVoteData'])->name('vote.storeVote');

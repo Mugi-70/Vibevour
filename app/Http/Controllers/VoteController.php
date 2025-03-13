@@ -87,13 +87,96 @@ class VoteController extends Controller
     public function getVoteData($slug)
     {
         $vote = Vote::where('slug', $slug)->with(['questions.options'])->firstOrFail();
-        return response()->json(['vote' => $vote]);
+        return response()->json([
+            'vote' => [
+                'title' => $vote->title,
+                'created_at' => Carbon::parse($vote->created_at)->format('d/m/y H:i'),
+                'description' => $vote->description,
+                'close_date' => Carbon::parse($vote->close_date)->format('d/m/y H:i'),
+                'questions' => $vote->questions->map(function ($question) {
+                    return [
+                        'id' => $question->id,
+                        'question' => $question->question,
+                        'options' => $question->options->map(function ($option) {
+                            return [
+                                'id' => $option->id,
+                                'option' => $option->option
+                            ];
+                        })
+                    ];
+                })
+            ]
+        ]);
     }
 
-    public function storeVoteData(Request $request)
+
+    public function checkProtection($slug)
     {
-        $vote = Vote::where('slug', $request->slug)->firstOrFail();
+        $vote = Vote::where('slug', $slug)->firstOrFail();
+        return response()->json([
+            'is_protected' => $vote->is_protected
+        ]);
     }
+
+    public function verifyAccess(Request $request, $slug)
+    {
+        $vote = Vote::where('slug', $slug)->firstOrFail();
+
+        if (!$vote->is_protected) {
+            return response()->json(['valid' => true]);
+        }
+
+        $accessCode = $request->input('access_code');
+        $valid = $vote->access_code === $accessCode;
+
+        if ($valid) {
+            session(["verified_vote_{$slug}" => true]);
+        }
+
+        return response()->json(['valid' => $valid]);
+    }
+
+    public function getVoteSummary($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
+
+        $totalVotes = $vote->questions->flatMap->options->flatMap->results->count();
+        $accessCode = $vote->access_code;
+
+        return response()->json([
+            'totalVotes' => $totalVotes,
+            'accessCode' => $accessCode,
+        ]);
+    }
+
+
+    public function storeVoteData(Request $request, $slug)
+    {
+        $request->validate([
+            'votes' => 'required|array',
+            'votes.*' => 'exists:options,id'
+        ], [
+            'votes.required' => 'Harap pilih setidaknya satu opsi sebelum mengirimkan vote.',
+            'votes.*.exists' => 'Opsi yang dipilih tidak valid.'
+        ]);
+
+        $vote = Vote::where('slug', $slug)->firstOrFail();
+
+        if ($vote->status === 'closed') {
+            return response()->json(['message' => 'Voting telah ditutup.'], 403);
+        }
+
+        foreach ($request->votes as $question_id => $option_id) {
+            Result::create([
+                'vote_id' => $vote->id,
+                'question_id' => $question_id,
+                'option_id' => $option_id
+            ]);
+        }
+
+        return response()->json(['message' => 'Vote berhasil disimpan!']);
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -180,9 +263,16 @@ class VoteController extends Controller
      */
     public function show(string $slug)
     {
-        $vote = Vote::where('slug', $slug)->with('questions.options')->firstOrFail();
+        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
 
         return view('voting.detailvote', compact('vote'));
+    }
+
+    public function getVoteDetail($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
+
+        return response()->json($vote);
     }
 
     /**

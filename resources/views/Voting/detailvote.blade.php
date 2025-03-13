@@ -12,117 +12,146 @@
 
 <div class="container p-3">
     <div class="card shadow p-4">
-        <h4 class="fw-bold">{{ $vote->title }}</h4>
-        <p class="text-muted">Vote dibuat pada {{ $vote->created_at->format('d/m/Y') }}</p>
-        <p class="text-secondary">
-            {{ $vote->description }}
-        </p>
+        <h4 class="fw-bold" id="vote-title"></h4>
+        <p class="text-muted" id="vote-date"></p>
+        <p class="text-secondary" id="vote-description"></p>
         <div class="line"></div>
 
         <h5 class="my-4">Daftar Pertanyaan</h5>
-        @foreach ($vote->questions as $index => $question)
-        <div class="row ">
-            <div class="col-md-6">
-                <p class="fw-bold">{{ $question->question }}</p>
-
-                @php
-                $totalVotes = $question->options->sum(fn($option) => $option->results->count());
-                $colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF1493', '#39FF14', '#00FFFF', '#FFD700'];
-                $colorIndex = 0;
-                @endphp
-
-                @foreach ($question->options as $option)
-                @php
-                $voteCount = optional($option->results)->count() ?? 0;
-                $percentage = $totalVotes > 0 ? round(($voteCount / $totalVotes) * 100, 2) : 0;
-                $barColor = $colors[$colorIndex % count($colors)];
-                $colorIndex++;
-                @endphp
-
-                <div class="row mb-2">
-                    <div class="col-6">{{ $option->option }}</div>
-                    <div class="col-6 text-end">{{ $percentage }}% ({{ $voteCount }} Vote)</div>
-                </div>
-                <div class="progress mb-2">
-                    <div class="progress-bar" style="width: {{ $percentage }}%; background-color: {{ $barColor }};"></div>
-                </div>
-                @endforeach
-
-                <p class="mt-3 fw-bold">Total vote untuk pertanyaan ini: {{ $totalVotes }}</p>
-            </div>
-
-            <div class="col-md-6">
-                <h5 class="my-4">Hasil Voting</h5>
-                <canvas id="pieChart-{{ $index }}" style="max-width: 100%; max-height: 300px;"></canvas>
-            </div>
-        </div>
-
-        @if (!$loop->last)
-        <hr class="my-4 line">
-        @endif
-        @endforeach
+        <div id="question-list"></div>
 
         <script>
             $(document).ready(function() {
+                let slug = "{{ $vote->slug }}";
+                let url = `/detail_vote_${slug}/data`;
+
                 $.ajax({
-                    url: "{{ route('vote.show', $vote->slug) }}/chart-data",
+                    url: url,
                     method: "GET",
-                    success: function(data) {
-                        if (data.length > 0) {
-                            let defaultColor = '#D3D3D3';
-                            let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF1493', '#39FF14', '#00FFFF', '#FFD700'];
+                    success: function(response) {
+                        $("#vote-title").text(response.title);
+                        $("#vote-date").text("Vote dibuat pada " + new Date(response.created_at).toLocaleDateString("id-ID"));
+                        $("#vote-description").text(response.description);
 
-                            data.forEach((question, index) => {
-                                let ctx = document.getElementById(`pieChart-${index}`).getContext('2d');
+                        let questionsHtml = "";
 
-                                let labels = [];
-                                let counts = [];
-                                let chartColors = [];
+                        response.questions.forEach((question, index) => {
+                            let totalVotes = question.options.reduce((acc, option) => acc + option.results.length, 0);
+                            let colorIndex = 0;
+                            let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
 
-                                question.options.forEach((option, optionIndex) => {
-                                    labels.push(option.label);
-                                    counts.push(option.count);
-                                });
+                            let optionsHtml = question.options.map(option => {
+                                let voteCount = option.results.length;
+                                let percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+                                let barColor = colors[colorIndex % colors.length];
+                                colorIndex++;
 
-                                let totalVotes = counts.reduce((a, b) => a + b, 0);
+                                return `
+                            <div class="row mb-2">
+                                <div class="col-6">${option.option}</div>
+                                <div class="col-6 text-end">${percentage}% (${voteCount} Vote)</div>
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" style="width: ${percentage}%; background-color: ${barColor};"></div>
+                            </div>
+                        `;
+                            }).join('');
 
-                                if (totalVotes === 0) {
-                                    labels = ["Belum ada yang melakukan voting"];
-                                    counts = [1];
-                                    chartColors = [defaultColor];
-                                } else {
-                                    chartColors = colors.slice(0, labels.length);
-                                }
+                            questionsHtml += `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="fw-bold">${question.question}</p>
+                                ${optionsHtml}
+                                <p class="mt-3 fw-bold">Total vote untuk pertanyaan ini: ${totalVotes}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="my-4">Hasil Voting</h5>
+                                <canvas id="pieChart-${index}" style="max-width: 100%; max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                    `;
+                        });
 
-                                new Chart(ctx, {
-                                    type: 'pie',
-                                    data: {
-                                        labels: labels,
-                                        datasets: [{
-                                            data: counts,
-                                            backgroundColor: chartColors,
-                                        }]
-                                    },
-                                    options: {
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                    }
-                                });
-                            });
-                        }
+                        $("#question-list").html(questionsHtml);
+                        loadChartData(slug);
                     },
                     error: function(error) {
-                        console.log("Error fetching chart data: ", error);
+                        console.log("Error fetching vote data: ", error);
                     }
                 });
+
+
+                function loadChartData(slug) {
+                    $.ajax({
+                        url: `/detail_vote_${slug}/chart-data`,
+                        method: "GET",
+                        success: function(data) {
+                            let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+                            if (data.length > 0) {
+                                data.forEach((question, index) => {
+                                    let ctx = document.getElementById(`pieChart-${index}`).getContext('2d');
+
+                                    let labels = question.options.map(option => option.label);
+                                    let counts = question.options.map(option => option.count);
+
+                                    if (counts.every(count => count === 0)) {
+                                        labels = ["Belum ada yang melakukan voting"];
+                                        counts = [1];
+                                        colors = ['#D3D3D3'];
+                                    }
+
+                                    new Chart(ctx, {
+                                        type: 'pie',
+                                        data: {
+                                            labels: labels,
+                                            datasets: [{
+                                                data: counts,
+                                                backgroundColor: colors.slice(0, labels.length),
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                        }
+                                    });
+                                });
+                            } else {
+                                console.log("Data chart kosong.");
+                            }
+                        },
+                        error: function(error) {
+                            console.log("Error fetching chart data: ", error);
+                        }
+                    });
+                }
             });
         </script>
 
         <div class="row">
-            <p class="mt-3 fw-bold">Total orang yang sudah melakukan vote: {{ $vote->questions->flatMap->options->flatMap->results->count() }}</p>
-            @if ($vote->access_code != null)
-            <p>Kode akses untuk vote ini adalah: {{ $vote->access_code }}</p>
-            @endif
+            <p class="mt-3 fw-bold"><span id="total-votes">Loading...</span></p>
+            <p id="access-code-container" style="display: none;"><span id="access-code"></span></p>
+            <script>
+                $(document).ready(function() {
+                    $.ajax({
+                        url: "{{ route('vote.show', $vote->slug) }}/vote-summary",
+                        method: "GET",
+                        success: function(data) {
+                            $("#total-votes").text("Total orang yang sudah melakukan vote: " + data.totalVotes);
+
+                            if (data.accessCode) {
+                                $("#access-code").text("Kode akses untuk vote ini adalah: " + (data.accessCode));
+                                $("#access-code-container").show();
+                            }
+                        },
+                        error: function(error) {
+                            console.log("Error fetching vote summary: ", error);
+                            $("#total-votes").text("Gagal memuat data.");
+                        }
+                    });
+                });
+            </script>
             <div class="col-md-9 mt-3 ">
                 <a href="/vote_saya" class="btn btn-secondary btn-sm"><i class="bi bi-chevron-left"></i>Kembali </a>
                 <a href="javascript:void(0);" class="btn btn-warning btn-sm edit-vote-btn" data-slug="{{ $vote->slug }}" style="color: white">
@@ -161,7 +190,7 @@
 </div>
 </div>
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>

@@ -9,6 +9,12 @@ class result extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'vote_id',
+        'question_id',
+        'option_id'
+    ];
+    
     public function vote()
     {
         return $this->belongsTo(vote::class);
@@ -18,7 +24,7 @@ class result extends Model
     {
         return $this->belongsTo(question::class);
     }
-    
+
     public function option()
     {
         return $this->belongsTo(option::class);
