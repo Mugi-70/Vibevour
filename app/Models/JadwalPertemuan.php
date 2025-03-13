@@ -10,7 +10,7 @@ class JadwalPertemuan extends Model
     use HasFactory;
 
     protected $table = 'jadwal_pertemuan';
-    protected $fillable = ['grup_id', 'judul', 'tanggal', 'waktu_mulai', 'waktu_selesai'];
+    protected $fillable = ['grup_id', 'judul', 'tanggal', 'waktu_mulai', 'durasi'];
 
     public function user()
     {
@@ -24,6 +24,6 @@ class JadwalPertemuan extends Model
 
     public function peserta()
     {
-        return $this->hasMany(PesertaJadwal::class, 'jadwal_id');
+        return $this->hasMany(JadwalPertemuanAnggota::class, 'jadwal_id');
     }
 }

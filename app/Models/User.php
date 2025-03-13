@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(JadwalPertemuan::class, 'peserta_jadwal');
     }
+
+    public function ketersediaan()
+    {
+        return $this->hasMany(Ketersediaan::class, 'user_id');
+    }
 }

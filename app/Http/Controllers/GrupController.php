@@ -9,8 +9,10 @@ use Carbon\CarbonPeriod;
 use App\Models\AnggotaGrup;
 use App\Models\Ketersediaan;
 use Illuminate\Http\Request;
-use App\Models\AnggotaGrupPending;
 use App\Models\JadwalPertemuan;
+use App\Models\AnggotaGrupPending;
+use App\Models\JadwalPertemuan_Anggota;
+use App\Models\JadwalPertemuanAnggota;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -77,8 +79,6 @@ class GrupController extends Controller
             $waktu_list[] = $waktu->format('H:i');
         }
 
-        // *3. Ambil Data Jadwal yang Sudah Dibuat*
-        $jadwal_data = JadwalPertemuan::with('peserta.user')->where('grup_id', $id)->get();
 
         return view('jadwal.grup_UI', [
             'nama_grup' => $grup->nama_grup,
@@ -92,7 +92,7 @@ class GrupController extends Controller
             'tanggal_list' => $tanggal_list,
             'grup' => $grup,
             'role' => $role,
-            'jadwal_data' => $jadwal_data // Kirim data jadwal ke Blade
+            // 'jadwal_data' => $jadwal_data // Kirim data jadwal ke Blade
         ]);
     }
 
@@ -132,7 +132,7 @@ class GrupController extends Controller
 
                     // Masukkan ke tabel pending
                     AnggotaGrupPending::create([
-                        'grup_id' => $grup->id, // Perbaikan penggunaan id
+                        'grup_id' => $grup->id_grup, // Perbaikan penggunaan id
                         'email' => $email,
                         'status' => 'Pending'
                     ]);
@@ -158,10 +158,9 @@ class GrupController extends Controller
     public function saveSchedules(Request $request)
     {
         $request->validate([
+            'judul' => 'required',
             'tanggal' => 'required|date',
             'waktu' => 'required',
-            'anggota' => 'required|array',  // Pastikan anggota dikirim sebagai array
-            'anggota.*' => 'exists:users,id', // Validasi setiap anggota harus ada di tabel users
         ]);
 
         // Simpan jadwal
@@ -170,11 +169,20 @@ class GrupController extends Controller
             'judul' => $request->judul,
             'tanggal' => $request->tanggal,
             'waktu_mulai' => $request->waktu,
+            'durasi' => $request->durasi,
         ]);
 
-        // Simpan anggota yang hadir ke tabel pivot atau jadwal_anggota
-        foreach ($request->anggota as $userId) {
-            DB::table('peserta_jadwal')->insert([
+        //tanggal, waktu, user_id create ke tabel jadwal_pertemuan_anggota
+        $anggotaYangTersedia = Ketersediaan::where('tanggal', $request->tanggal)
+            ->whereTime('waktu', '>=', str_pad($request->waktu, 2, '0', STR_PAD_LEFT) . ':00:00')
+            ->pluck('user_id');
+
+        // dd($anggotaYangTersedia);
+
+        // anggota yang hadir 
+        foreach ($anggotaYangTersedia as $userId) {
+            // dd($userId);
+            JadwalPertemuanAnggota::create([
                 'jadwal_id' => $jadwal->id,
                 'user_id' => $userId,
                 'created_at' => now(),
@@ -182,7 +190,10 @@ class GrupController extends Controller
             ]);
         }
 
-        return response()->json(['message' => 'Jadwal dan anggota berhasil disimpan']);
+        return response()->json([
+            'message' => 'Jadwal dan anggota berhasil disimpan',
+            'anggota' => $anggotaYangTersedia,
+        ]);
     }
 
     //todo Mengedit grup
@@ -258,5 +269,11 @@ class GrupController extends Controller
             'message' => 'Jadwal berhasil disimpan',
             'users' => $jadwals->map(fn ($jadwal) => $jadwal->user->name)
         ], 200);
+    }
+
+    public function detailJadwal(string $id)
+    {
+        $anggota = JadwalPertemuanAnggota::where('jadwal_id', $id)->with('user')->get();
+        return response()->json($anggota);
     }
 }
