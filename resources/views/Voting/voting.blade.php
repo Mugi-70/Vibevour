@@ -34,6 +34,9 @@
             font-weight: bold;
         }
     </style>
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 </head>
 
 <body>
@@ -54,9 +57,17 @@
 
                 <div class="line"></div>
 
-                <p class="text-secondary" id="vote-description"></p>
+                <p class="text-secondary" id="vote-description">Deskripsi</p>
 
                 <div id="questions-container" class="m-3"></div>
+
+                <div class="m-3" id="nameContainer" style="display: none;">
+                    <label for="voterName" class="form-label">Nama Anda:</label>
+                    <input type="text" class="form-control" id="voterName" placeholder="Masukkan nama Anda">
+                    <div class="invalid-feedback" id="nameFeedback">
+                        Nama wajib diisi.
+                    </div>
+                </div>
 
                 <p class="text-muted mt-4"><span id="vote-end"></span></p>
 
@@ -114,25 +125,48 @@
                     url: "/vote_" + voteSlug + "/data",
                     type: "GET",
                     success: function(response) {
-                        $("#vote-title1").text("Vote " + (response.vote.title));
+                        console.log(response);
+                        $("#vote-title1").text("Vote " + response.vote.title);
                         $("#vote-title").text(response.vote.title);
                         $("#vote-date").text("Vote dibuat pada " + response.vote.created_at);
                         $("#vote-description").text(response.vote.description);
                         $("#vote-end").text("Vote berakhir pada " + response.vote.close_date);
                         $("#voteResults").attr("href", "/vote/" + voteSlug + "/results");
 
+                        if (response.vote.require_name) {
+                            $("#nameContainer").show();
+                        } else {
+                            $("#nameContainer").hide();
+                        }
+
                         let questionsHtml = "";
 
                         if (response.vote.questions.length > 0) {
-                            response.vote.questions.forEach(question => {
-                                questionsHtml += `<h6 class="mt-4">${question.question}</h6>`;
-                                question.options.forEach(option => {
-                                    questionsHtml += `
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="voteOption[${question.id}]" value="${option.id}" id="option${option.id}">
-                                    <label class="form-check-label text-muted" for="option${option.id}">${option.option}</label>
-                                </div>`;
-                                });
+                            response.vote.questions.forEach((question, index) => {
+                                questionsHtml += `<h6 class="mt-4">${question.question} ${question.required ? '<span class="text-danger">*</span>' : ''}</h6>`;
+
+                                if (question.type === "multiple") {
+                                    question.options.forEach(option => {
+                                        questionsHtml += `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="voteOption[${question.id}][]" value="${option.id}" id="option${option.id}">
+                                        <label class="form-check-label text-muted" for="option${option.id}">${option.option}</label>
+                                    </div>`;
+                                    });
+                                } else {
+                                    question.options.forEach(option => {
+                                        questionsHtml += `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="voteOption[${question.id}]" value="${option.id}" id="option${option.id}">
+                                        <label class="form-check-label text-muted" for="option${option.id}">${option.option}</label>
+                                    </div>`;
+                                    });
+                                }
+
+
+                                if (index !== response.vote.questions.length - 1) {
+                                    questionsHtml += `<hr class="hr my-3">`;
+                                }
                             });
                         } else {
                             questionsHtml = "<p class='text-muted'>Tidak ada pertanyaan untuk voting ini.</p>";
@@ -145,6 +179,7 @@
                     }
                 });
             }
+
 
             $("#submitAccessCode").click(function() {
                 let accessCode = $("#accessCodeInput").val().trim();
@@ -185,16 +220,39 @@
 
             checkAccessProtection();
 
-
             $("#submitVote").click(function() {
                 let selectedOptions = {};
+                let voterName = $("#voterName").val().trim();
+                let requiresName = $("#nameContainer").is(":visible");
+                let isValid = true;
 
-                $("input[type=radio]:checked").each(function() {
-                    selectedOptions[$(this).attr("name").replace("voteOption[", "").replace("]", "")] = $(this).val();
+                $("input[type=checkbox]:checked").each(function() {
+                    let name = $(this).attr("name").replace("voteOption[", "").replace("][]", "").replace("]", "");
+                    if (!selectedOptions[name]) {
+                        selectedOptions[name] = [];
+                    }
+                    selectedOptions[name].push($(this).val());
                 });
 
-                if (Object.keys(selectedOptions).length === 0) {
-                    alert("Pilih setidaknya satu opsi sebelum voting!");
+                $(".form-check-input").each(function() {
+                    let questionId = $(this).attr("name").replace("voteOption[", "").replace("][]", "").replace("]", "");
+                    let isRequired = $(this).closest(".form-check").prev("h6").find(".text-danger").length > 0;
+
+                    if (isRequired && (!selectedOptions[questionId] || selectedOptions[questionId].length === 0)) {
+                        isValid = false;
+                    }
+                });
+
+                if (requiresName && voterName === "") {
+                    $("#voterName").addClass("is-invalid");
+                    $("#nameFeedback").text("Nama wajib diisi.");
+                    isValid = false;
+                } else {
+                    $("#voterName").removeClass("is-invalid");
+                }
+
+                if (!isValid) {
+                    alert("Harap lengkapi semua pertanyaan yang wajib diisi!");
                     return;
                 }
 
@@ -202,12 +260,12 @@
                     url: "/vote_" + voteSlug + "/submit",
                     method: "POST",
                     data: {
-                        _token: "{{ csrf_token() }}",
-                        votes: selectedOptions
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        votes: selectedOptions,
+                        name: voterName
                     },
                     success: function(response) {
                         alert(response.message);
-                        // window.location.href = "/vote/" + voteSlug + "/results";
                     },
                     error: function(xhr) {
                         if (xhr.status === 403) {
@@ -219,17 +277,18 @@
                 });
             });
 
-        });
 
-        function copyLink() {
-            var dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = window.location.href;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            alert("Link telah disalin!");
-        }
+            function copyLink() {
+                var dummy = document.createElement("textarea");
+                document.body.appendChild(dummy);
+                dummy.value = window.location.href;
+                dummy.select();
+                document.execCommand("copy");
+                document.body.removeChild(dummy);
+                alert("Link telah disalin!");
+            }
+
+        });
     </script>
     <div class="modal fade" id="accessCodeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="accessCodeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

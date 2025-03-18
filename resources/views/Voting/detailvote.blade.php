@@ -38,7 +38,7 @@
                         response.questions.forEach((question, index) => {
                             let totalVotes = question.options.reduce((acc, option) => acc + option.results.length, 0);
                             let colorIndex = 0;
-                            let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+                            let colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF1493', '#39FF14', '#00FFFF', '#FFD700'];
 
                             let optionsHtml = question.options.map(option => {
                                 let voteCount = option.results.length;

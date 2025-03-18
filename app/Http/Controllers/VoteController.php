@@ -90,13 +90,15 @@ class VoteController extends Controller
         return response()->json([
             'vote' => [
                 'title' => $vote->title,
-                'created_at' => Carbon::parse($vote->created_at)->format('d/m/y H:i'),
+                'created_at' => Carbon::parse($vote->created_at)->format('d/m/y'),
                 'description' => $vote->description,
                 'close_date' => Carbon::parse($vote->close_date)->format('d/m/y H:i'),
+                'require_name' => $vote->require_name,
                 'questions' => $vote->questions->map(function ($question) {
                     return [
                         'id' => $question->id,
                         'question' => $question->question,
+                        'type' => $question->type,
                         'options' => $question->options->map(function ($option) {
                             return [
                                 'id' => $option->id,
@@ -136,45 +138,68 @@ class VoteController extends Controller
         return response()->json(['valid' => $valid]);
     }
 
-    public function getVoteSummary($slug)
-    {
-        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
-
-        $totalVotes = $vote->questions->flatMap->options->flatMap->results->count();
-        $accessCode = $vote->access_code;
-
-        return response()->json([
-            'totalVotes' => $totalVotes,
-            'accessCode' => $accessCode,
-        ]);
-    }
-
 
     public function storeVoteData(Request $request, $slug)
     {
-        $request->validate([
-            'votes' => 'required|array',
-            'votes.*' => 'exists:options,id'
-        ], [
-            'votes.required' => 'Harap pilih setidaknya satu opsi sebelum mengirimkan vote.',
-            'votes.*.exists' => 'Opsi yang dipilih tidak valid.'
-        ]);
-
         $vote = Vote::where('slug', $slug)->firstOrFail();
 
         if ($vote->status === 'closed') {
             return response()->json(['message' => 'Voting telah ditutup.'], 403);
         }
 
-        foreach ($request->votes as $question_id => $option_id) {
-            Result::create([
-                'vote_id' => $vote->id,
-                'question_id' => $question_id,
-                'option_id' => $option_id
-            ]);
+        $rules = [
+            'votes' => 'required|array',
+            'votes.*' => 'exists:options,id',
+        ];
+
+        if ($vote->require_name) {
+            $rules['name'] = 'required|string|max:255';
         }
 
-        return response()->json(['message' => 'Vote berhasil disimpan!']);
+        $request->validate($rules, [
+            'votes.required' => 'Harap pilih setidaknya satu opsi sebelum mengirimkan vote.',
+            'votes.*.exists' => 'Opsi yang dipilih tidak valid.',
+            'name.required' => 'Nama wajib diisi.',
+        ]);
+
+        $voterName = $vote->require_name ? $request->input('name') : null;
+
+        foreach ($request->votes as $questionId => $optionIds) {
+            if (!is_array($optionIds)) {
+                $optionIds = [$optionIds];
+            }
+
+            foreach ($optionIds as $optionId) {
+                Result::create([
+                    'vote_id' => $vote->id,
+                    'question_id' => $questionId,
+                    'option_id' => $optionId,
+                    'name' => $voterName,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Vote berhasil dikirim!']);
+    }
+
+
+
+    public function getVoteSummary($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
+
+        $results = $vote->questions->flatMap->options->flatMap->results;
+
+        $namedVotes = $results->filter(fn($result) => !is_null($result->name))->unique('name')->count();
+
+        $anonymousVotes = $results->where('name', null)->count();
+
+        $totalVotes = $namedVotes + $anonymousVotes;
+
+        return response()->json([
+            'totalVotes' => $totalVotes,
+            'accessCode' => $vote->access_code,
+        ]);
     }
 
 
@@ -223,9 +248,8 @@ class VoteController extends Controller
             if ($request->filled('close_date')) {
                 $vote->close_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->close_date))->format('Y-m-d H:i:s');
             }
-            if ($request->has('require_name') && $request->require_name) {
-                $vote->name = 'required';
-            }
+
+            $vote->require_name = $request->has('require_name') && $request->require_name ? true : false;
 
             if ($request->has('is_protected') && $request->is_protected) {
                 $vote->access_code = $request->access_code;
@@ -239,6 +263,8 @@ class VoteController extends Controller
                     $question = new Question();
                     $question->vote_id = $vote->id;
                     $question->question = $questionText;
+                    $question->type = isset($request->is_multiple[$questionKey]) && $request->is_multiple[$questionKey] ? 'multiple' : 'single';
+                    $question->required = isset($request->is_required[$questionKey]) && $request->is_required[$questionKey] ? true : false;
                     $question->save();
 
                     if (isset($request->choices[$questionKey]) && is_array($request->choices[$questionKey])) {
@@ -298,6 +324,8 @@ class VoteController extends Controller
             'visibility' => 'required|in:public,private',
             'questions' => 'required|array',
             'questions.*.text' => 'required|string|max:1000',
+            'questions.*.type' => 'nullable|in:single,multiple',
+            'questions.*.required' => 'nullable|boolean',
             'questions.*.options.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
             'open_date' => 'nullable|date',
             'close_date' => 'nullable|date',
@@ -337,12 +365,16 @@ class VoteController extends Controller
                 $question = Question::find($questionId);
                 if ($question) {
                     $question->question = $qData['text'];
+                    $question->type = isset($qData['type']) && $qData['type'] === 'multiple' ? 'multiple' : 'single';
+                    $question->required = isset($qData['required']) ? true : false;
                     $question->save();
                 }
             } else {
                 $question = new Question();
                 $question->vote_id = $vote->id;
                 $question->question = $qData['text'];
+                $question->type = isset($qData['type']) && $qData['type'] === 'multiple' ? 'multiple' : 'single';
+                $question->required = isset($qData['required']) ? true : false;
                 $question->save();
             }
 
@@ -394,9 +426,24 @@ class VoteController extends Controller
             ->with('success', 'Vote berhasil diperbarui.');
     }
 
+    public function deleteQuestion($id)
+    {
+        try {
+            $question = Question::findOrFail($id);
 
+            $question->delete();
 
-
+            return response()->json([
+                'success' => true,
+                'message' => 'Pertanyaan berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus pertanyaan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * Remove the specified resource from storage.
      */

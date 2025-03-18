@@ -38,39 +38,20 @@
                 <div class="row">
                     <div class="col-md-5">
                         <div>
-                            <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
-                            <select class="form-select" id="voteVisibility" name="visibility" required>
-                                <option value="private">Private</option>
-                                <option value="public">Public</option>
-                            </select>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-8">
-                                <div class="form-check form-switch mb-2">
+                            <label for="protectVote" class="form-label">Kode vote</label>
+                            <div class="form-control form-switch mb-2">
+                                <div class="form-check form-switch ">
                                     <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check form-switch mb-2">
                                     <input class="form-check-input" type="checkbox" id="protectVote" name="is_protected">
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-10">
-                                <input type="text" id="randomCode" name="access_code" class="form-control mb-2 d-none" readonly>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="form-check form-switch">
-                                    <label class="form-check-label" for="includeName">Sertakan nama untuk mengisi</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="includeName" name="require_name">
-                                </div>
+                        <input type="text" id="randomCode" name="access_code" class="form-control mb-2 d-none" readonly>
+                        <label class="form-label" for="includeName">Nonaktifkan anonymous</label>
+                        <div class="form-control form-switch">
+                            <div class="form-check form-switch">
+                                <label class="form-check-label" for="includeName">Sertakan nama untuk mengisi</label>
+                                <input class="form-check-input" type="checkbox" id="includeName" name="require_name">
                             </div>
                         </div>
                     </div>
@@ -95,6 +76,13 @@
                             <span class="input-group-text">
                                 <i class="bi bi-calendar-event"></i>
                             </span>
+                        </div>
+                        <div>
+                            <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
+                            <select class="form-select" id="voteVisibility" name="visibility" required>
+                                <option value="private">Private</option>
+                                <option value="public">Public</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -124,8 +112,8 @@
                             <p id="uploadText">Klik untuk upload foto</p>
                             <p id="uploadHint" class="text-muted">JPG, PNG, Max 3MB</p>
                             <img id="previewImage" src="" class="d-none" style="max-width: 100%; height: auto;">
-                            <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
                         </div>
+                        <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" id="confirmUpload" data-bs-dismiss="modal">OK</button>
@@ -145,17 +133,13 @@
                 dateFormat: "d-m-Y H:i",
                 time_24hr: true,
                 minDate: "today",
-                onChange: function(selectedDates, dateStr) {
-                    if (selectedDates[0]) {
+                onChange: function(selectedDates) {
+                    if (selectedDates.length > 0) {
                         let minCloseDate = new Date(selectedDates[0]);
                         minCloseDate.setHours(minCloseDate.getHours() + 1);
 
                         closeDateInput.set("minDate", minCloseDate);
-
-                        let currentCloseDate = closeDateInput.selectedDates[0];
-                        if (!currentCloseDate || currentCloseDate < minCloseDate) {
-                            closeDateInput.setDate(minCloseDate);
-                        }
+                        closeDateInput.setDate(minCloseDate);
                     }
                 }
             });
@@ -171,17 +155,16 @@
                 if ($("#openDate").val()) {
                     openDateInput.setDate($("#openDate").val());
 
-                    if (openDateInput.selectedDates[0]) {
+                    if (openDateInput.selectedDates.length > 0) {
                         let minCloseDate = new Date(openDateInput.selectedDates[0]);
                         minCloseDate.setHours(minCloseDate.getHours() + 1);
+
                         closeDateInput.set("minDate", minCloseDate);
+                        closeDateInput.setDate(minCloseDate);
                     }
                 }
-
-                if ($("#closeDate").val()) {
-                    closeDateInput.setDate($("#closeDate").val());
-                }
             });
+
 
             // flatpickr("#openDate", {
             //     enableTime: true,
@@ -195,7 +178,7 @@
             //     dateFormat: "d-m-Y H:i",
             //     time_24hr: true,
             //     minDate: "today"
-            // });
+            // });  
 
             //Kode vote
             $('#protectVote').on('change', function() {
@@ -206,6 +189,7 @@
                     textbox.addClass('d-none').val('');
                 }
             });
+
 
             function generateRandomCode() {
                 let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -269,28 +253,38 @@
                 questionCounter++;
                 const questionId = `question_${questionCounter}`;
                 const $card = $(`
-            <div class="card p-4 mt-3 position-relative card-question" id="${questionId}">
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
-                <h4>Daftar Pertanyaan ${questionCounter}</h4>
-                <hr class="my-3" style="height: 2px; background-color: black;">
-                <h5>Pertanyaan</h5>
-                <textarea class="form-control mb-3" 
-                        rows="3" 
-                        placeholder="Masukkan pertanyaan"
-                        name="questions[${questionId}]"
-                        id="question_text_${questionId}"
-                        required></textarea>
-                <h5>Pilihan</h5>
-                <div class="choices" id="choices_${questionId}"></div>
-                <div class="text-start mt-2">
-                    <button type="button" class="btn btn-primary add-choice-btn" 
-                            style="text-decoration: none;" 
-                            data-question-id="${questionId}">
-                        <i class="bi bi-plus-circle"></i> Tambah Pilihan
-                    </button>
-                </div>
+        <div class="card p-4 mt-3 position-relative card-question" id="${questionId}">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
+            <h4>Daftar Pertanyaan ${questionCounter}</h4>
+            <hr class="my-3" style="height: 2px; background-color: black;">
+            <h5>Pertanyaan</h5>
+            <textarea class="form-control mb-3" 
+                    rows="3" 
+                    placeholder="Masukkan pertanyaan"
+                    name="questions[${questionId}]"
+                    id="question_text_${questionId}"
+                    required></textarea>
+            
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="multiple_${questionId}" name="is_multiple[${questionId}]">
+                        <label class="form-check-label" for="multiple_${questionId}">Izinkan pilih banyak</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="required_${questionId}" name="is_required[${questionId}]">
+                        <label class="form-check-label" for="required_${questionId}">Wajib diisi</label>
+                    </div>
+            
+            <h5>Pilihan</h5>
+            <div class="choices" id="choices_${questionId}"></div>
+            <div class="text-start mt-2">
+                <button type="button" class="btn btn-primary add-choice-btn" 
+                        style="text-decoration: none;" 
+                        data-question-id="${questionId}">
+                    <i class="bi bi-plus-circle"></i> Tambah Pilihan
+                </button>
             </div>
-        `);
+        </div>
+    `);
 
                 const $choicesContainer = $card.find('.choices');
 
@@ -323,6 +317,18 @@
                     $(this).find('textarea')
                         .attr('name', `questions[${newId}]`)
                         .attr('id', `question_text_${newId}`);
+
+                    $(this).find(`input[type="checkbox"][id^="multiple_"]`)
+                        .attr('name', `is_multiple[${newId}]`)
+                        .attr('id', `multiple_${newId}`);
+                    $(this).find(`label[for^="multiple_"]`)
+                        .attr('for', `multiple_${newId}`);
+
+                    $(this).find(`input[type="checkbox"][id^="required_"]`)
+                        .attr('name', `is_required[${newId}]`)
+                        .attr('id', `required_${newId}`);
+                    $(this).find(`label[for^="required_"]`)
+                        .attr('for', `required_${newId}`);
 
                     $(this).find('h4').text(`Daftar Pertanyaan ${questionCounter}`);
 

@@ -12,7 +12,8 @@ class result extends Model
     protected $fillable = [
         'vote_id',
         'question_id',
-        'option_id'
+        'option_id',
+        'name'
     ];
     
     public function vote()

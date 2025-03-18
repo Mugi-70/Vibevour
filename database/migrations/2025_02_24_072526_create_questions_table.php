@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('vote_id');
             $table->foreign(columns: 'vote_id')->references('id')->on('votes')->onDelete('cascade');
             $table->text('question');
+            $table->enum('type', ['single', 'multiple']);
+            $table->boolean('required')->default(false);
             $table->timestamps();
         });
     }

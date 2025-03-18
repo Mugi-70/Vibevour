@@ -24,7 +24,7 @@
 
         <div id="questionsContainer">
             @foreach($vote->questions as $index => $question)
-            <div class="card p-3 mt-3 question-card" data-index="{{ $index }}">
+            <div class="card p-3 mt-3 question-card" data-index="{{ $index }}" data-type="{{ $question->type }}" data-required="{{ $question->required ? 'true' : 'false' }}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h4>Pertanyaan {{ $index + 1 }}</h4>
                     <button type="button" class="btn btn-sm btn-outline-danger remove-question" data-question-id="{{ $question->id }}">
@@ -33,6 +33,21 @@
                 </div>
                 <input type="hidden" name="questions[{{ $index }}][id]" value="{{ $question->id }}">
                 <textarea class="form-control mb-3" name="questions[{{ $index }}][text]" required>{{ $question->question }}</textarea>
+
+                <div class="mb-3 question-settings">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="multiple_{{ $question->id }}"
+                            name="questions[{{ $index }}][type]" value="multiple"
+                            {{ $question->type === 'multiple' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="multiple_{{ $question->id }}">Izinkan pilih banyak</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="required_{{ $question->id }}"
+                            name="questions[{{ $index }}][required]" value="1"
+                            {{ $question->required ? 'checked' : '' }}>
+                        <label class="form-check-label" for="required_{{ $question->id }}">Wajib diisi</label>
+                    </div>
+                </div>
 
                 <div class="optionsContainer">
                     @foreach($question->options as $optIndex => $option)
@@ -75,6 +90,7 @@
                     </div>
                     @endforeach
                 </div>
+
                 <div class="text-start mt-2">
                     <button type="button" class="btn btn-primary add-option" style="text-decoration: none;">
                         <i class="bi bi-plus-circle"></i> Tambah Pilihan
@@ -232,6 +248,25 @@
     </div>
 </div>
 
+<div class="modal fade" id="deleteQuestionModal" tabindex="-1" aria-labelledby="deleteQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteQuestionModalLabel">Konfirmasi Hapus Pertanyaan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus pertanyaan ini?</p>
+                <p class="text-danger">Peringatan: Semua opsi dan data hasil untuk pertanyaan ini juga akan dihapus!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteQuestion">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function() {
         // Tanggal
@@ -250,17 +285,13 @@
             dateFormat: "d-m-Y H:i",
             time_24hr: true,
             minDate: "today",
-            onChange: function(selectedDates, dateStr) {
-                if (selectedDates[0]) {
+            onChange: function(selectedDates) {
+                if (selectedDates.length > 0) {
                     let minCloseDate = new Date(selectedDates[0]);
                     minCloseDate.setHours(minCloseDate.getHours() + 1);
 
                     closeDateInput.set("minDate", minCloseDate);
-
-                    let currentCloseDate = closeDateInput.selectedDates[0];
-                    if (!currentCloseDate || currentCloseDate < minCloseDate) {
-                        closeDateInput.setDate(minCloseDate);
-                    }
+                    closeDateInput.setDate(minCloseDate);
                 }
             }
         });
@@ -270,6 +301,20 @@
             dateFormat: "d-m-Y H:i",
             time_24hr: true,
             minDate: "today"
+        });
+
+        $(document).ready(function() {
+            if ($("#openDate").val()) {
+                openDateInput.setDate($("#openDate").val());
+
+                if (openDateInput.selectedDates.length > 0) {
+                    let minCloseDate = new Date(openDateInput.selectedDates[0]);
+                    minCloseDate.setHours(minCloseDate.getHours() + 1);
+
+                    closeDateInput.set("minDate", minCloseDate);
+                    closeDateInput.setDate(minCloseDate);
+                }
+            }
         });
 
 
@@ -303,7 +348,9 @@
                 $(this).find('input[name^="questions"][name$="[id]"]').attr('name', 'questions[' + index + '][id]');
                 $(this).find('textarea[name^="questions"][name$="[text]"]').attr('name', 'questions[' + index + '][text]');
 
-                // Update option indices
+                $(this).find('input[id^="multiple_"]').attr('name', 'questions[' + index + '][type]');
+                $(this).find('input[id^="required_"]').attr('name', 'questions[' + index + '][required]');
+
                 $(this).find('.optionsContainer .row').each(function(optIndex) {
                     $(this).find('input[name$="[id]"]').attr('name', 'questions[' + index + '][options][' + optIndex + '][id]');
                     $(this).find('input[name$="[text]"]').attr('name', 'questions[' + index + '][options][' + optIndex + '][text]');
@@ -311,7 +358,32 @@
             });
         }
 
-        $('#addQuestionBtn').click(function() {
+        $('.question-card').each(function() {
+            const questionId = $(this).find('input[name$="[id]"]').val();
+            const questionType = $(this).data('type') || 'single';
+            const questionRequired = $(this).data('required') || false;
+
+            if ($(this).find('.question-settings').length === 0) {
+                $(this).find('.optionsContainer').before(`
+                <div class="mb-3 question-settings">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="multiple_${questionId}" 
+                            name="questions[${$(this).data('index')}][type]" value="multiple"
+                            ${questionType === 'multiple' ? 'checked' : ''}>
+                        <label class="form-check-label" for="multiple_${questionId}">Izinkan pilih banyak</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="required_${questionId}" 
+                            name="questions[${$(this).data('index')}][required]" value="1"
+                            ${questionRequired ? 'checked' : ''}>
+                        <label class="form-check-label" for="required_${questionId}">Wajib diisi</label>
+                    </div>
+                </div>
+            `);
+            }
+        });
+
+        $('#addQuestionBtn').off('click').on('click', function() {
             let newQuestionHtml = `
             <div class="card p-3 mt-3 question-card" data-index="${questionCount}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -322,6 +394,19 @@
                 </div>
                 <input type="hidden" name="questions[${questionCount}][id]" value="">
                 <textarea class="form-control mb-3" name="questions[${questionCount}][text]" required></textarea>
+                
+                <div class="mb-3 question-settings">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="multiple_new_${questionCount}" 
+                            name="questions[${questionCount}][type]" value="multiple">
+                        <label class="form-check-label" for="multiple_new_${questionCount}">Izinkan pilih banyak</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="required_new_${questionCount}" 
+                            name="questions[${questionCount}][required]" value="1">
+                        <label class="form-check-label" for="required_new_${questionCount}">Wajib diisi</label>
+                    </div>
+                </div>
 
                 <div class="optionsContainer">
                     <!-- Option 1 -->
@@ -375,10 +460,52 @@
             questionCount++;
         });
 
+        let questionToDelete = null;
+
         $(document).on("click", ".remove-question", function() {
-            $(this).closest('.question-card').remove();
-            updateQuestionNumbers();
-            questionCount = $('.question-card').length;
+            questionToDelete = $(this).closest('.question-card');
+            const questionId = questionToDelete.find('input[name$="[id]"]').val();
+
+            if (questionId) {
+                $('#deleteQuestionModal').modal('show');
+            } else {
+                questionToDelete.remove();
+                updateQuestionNumbers();
+                questionCount = $('.question-card').length;
+            }
+        });
+
+        $('#confirmDeleteQuestion').click(function() {
+            if (!questionToDelete) return;
+
+            const questionId = questionToDelete.find('input[name$="[id]"]').val();
+
+            if (questionId) {
+                $.ajax({
+                    url: `/hapus_pertanyaan/${questionId}`,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        questionToDelete.remove();
+                        updateQuestionNumbers();
+                        questionCount = $('.question-card').length;
+
+                        if (response.success) {
+                            console.log(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error deleting question:', xhr.responseText);
+                        $("#errorModalContent").text("Gagal menghapus pertanyaan. Silakan coba lagi.");
+                        new bootstrap.Modal(document.getElementById('errorModal')).show();
+                    }
+                });
+            }
+
+            // Close the modal
+            $('#deleteQuestionModal').modal('hide');
         });
 
         $(document).on("click", ".remove-option", function() {

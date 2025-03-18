@@ -64,6 +64,7 @@ Route::post('/simpan_vote', [VoteController::class, 'store'])->name('vote.store'
 Route::get('/edit_vote_{slug}', [VoteController::class, 'edit'])->name('vote.edit');
 Route::put('/update_vote_{slug}', [VoteController::class, 'update'])->name('vote.update');
 Route::delete('/hapus_vote_{slug}', [VoteController::class, 'destroy'])->name('vote.destroy');
+Route::delete('/hapus_pertanyaan/{id}', [VoteController::class, 'deleteQuestion'])->name('question.delete');
 
 
 Route::get('/vote_{slug}', [VoteController::class, 'vote'])->name('vote.vote');
