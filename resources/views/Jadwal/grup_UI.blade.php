@@ -41,12 +41,14 @@
                                 <i class="bi bi-people"></i> Daftar Anggota
                             </button>
                         </li>
-                        <li>
-                            <button class="dropdown-item text-warning" data-bs-toggle="offcanvas"
-                                data-bs-target="#edit_grup" style="">
-                                <i class="bi bi-pencil"></i> Edit Grup
-                            </button>
-                        </li>
+                        @if ($role === 'admin')
+                            <li>
+                                <button class="dropdown-item text-warning" data-bs-toggle="offcanvas"
+                                    data-bs-target="#edit_grup" style="">
+                                    <i class="bi bi-pencil"></i> Edit Grup
+                                </button>
+                            </li>
+                        @endif
                         @unless ($role == 'admin')
                             <li>
                                 <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#delete_grup">
@@ -134,10 +136,12 @@
                             aria-controls="offcanvasRight">
                             <i class="bi bi-people"></i> Daftar Anggota
                         </button>
-                        <button class="btn btn-warning w-100" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
-                            aria-controls="offcanvasRight">
-                            <i class="bi bi-pencil"></i> Edit Grup
-                        </button>
+                        @if ($role === 'admin')
+                            <button class="btn btn-warning w-100" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
+                                aria-controls="offcanvasRight">
+                                <i class="bi bi-pencil"></i> Edit Grup
+                            </button>
+                        @endif
                         @unless ($role == 'admin')
                             <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup"
                                 id="hapus_grup{{ $grup->id_grup }}">
@@ -193,6 +197,8 @@
                                         $anggotaYangTersedia = App\Models\Ketersediaan::where('tanggal', $t)
                                             ->where('waktu', $ts)
                                             ->get();
+
+                                        $userTersedia = $anggotaYangTersedia->contains('user_id', 1);
                                     @endphp
 
                                     <td class="item" data-tanggal="{{ $t }}"
@@ -204,12 +210,13 @@
                                             <!-- Jika jadwal sudah ada, tampilkan tombol -->
                                             <button class="bjadwal btn btn-primary custom w-100 h-100"
                                                 data-bs-toggle="offcanvas" data-bs-target="#jadwal"
-                                                data-bs-toggle="offcanvas" data-bs-target="#jadwal"
                                                 data-jadwal-id="{{ $jadwal->id ?? '' }}"
+                                                data-grup-id="{{ $grup->id_grup }}"
                                                 data-judul="{{ $jadwal->judul ?? '' }}"
                                                 data-tanggal="{{ $jadwal->tanggal ?? '' }}"
                                                 data-waktu-mulai="{{ $jadwal->waktu_mulai ?? '' }}"
-                                                data-durasi="{{ $jadwal->durasi ?? '' }}">
+                                                data-durasi="{{ $jadwal->durasi ?? '' }}"
+                                                data-user-tersedia="{{ $userTersedia ? '1' : '0' }}">
                                                 <div class="d-flex flex-column text-center">
                                                     <div class="title">{{ $jadwal->judul }}</div>
                                                     <div class="subtitle d-flex align-items-center">
@@ -222,9 +229,12 @@
                                             <!-- Jika tidak ada jadwal, tapi ada anggota yang bersedia -->
                                             <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
                                                 @foreach ($anggotaYangTersedia as $anggota)
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <p class="m-0 fw-bold"
-                                                            data-user-id="{{ $anggota->user->id ?? '' }}">
+                                                    <div
+                                                        class="anggota-d d-flex justify-content-between align-items-center">
+                                                        <p class="m-0 fw-bold anggota-hadir"
+                                                            data-user-id="{{ $anggota->user->id ?? '' }}"
+                                                            data-tanggal="{{ $t }}"
+                                                            data-waktu="{{ $ts }}">
                                                             {{ $anggota->user->name ?? '' }}</p>
                                                         <i class="bi bi-check-square fs-4"></i>
                                                     </div>
@@ -250,6 +260,7 @@
         @include('Jadwal.modal.hapus_grup')
         @include('Jadwal.modal.anggota_free')
         @include('Jadwal.modal.ketersediaan')
+        @include('Jadwal.modal.batal_ketersediaan')
         {{-- modal --}}
 
         {{-- offcanvas --}}
@@ -260,6 +271,68 @@
 
 
     <script>
+        //batalkan kehadiran di kalender
+        $(document).ready(function() {
+            // Saat user mengklik namanya di dalam daftar kehadiran
+            $(document).on("click", ".anggota-hadir", function(event) {
+                event.stopPropagation(); // Hindari modal lain muncul
+
+                let userId = $(this).data("user-id");
+                let tanggal = $(this).data("tanggal");
+                let waktu = $(this).data("waktu");
+
+                $("#selectedDate").val(tanggal);
+                $("#selectedTime").val(waktu);
+
+                console.log("User ID:", userId);
+                console.log("Tanggal:", tanggal);
+                console.log("Waktu:", waktu);
+
+                if (userId == 1) { // nanti diganti dengan user yang login
+                    $("#cancelAvailability").modal("show");
+                    $("#selectedDateLabel").text(tanggal);
+                    $("#selectedTimeLabel").text(waktu);
+                    $("#cancelUserId").val(userId);
+                }
+            });
+
+            // Saat tombol "Konfirmasi" ditekan
+            $("#confirmCancel").click(function() {
+                let userId = 1;
+                // let userId = $("#cancelUserId").val();
+                let tanggal = $("#selectedDate").val();
+                let waktu = $("#selectedTime").val();
+
+                console.log(userId)
+                console.log(tanggal)
+                console.log(waktu)
+
+                $.ajax({
+                    type: "POST",
+                    url: "/batalAvai",
+                    data: {
+                        user_id: userId,
+                        tanggal: tanggal,
+                        waktu: waktu
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        $("#cancelAvailability").modal("hide");
+                        // $(".anggota-d").remove();
+                        $(".lebel").show();
+                        var toast = new bootstrap.Toast(document.getElementById(
+                            "batalHadir"));
+                        toast.show();
+                    },
+                    error: function(xhr) {
+                        alert("Gagal membatalkan kehadiran. Silakan coba lagi.");
+                    }
+                });
+            });
+        });
+
         /* fungsi memunculkan modal dengan klik */
         $(".item").click(function() {
             openModal($(this))
@@ -283,6 +356,14 @@
             selected_waktu = waktu;
             selected_durasi = durasi;
 
+            // Cek apakah user sudah menyediakan kehadiran
+            let userTersedia = selectedCell.find(".anggota-hadir[data-user-id='1']").length > 0;
+
+            if (userTersedia) {
+                console.log("User sudah hadir, tidak menampilkan modal penyediaan kehadiran.");
+                return; // Hentikan fungsi jika user sudah hadir
+            }
+
             console.log("Tanggal:", tanggal);
             console.log("Waktu:", waktu);
             console.log("Role:", role);
@@ -293,8 +374,8 @@
             $("#selectedDate").val(tanggal);
             $("#selectedTime").val(waktu);
 
-            $("#selectedDateText").text(tanggal);
-            $("#selectedTimeText").text(waktu);
+            $("#selectedDate22").text(tanggal);
+            $("#selectedTime22").text(waktu);
 
             // Menampilkan modal sesuai role
             if (role === "admin") {
@@ -307,6 +388,7 @@
         }
         /* membuka modal */
 
+
         /* tooltips */
         $(document).ready(function() {
             $('.btn').tooltip();
@@ -314,33 +396,56 @@
         /* tooltips */
 
         $(document).ready(function() {
-            $(".delete-meet").click(function() {
-                $(".bjadwal").remove();
+            let selectedJadwalId = null;
 
-                // tutup modal pembatalan jadwal
-                $("#cancel").modal("hide");
-
-                // tutup offcanvas jadwal
-                $("#jadwal").offcanvas("hide");
-
-                // Hapus backdrop
-                $(".modal-backdrop").remove();
-
-                // Pastikan body tidak terkunci
-                $("body").removeClass("modal-open").css("overflow", "");
-
-                $(".lebel").show();
-
-                // Reset elemen offcanvas agar bisa ditampilkan lagi
-                setTimeout(function() {
-                    $("#jadwal").removeClass("show").attr("aria-hidden", "true");
-                    $(".offcanvas-backdrop").remove();
-                }, 500);
+            // Saat tombol jadwal diklik, simpan ID jadwal ke modal
+            $(".bjadwal").click(function() {
+                selectedJadwalId = $(this).data("jadwal-id");
+                console.log("Jadwal ID terpilih:", selectedJadwalId);
             });
 
+            // Saat tombol hapus di modal diklik
+            $(".delete-meet").click(function() {
+                if (!selectedJadwalId) {
+                    alert("Jadwal tidak ditemukan!");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/jadwal/" + selectedJadwalId,
+                    type: "DELETE",
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr("content")
+                    },
+                    success: function(response) {
+                        console.log("Response:", response);
+                        if (response.success) {
+                            // Hapus tombol jadwal dari tampilan
+                            $(".bjadwal[data-jadwal-id='" + selectedJadwalId + "']").remove();
+
+                            // Tutup modal dan offcanvas
+                            $("#cancel").modal("hide");
+                            $("#jadwal").offcanvas("hide");
+
+                            // Hapus backdrop modal jika masih ada
+                            $(".modal-backdrop").remove();
+                            $("body").removeClass("modal-open").css("overflow", "");
+                            var toast = new bootstrap.Toast(document.getElementById(
+                                "successToast"));
+                            toast.show();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                        alert("Terjadi kesalahan saat menghapus jadwal.");
+                    }
+                });
+            });
         });
 
-        // offcanvas di buka
+        // offcanvas di buka    
         $(document).ready(function() {
             $(".bjadwal").on("click", function(event) {
                 event.stopPropagation(); // Mencegah modal utama terbuka
@@ -409,7 +514,9 @@
                     setTimeout(() => {
                         $("#scheduleModal").modal("hide");
                     }, 500);
-
+                    var toast = new bootstrap.Toast(document.getElementById(
+                        "jadwalDibuat"));
+                    toast.show();
                 },
                 error: function(xhr) {
                     alert("Terjadi kesalahan saat menyimpan jadwal.");
@@ -445,22 +552,24 @@
                     console.log("Response dari server:", response);
 
                     let userListHTML = response.users.map(user => `
-        <div class="d-flex justify-content-between align-items-center">
-            <p class="m-0 fw-bold">${user}</p>
-            <i class="bi bi-check-square fs-4"></i>
-        </div>
-        `).join('');
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="m-0 fw-bold">${user}</p>
+                    <i class="bi bi-check-square fs-4"></i>
+                </div>
+                `).join('');
                     // data sesuai dengan tanggal dan waktu
                     let cell = $(".item[data-tanggal='" + tanggal + "'][data-waktu='" + waktu + "']");
 
                     // Update tampilan 
                     cell.html(`
-        <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
-            ${userListHTML}
-        </div>
-        `);
+                <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
+                ${userListHTML}
+                </div>
+                `);
                     // **Tutup modal 
                     $("#availability").modal("hide");
+                    var toast = new bootstrap.Toast(document.getElementById("sediaAnggota"));
+                    toast.show();
                 },
 
                 error: function(xhr) {
@@ -477,48 +586,141 @@
             }
         });
 
+        //detail jadwal
         $(document).ready(function() {
+            let selectedJadwalId = null;
+            let selectedGrupId = null;
             $(".bjadwal").on("click", function() {
-                // Ambil data dari atribut
+                event.stopPropagation(); // Hindari modal lain muncul
+
+                selectedJadwalId = $(this).data("jadwal-id");
+                selectedGrupId = $(this).data("grup-id");
+
+                console.log("Jadwal ID dari tombol jadwal:", selectedJadwalId);
+                console.log("Grup ID dari tombol jadwal:", selectedGrupId);
+                // Ambil data dari atribut tombol
                 let jadwalId = $(this).data("jadwal-id");
                 let judul = $(this).data("judul");
                 let tanggal = $(this).data("tanggal");
                 let waktuMulai = $(this).data("waktu-mulai");
-                let waktuSelesai = $(this).data("waktu-selesai");
                 let durasi = $(this).data("durasi");
+
+                console.log(tanggal);
+                console.log(waktuMulai);
+                // Pastikan data tidak kosong
+                if (!jadwalId) {
+                    console.error("Jadwal ID tidak ditemukan");
+                    return;
+                }
+
+                // Format Tanggal (YYYY-MM-DD -> DD-MM-YYYY)
+                let formattedTanggal = formatTanggal(tanggal);
+
+                // Format Waktu (HH:MM:SS -> HH:MM)
+                let formattedWaktuMulai = formatWaktu(waktuMulai);
+
+                // Format Durasi (dalam menit)
+                let formattedDurasi = formatDurasi(durasi);
 
                 // Masukkan data ke dalam Offcanvas
                 $("#judul").text(judul);
-                $(".tanggal-1 p").text(tanggal);
-                $(".wktu .waktu-mulai").text(waktuMulai);
-                $(".wktu .waktu-selesai").text(waktuSelesai);
-                $(".durasi p").text(durasi);
+                $(".tanggal-1 p").text(formattedTanggal);
+                $(".wktu .waktu-mulai").text(formattedWaktuMulai);
+                $(".durasi p").text(formattedDurasi);
 
-                // Panggil 
+                // Kosongkan daftar sebelum menambahkan yang baru
+                let hadirList = $(".present");
+                // hadirList.html("<h5><strong>Dihadiri Oleh:</strong></h5>");
+
+                // untuk mendapatkan daftar anggota yang hadir
                 $.ajax({
-                    url: "/jadwal/" + jadwalId + "/anggota",
+                    url: `/jadwal/${jadwalId}/anggota`,
                     type: "GET",
-                    success: function(response) {
-                        let hadirList = $(".present");
-                        hadirList.html("<h5><strong>Dihadiri Oleh:</strong></h5>");
-
-                        response.forEach((user) => {
-                            let anggotaHtml = `
-                        <div class="box-item d-flex">
-                            <div class="avatar-search">${user.name.charAt(0)}</div>
-                            <div class="nama-user mt-1">
-                                <h6>${user.name}</h6>
-                                <p style="margin-top: -10px">${user.email}</p>
-                            </div>
-                        </div>`;
-                            hadirList.append(anggotaHtml);
+                    dataType: "json",
+                    success: function(data) {
+                        let anggotaList = "";
+                        data.anggota.forEach(anggota => {
+                            anggotaList += `<div class="box-item d-flex">
+                                    <div class="avatar-search">${anggota.name.charAt(0)}</div>
+                                    <div class="nama-user mt-1">
+                                        <h6>${anggota.name}</h6>
+                                        <p style="margin-top: -10px">${anggota.email}</p>
+                                    </div>
+                                </div>`;
                         });
-                    },
-                    error: function() {
-                        console.error("Gagal mengambil data kehadiran");
+
+                        $(".present").html(anggotaList);
+
+                        // Cek apakah user sudah hadir
+                        if (!data.sudahHadir) {
+                            $("#hadiri-jadwal").show();
+                        } else {
+                            $("#hadiri-jadwal").hide();
+                        }
+
+                        $("#jadwal").offcanvas("show");
                     },
                 });
             });
+
+            // Saat tombol "Konfirmasi Hadir" ditekan kirim data ke backend
+            $("#konfirmasiHadir").click(function() {
+                console.log("jdawl", selectedJadwalId);
+                console.log("grup", selectedGrupId);
+                // let selectedTanggal = tanggal;
+                // let selectedWaktu = waktuMulai;
+                // console.log(selectedTanggal);
+                // console.log(selectedWaktu);
+                if (!selectedJadwalId) {
+                    alert("Jadwal ID tidak valid!");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/hadiri-jadwal",
+                    method: "POST",
+                    data: {
+                        jadwal_id: selectedJadwalId,
+                        grup_id: selectedGrupId,
+                        _token: "{{ csrf_token() }}" // Pastikan CSRF token ada
+                    },
+                    success: function(response) {
+                        $("#konfirmasi-modal").hide();
+                        $("#jadwal").offcanvas("hide");
+                        location.reload(); // Refresh halaman agar daftar hadir diperbarui
+                    },
+                    error: function(xhr) {
+                        alert("Gagal menghadiri jadwal!");
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+
+            // Fungsi untuk memformat tanggal ke format DD-MM-YYYY
+            function formatTanggal(tanggal) {
+                if (!tanggal) return "-";
+
+                let options = {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                };
+                return new Date(tanggal).toLocaleDateString("id-ID", options);
+            }
+
+            // Fungsi untuk memformat waktu ke format HH:MM
+            function formatWaktu(waktu) {
+                if (!waktu) return "-";
+                return waktu.substring(0, 5);
+            }
+
+            // Fungsi untuk menampilkan durasi dalam menit
+            function formatDurasi(durasi) {
+                if (!durasi) return "-";
+                let angkaDurasi = durasi.match(/\d+/);
+                return angkaDurasi ? `${angkaDurasi[0]} Menit` : "-";
+            }
+
         });
     </script>
     @include('Jadwal.off_canvas.jadwal')

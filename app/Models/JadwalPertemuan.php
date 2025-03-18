@@ -10,6 +10,7 @@ class JadwalPertemuan extends Model
     use HasFactory;
 
     protected $table = 'jadwal_pertemuan';
+    protected $primaryKey = 'id';
     protected $fillable = ['grup_id', 'judul', 'tanggal', 'waktu_mulai', 'durasi'];
 
     public function user()

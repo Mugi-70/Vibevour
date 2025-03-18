@@ -50,7 +50,12 @@ Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
 Route::get('/cari', [GrupController::class, 'cari_anggota']);
 
 
-Route::get('/jadwal/{id}/anggota', [GrupController::class, 'detailJadwal']);
+Route::get('/jadwal/{jadwalId}/anggota', [GrupController::class, 'detailJadwal']);
+Route::delete('/jadwal/{id}', [GrupController::class, 'deleteJadwal']);
+
+Route::post('/batalAvai', [GrupController::class, 'batalKehadiran'])->name('batal.kehadiran');
+Route::post('/hadiri-jadwal', [GrupController::class, 'hadiriJadwal']);
+
 
 
 // cari period dari rentang tanggal

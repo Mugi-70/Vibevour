@@ -10,7 +10,7 @@ class JadwalPertemuanAnggota extends Model
     use HasFactory;
 
     protected $table = 'jadwal_pertemuan_anggota';
-    protected $fillable = ['jadwal_id', 'user_id'];
+    protected $fillable = ['jadwal_id', 'user_id', 'grup_id'];
 
     public function user()
     {

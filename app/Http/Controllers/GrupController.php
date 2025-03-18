@@ -51,8 +51,8 @@ class GrupController extends Controller
     {
         $grup = Grup::with('anggota.user')->findOrFail($id);
 
-        $role = 'admin';
-        // $role = 'anggota';
+        // $role = 'admin';
+        $role = 'anggota';
 
         //? Data dari database
         $input_tanggal_mulai = $grup->tanggal_mulai;
@@ -78,7 +78,6 @@ class GrupController extends Controller
         foreach ($periode_waktu as $waktu) {
             $waktu_list[] = $waktu->format('H:i');
         }
-
 
         return view('jadwal.grup_UI', [
             'nama_grup' => $grup->nama_grup,
@@ -154,7 +153,7 @@ class GrupController extends Controller
         }
     }
 
-
+    //! membuat jadwal
     public function saveSchedules(Request $request)
     {
         $request->validate([
@@ -184,6 +183,7 @@ class GrupController extends Controller
             // dd($userId);
             JadwalPertemuanAnggota::create([
                 'jadwal_id' => $jadwal->id,
+                'grup_id' => $jadwal->grup_id,
                 'user_id' => $userId,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -245,6 +245,7 @@ class GrupController extends Controller
         ]);
     }
 
+    //! anggota availability
     public function simpanAvai(Request $request)
     {
         $request->validate([
@@ -271,9 +272,114 @@ class GrupController extends Controller
         ], 200);
     }
 
-    public function detailJadwal(string $id)
+    //! detail jadwal
+    public function detailJadwal(string $jadwalId)
     {
-        $anggota = JadwalPertemuanAnggota::where('jadwal_id', $id)->with('user')->get();
-        return response()->json($anggota);
+        $userId = 1; // Ambil ID user yang sedang login
+        // $userId = auth()->id(); // Ambil ID user yang sedang login
+        $jadwal = JadwalPertemuan::with('peserta.user')->find($jadwalId);
+        $grup = Grup::where('id_grup', $jadwal->grup_id)->first();
+
+        if (!$jadwal) {
+            return response()->json([], 404);
+        }
+
+        // Ambil daftar peserta yang sudah menghadiri
+        $anggota = $jadwal->peserta->map(function ($peserta) {
+            return [
+                'name' => $peserta->user->name,
+                'email' => $peserta->user->email,
+            ];
+        });
+
+        // Cek apakah user yang sedang login sudah ada di peserta
+        $sudahHadir = $jadwal->peserta->where('user_id', $userId)->isNotEmpty();
+
+        return response()->json([
+            'anggota' => $anggota,
+            'sudahHadir' => $sudahHadir
+        ]);
+    }
+
+    //! anggota menghadiri jadwal
+    public function hadiriJadwal(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'jadwal_id' => 'required|integer|exists:jadwal_pertemuan,id'
+        ]);
+
+        $userId = 1; // Ambil ID user yang sedang login
+
+        // Cek apakah user sudah hadir
+        $sudahHadir = JadwalPertemuanAnggota::where([
+            'user_id' => $userId,
+            'jadwal_id' => $request->jadwal_id,
+            'grup_id' => $request->grup_id
+        ])->exists();
+
+        if ($sudahHadir) {
+            return response()->json(['message' => 'Anda sudah menghadiri jadwal ini'], 400);
+        }
+
+        // Simpan data ke database
+        JadwalPertemuanAnggota::create([
+            'user_id' => $userId,
+            'jadwal_id' => $request->jadwal_id,
+            'grup_id' => $request->grup_id,
+        ]);
+
+        return response()->json(['message' => 'Berhasil menghadiri jadwal']);
+    }
+
+    //!menghapus jadwal
+    public function deleteJadwal(string $id)
+    {
+        $jadwal = JadwalPertemuan::find($id);
+
+        if (!$jadwal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jadwal tidak ditemukan.'
+            ]);
+        }
+
+        // Hapus semua peserta terkait
+        $jadwal->peserta()->delete();
+
+        // Hapus jadwal utama
+        $jadwal->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jadwal berhasil dihapus.'
+        ]);
+    }
+
+
+    public function batalKehadiran(Request $request)
+    {
+        // Validasi request
+        // $request->validate([
+        //     'tanggal' => 'required|date',
+        //     'waktu' => 'required|string'
+        // ]);
+
+        // Hapus data kehadiran berdasarkan tanggal dan waktu
+        $kehadiran = Ketersediaan::where('tanggal', $request->tanggal)
+            ->where('waktu', $request->waktu)
+            ->first();
+
+        $kehadiran = Ketersediaan::where('user_id', $request->user_id)
+            ->where('tanggal', $request->tanggal)
+            ->where('waktu', $request->waktu)
+            ->first();
+
+        if ($kehadiran) {
+            $kehadiran->delete();
+            return redirect()->back()->with('success', 'Kehadiran berhasil dibatalkan.');
+        } else {
+            return redirect()->back()->with('error', 'Kehadiran tidak ditemukan.');
+        }
     }
 }

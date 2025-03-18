@@ -20,7 +20,7 @@
                 <p>Waktu Mulai</p>
             </h6> --}}
             <h6 class="d-flex">
-                <i class="bi bi-clock-history me-2"></i>
+                <i class="bi bi-clock me-2"></i>
                 <p class="waktu-mulai">07:00</p>
             </h6>
         </div>
@@ -35,15 +35,6 @@
         <hr>
         <div class="present">
             <h5><strong>Dihadiri Oleh :</strong></h5>
-            {{-- @foreach ($hadir as $h) --}}
-            <div class="box-item d-flex">
-                <div class="avatar-search">p</div>
-                <div class="nama-user mt-1">
-                    <h6>Penjual</h6>
-                    <p style="margin-top: -10px">Penjual@gmail.com</p>
-                </div>
-            </div>
-            {{-- @endforeach --}}
         </div>
     </div>
     <div class="card h-25 d-flex flex-row align-items-center justify-content-center p-1"
@@ -52,12 +43,23 @@
             <button type="button" class="btn btn-danger w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
                 data-bs-target="#cancel"><i class="bi bi-trash3"></i> Batalkan Jadwal</button>
         @else
-            <button type="button" class="btn btn-primary w-50 m-1" style="font-size: 14px" data-bs-toggle="modal"
-                data-bs-target="#cancel"><i class="bi bi-clipboard-check"></i> Hadiri Jadwal</button>
+            <button type="button" class="btn btn-primary w-50 m-1" id="hadiri-jadwal" style="font-size: 14px"
+                data-bs-toggle="modal" data-bs-target="#hadiri"><i class="bi bi-clipboard-check"></i> Hadiri
+                Jadwal</button>
         @endif
     </div>
 </div>
 @include('Jadwal.modal.batal_jadwal')
 @include('Jadwal.modal.hadiri_jadwal')
 
-<script></script>
+<!-- Toast Notifikasi -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="hadirAnggotaJadwal" class="toast align-items-center text-bg-success border-0" role="alert"
+        aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body"> berhasil membatalkan kehadiran
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
