@@ -1,5 +1,5 @@
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="history" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             {{-- <div class="modal-header border-0">
@@ -43,10 +43,10 @@
                         </div>
                         <div class="member">
                             <p style="font-weight: bold; font-size: 20px">Anggota</p>
-                            @foreach ($anggota as $item)
+                            {{-- @foreach ($anggota as $item)
                                 <p class="ms-3">{{ $item }}</p>
                                 <hr>
-                            @endforeach
+                            @endforeach --}}
 
                         </div>
                     </div>
