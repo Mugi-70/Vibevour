@@ -21,4 +21,9 @@ class JadwalPertemuanAnggota extends Model
     {
         return $this->belongsTo(JadwalPertemuan::class, 'jadwal_id');
     }
+
+    public function anggota()
+    {
+        return $this->hasMany(JadwalPertemuanAnggota::class, 'jadwal_id');
+    }
 }

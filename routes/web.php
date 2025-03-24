@@ -33,7 +33,7 @@ Route::post('/create/grup', [GrupController::class, 'store'])->name('coba_bikin'
 //edit grup
 Route::put('/edit/grup/{id}', [GrupController::class, 'update'])->name('coba_edit');
 //hapus grup
-Route::delete('/hapus_grup/{id}', [GrupController::class, 'delete'])->name('coba_hapus');
+Route::post('/hapus_grup/{id}', [GrupController::class, 'delete'])->name('coba_hapus');
 
 //menampilkan grup sesuai yang dipilih
 Route::get('/grup_UI/{id}', [GrupController::class, 'showGroup'])->name('grup.detail');
@@ -44,14 +44,17 @@ Route::post('/saveSchedules', [GrupController::class, 'saveSchedules']);
 Route::post('/undang', [GrupController::class, 'undang']);
 
 Route::get('/grup_UI_anggota', [GrupController::class, 'anggota']);
-Route::get('/pertemuan', [GrupController::class, 'pertemuan']);
+Route::get('/pertemuan/{id}', [GrupController::class, 'pertemuan']);
 
 //coba cari 
 Route::get('/cari', [GrupController::class, 'cari_anggota']);
 
+Route::post('/hapus_member/{id}', [GrupController::class, 'delete_member'])->name('hapus_member');
 
 Route::get('/jadwal/{jadwalId}/anggota', [GrupController::class, 'detailJadwal']);
 Route::delete('/jadwal/{id}', [GrupController::class, 'deleteJadwal']);
+
+Route::delete('/grup/{grup_id}/keluar', [GrupController::class, 'leaveGroup']);
 
 Route::post('/batalAvai', [GrupController::class, 'batalKehadiran'])->name('batal.kehadiran');
 Route::post('/hadiri-jadwal', [GrupController::class, 'hadiriJadwal']);

@@ -12,14 +12,14 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <strong><i class="bi bi-calendar-event me-2"></i> Tanggal:</strong>
                         <input type="text" id="selectedDate" class="form-control mb-2" placeholder=" tanggal" hidden>
-                        <span id="selectedDate22" class="fw-semibold"></span>
+                        <span id="selectedDate21" class="fw-semibold"></span>
                     </div>
                     {{-- <input type="text" id="selectedDate" hidden> --}}
 
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <strong><i class="bi bi-clock me-2"></i> Waktu:</strong>
                         <input type="text" id="selectedTime" class="form-control" placeholder=" waktu" hidden>
-                        <span id="selectedTime22" class="fw-semibold"></span>
+                        <span id="selectedTime21" class="fw-semibold"></span>
                     </div>
                     {{-- <input type="text" id="selectedTime" hidden> --}}
 

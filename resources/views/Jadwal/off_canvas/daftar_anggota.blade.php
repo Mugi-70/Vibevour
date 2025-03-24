@@ -2,7 +2,8 @@
     data-bs-backdrop="false" style="background-color: #F0F3F8">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasRightLabel"><i class="bi bi-people-fill me-2"></i><strong>Daftar
-                Anggota ()</strong></h5>
+                Anggota ({{ $totalAnggota }})
+            </strong></h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <hr>

@@ -29,22 +29,13 @@ class GrupController extends Controller
         return view('Jadwal.grup', compact('grup'));
     }
 
-    public function setRoleAdmin()
+    public function pertemuan($userId)
     {
-        session(['role' => 'admin']); // Simpan role sebagai admin
-        return redirect()->back()->with('success', 'Role diset sebagai Admin!');
-    }
-
-    public function setRoleAnggota()
-    {
-        session(['role' => 'anggota']); // Simpan role sebagai anggota
-        return redirect()->back()->with('success', 'Role diset sebagai Anggota!');
-    }
-
-    public function pertemuan()
-    {
-        $anggota = ["Penjual", "Notaris", "Pembeli"];
-        return view("Jadwal.pertemuan", compact('anggota'));
+        $userId = 1;
+        $jadwals = JadwalPertemuanAnggota::where('user_id', $userId)
+            ->with('jadwal') // Ambil data jadwal terkait
+            ->get();
+        return view("Jadwal.pertemuan", compact('jadwals'));
     }
 
     public function showGroup(string $id)
@@ -78,6 +69,12 @@ class GrupController extends Controller
         foreach ($periode_waktu as $waktu) {
             $waktu_list[] = $waktu->format('H:i');
         }
+        $jadwalAda = JadwalPertemuan::whereIn('tanggal', $tanggal_list)
+            ->whereIn('waktu_mulai', $waktu_list)
+            ->where('grup_id', $grup->id_grup)
+            ->exists();
+
+        $totalAnggota = AnggotaGrup::where('grup_id', $id)->count();
 
         return view('jadwal.grup_UI', [
             'nama_grup' => $grup->nama_grup,
@@ -91,9 +88,23 @@ class GrupController extends Controller
             'tanggal_list' => $tanggal_list,
             'grup' => $grup,
             'role' => $role,
-            // 'jadwal_data' => $jadwal_data // Kirim data jadwal ke Blade
+            'jadwalAda' => $jadwalAda,
+            'totalAnggota' => $totalAnggota,
         ]);
     }
+
+    // public function showKalender($id_grup)
+    // {
+    //     $user_id = Auth::id(); // Ambil ID user yang sedang login
+
+    //     // Ambil semua jadwal yang user ini sudah miliki di grup lain
+    //     $jadwalDiGrupLain = JadwalPertemuan::where('user_id', $user_id)
+    //         ->where('grup_id', '!=', $id_grup) // Bukan grup yang sedang dilihat
+    //         ->pluck('tanggal', 'waktu_mulai') // Ambil tanggal & waktu_mulai
+    //         ->toArray();
+
+    //     return view('Jadwal.grup_UI', compact('jadwalDiGrupLain'));
+    // }
 
     //todo Membuat Grup baru
     public function store(Request $request)
@@ -139,7 +150,7 @@ class GrupController extends Controller
                     // Masukkan ke tabel anggota grup dengan user_id yang valid
                     AnggotaGrup::create([
                         'grup_id' => $grup->id_grup,
-                        'user_id' => (int) $anggota, // Pastikan user_id dalam bentuk integer
+                        'user_id' => (int) $anggota,
                         'role' => 'member'
                     ]);
                 }
@@ -207,12 +218,46 @@ class GrupController extends Controller
         $grup->waktu_mulai = $request->waktu_mulai;
         $grup->waktu_selesai = $request->waktu_selesai;
         $grup->durasi = $request->durasi;
+        $grup->deskripsi = $request->desk;
         $grup->save();
 
-        return redirect('/grup')->with('success', 'Grup berhasil dibuat!');
+        $anggotaList = $request->input('anggota', []);
+
+        // if (empty($anggotaList)) {
+        //     return response()->json(['error' => 'Tidak ada anggota yang ditambahkan!'], 400);
+        // }
+
+        // Loop untuk setiap anggota
+        foreach ($anggotaList as $anggota) {
+            if ($anggota === 'invite') {
+                // Pastikan email dikirim dari frontend
+
+                $email = $request->input('email', null);
+
+                if (!$request->has('email')) {
+                    return response()->json(['error' => 'Email tidak ditemukan!'], 400);
+                }
+
+                // Masukkan ke tabel pending
+                AnggotaGrupPending::create([
+                    'grup_id' => $grup->id_grup, // Perbaikan penggunaan id
+                    'email' => $email,
+                    'status' => 'Pending'
+                ]);
+            } else {
+                // Masukkan ke tabel anggota grup dengan user_id yang valid
+                AnggotaGrup::create([
+                    'grup_id' => $grup->id_grup,
+                    'user_id' => (int) $anggota,
+                    'role' => 'member'
+                ]);
+            }
+        }
+
+        return redirect()->back();
     }
 
-    //todo 
+    //todo  menghapus grup
     public function delete(string $id)
     {
         $grup = Grup::find($id);
@@ -221,9 +266,34 @@ class GrupController extends Controller
         // }
 
         $grup->delete();
-        return redirect('/grup')->with('success', 'Grup berhasil dihapus');
+        return redirect()->route('coba');
     }
 
+    // mengeluarkan anggota dari grup
+    public function delete_member(string $id)
+    {
+        $user = AnggotaGrup::find($id);
+        $user->delete();
+        return response()->json(['message' => 'berhasil']);
+    }
+
+    // anggota keluar
+    public function leaveGroup($group_id)
+    {
+        // $user = Auth::user();
+        $user_id = 3;
+        $deleted = AnggotaGrup::where('grup_id', $group_id)
+            ->where('user_id', $user_id)
+            ->delete();
+
+        if ($deleted) {
+            return response()->json(['message' => 'Berhasil keluar dari grup.']);
+        } else {
+            return response()->json(['message' => 'Gagal keluar dari grup.'], 400);
+        }
+    }
+
+    //cari anggota
     public function cari_anggota(Request $request)
     {
         $search = $request->input('search', ''); // Pastikan tetap ada default string kosong
@@ -327,6 +397,13 @@ class GrupController extends Controller
             'user_id' => $userId,
             'jadwal_id' => $request->jadwal_id,
             'grup_id' => $request->grup_id,
+        ]);
+
+        Ketersediaan::create([
+            'user_id' => $userId,
+            'grup_id' => $request->grup_id,
+            'tanggal' => $request->tanggal,
+            'waktu' => $request->waktu_mulai,
         ]);
 
         return response()->json(['message' => 'Berhasil menghadiri jadwal']);

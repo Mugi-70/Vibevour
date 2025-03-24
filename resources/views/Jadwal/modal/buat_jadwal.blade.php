@@ -27,7 +27,7 @@
                                 :
                             </td>
                             <td>
-                                <p id="selectedDateText">
+                                <p id="selectedDate22">
                                 </p>
                             </td>
                         </tr>
@@ -40,7 +40,7 @@
                                 :
                             </td>
                             <td>
-                                <p id="selectedTimeText"></p>
+                                <p id="selectedTime22"></p>
                             </td>
                         </tr>
                         <tr>

@@ -1,11 +1,6 @@
 @extends('Jadwal.sidebar')
 
 @section('header')
-    {{-- <div class="title d-flex">
-        <h3 class="mt-3" style="font-weight: bold">Grup</h3>
-        <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="bottom"
-            title="Halaman Grup {{ $grup->nama_grup }}"><i class="bi bi-question-circle"></i></button>
-    </div> --}}
     <div class="card border-0 shadow-sm mb-1">
         <div class="card-body pt-3 pb-3 pe-3 border-0">
             <div class="d-flex align-items-center">
@@ -27,6 +22,18 @@
 @endsection
 
 @section('content')
+    <div id="toastNotification"
+        class="toast align-items-center text-white bg-danger border-0 position-fixed top-0 end-0 p-3" role="alert"
+        aria-live="assertive" aria-atomic="true" data-bs-delay="3000" style="z-index: 999">
+        <div class="d-flex">
+            <div class="toast-body" id="toastpemberitahuan">
+                <!-- Pesan akan diisi oleh JavaScript -->
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+        </div>
+    </div>
+
     <div class="row position-relative">
         <div class="card shadow-sm w-100" style=" border:none; ">
             <div class="card-body">
@@ -43,8 +50,9 @@
                         </li>
                         @if ($role === 'admin')
                             <li>
-                                <button class="dropdown-item text-warning" data-bs-toggle="offcanvas"
-                                    data-bs-target="#edit_grup" style="">
+                                <button class="edit dropdown-item text-warning" data-bs-toggle="offcanvas"
+                                    data-jadwal-ada="{{ $jadwalAda ? 'true' : 'false' }}" data-bs-target="#edit_grup"
+                                    aria-controls="offcanvasRight" style="">
                                     <i class="bi bi-pencil"></i> Edit Grup
                                 </button>
                             </li>
@@ -66,13 +74,14 @@
                             <i class="bi bi-people-fill fs-1"></i>
                             <h5 class="fw-bold mt-2">{{ $nama_grup }}</h5>
                             @if ($role === 'admin')
-                                <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal"
-                                    data-bs-target="#leave_grup">
+                                <button class="hapus btn btn-outline-danger mt-2" data-bs-toggle="modal"
+                                    data-bs-target="#delete_grup" data-grup-id="{{ $grup->id_grup }}"
+                                    data-grup-id="{{ $grup->id_grup }}">
                                     <i class="bi bi-trash"></i> Hapus Grup
                                 </button>
                             @elseif ($role === 'anggota')
-                                <button class="btn btn-outline-danger mt-2" data-bs-toggle="modal"
-                                    data-bs-target="#leave_grup">
+                                <button class="leave btn btn-outline-danger mt-2" data-bs-toggle="modal"
+                                    data-bs-target="#leave_grup" data-grup-id="{{ $grup->id_grup }}">
                                     <i class="bi bi-box-arrow-left"></i> Keluar Grup
                                 </button>
                             @endif
@@ -128,8 +137,6 @@
                         </div>
                     </div>
 
-
-
                     <!-- Tombol untuk Desktop di Sebelah Kanan Berbaris ke Bawah -->
                     <div class="col-md-2 d-none d-md-flex flex-column align-items-start gap-2">
                         <button class="btn btn-secondary w-100" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
@@ -137,14 +144,15 @@
                             <i class="bi bi-people"></i> Daftar Anggota
                         </button>
                         @if ($role === 'admin')
-                            <button class="btn btn-warning w-100" data-bs-toggle="offcanvas" data-bs-target="#edit_grup"
-                                aria-controls="offcanvasRight">
+                            <button class="edit btn btn-warning w-100" data-bs-toggle="offcanvas"
+                                data-bs-target="#edit_grup" aria-controls="offcanvasRight"
+                                data-jadwal-ada="{{ $jadwalAda ? 'true' : 'false' }}">
                                 <i class="bi bi-pencil"></i> Edit Grup
                             </button>
                         @endif
                         @unless ($role == 'admin')
                             <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup"
-                                id="hapus_grup{{ $grup->id_grup }}">
+                                id="hapus_grup">
                                 <i class="bi bi-trash"></i> Hapus Grup
                             </button>
                         @endunless
@@ -170,11 +178,10 @@
                     <table class="table table-bordered"
                         style="min-width: 600px; border-top: transparent !important; border-left: transparent !important;">
                         <tr>
-                            <td style="width: 6em; vertical-align: middle; left: 0; position: sticky; z-index: 2">
-                            </td>
+                            <td style="width: 6em; vertical-align: middle; left: 0; position: sticky; z-index: 2"></td>
                             {{-- waktu --}}
                             @foreach ($waktu_list as $ts)
-                                <td style="height: 80px;  position: sticky; text-align:center; vertical-align:middle">
+                                <td style="height: 80px; position: sticky; text-align:center; vertical-align:middle">
                                     {{ $ts }}
                                 </td>
                             @endforeach
@@ -191,17 +198,28 @@
                                         // Ambil jadwal yang sudah tersimpan
                                         $jadwal = App\Models\JadwalPertemuan::where('tanggal', $t)
                                             ->where('waktu_mulai', $ts)
+                                            ->where('grup_id', $grup->id_grup)
                                             ->first();
 
                                         // Ambil anggota yang bersedia dari tabel ketersediaan
                                         $anggotaYangTersedia = App\Models\Ketersediaan::where('tanggal', $t)
                                             ->where('waktu', $ts)
+                                            ->where('grup_id', $grup->id_grup)
                                             ->get();
 
                                         $userTersedia = $anggotaYangTersedia->contains('user_id', 1);
+
+                                        // Cek apakah jadwal sudah ada di grup lain
+                                        $jadwalDiGrupLain = App\Models\JadwalPertemuan::where('tanggal', $t)
+                                            ->where('waktu_mulai', $ts)
+                                            ->where('grup_id', '!=', $grup->id_grup)
+                                            ->exists();
+
+                                        // Jika jadwal sudah ada di grup lain, tambahkan class CSS untuk menonaktifkan sel
+                                        $disabledClass = $jadwalDiGrupLain ? 'bg-black-300 pointer-events-none' : '';
                                     @endphp
 
-                                    <td class="item" data-tanggal="{{ $t }}"
+                                    <td class="item {{ $disabledClass }}" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}" data-role="{{ $role }}"
                                         data-grup-id="{{ $grup->id_grup }}" data-durasi="{{ $grup->durasi }}"
                                         style="height: 50px; max-width:20px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
@@ -225,6 +243,10 @@
                                                     </div>
                                                 </div>
                                             </button>
+                                        @elseif ($jadwalDiGrupLain)
+                                            <!-- Jika slot ini sudah terpakai di grup lain -->
+                                            <div class="text-muted" style="font-size: 14px; color:aqua">Sudah ada jadwal
+                                            </div>
                                         @elseif ($anggotaYangTersedia->isNotEmpty())
                                             <!-- Jika tidak ada jadwal, tapi ada anggota yang bersedia -->
                                             <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
@@ -235,7 +257,8 @@
                                                             data-user-id="{{ $anggota->user->id ?? '' }}"
                                                             data-tanggal="{{ $t }}"
                                                             data-waktu="{{ $ts }}">
-                                                            {{ $anggota->user->name ?? '' }}</p>
+                                                            {{ $anggota->user->name ?? '' }}
+                                                        </p>
                                                         <i class="bi bi-check-square fs-4"></i>
                                                     </div>
                                                 @endforeach
@@ -247,10 +270,10 @@
                                         @endif
                                     </td>
                                 @endforeach
-
                             </tr>
                         @endforeach
                     </table>
+
                 </div>
             </div>
         </div>
@@ -267,11 +290,112 @@
         @include('Jadwal.off_canvas.edit_grup')
         @include('jadwal.off_canvas.daftar_anggota')
         {{-- offcanvas --}}
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="toastJadwalAda" class="toast align-items-center text-white bg-danger border-0" role="alert"
+                aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        Sudah ada jadwal di grup, Grup tidak dapat diedit!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
     </div>
 
-
     <script>
-        //batalkan kehadiran di kalender
+        //anggota keluar grup
+        $(document).ready(function() {
+            let groupId;
+
+            // Saat tombol "Keluar dari Grup" diklik, simpan ID grup
+            $('button[data-bs-target="#leave_grup"]').click(function() {
+                groupId = $(this).data('grup-id');
+            });
+
+            // Saat tombol "Keluar" di modal diklik
+            $('#confirmLeaveBtn').click(function() {
+                $.ajax({
+                    url: '/grup/' + groupId + '/keluar',
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        window.location.href = "/grup"
+                    },
+                    error: function(xhr) {
+                        alert("Gagal keluar dari grup.");
+                    }
+                });
+            });
+        });
+
+        //validasi jika jadwal ada maka tidak bisa edit
+        $(document).ready(function() {
+            $(".edit").click(function(event) {
+                let jadwalAda = $(this).data("jadwal-ada");
+
+                if (jadwalAda) {
+                    event.preventDefault(); // Mencegah offcanvas muncul
+                    let toastEl = new bootstrap.Toast($("#toastJadwalAda")[0]);
+                    toastEl.show();
+                }
+            });
+        });
+
+
+        //hapus grup
+        $(document).ready(function() {
+            let selectedIDG = null;
+
+            // Simpan ID Grup saat tombol "Hapus" ditekan
+            $(document).on("click", ".hapus", function() {
+                selectedIDG = $(this).data("grup-id");
+                console.log("ID Grup yang dipilih:", selectedIDG);
+
+                // Simpan ID dalam modal 
+                $("#delete_grup").attr("data-id", selectedIDG);
+            });
+
+            // "Konfirmasi Hapus grup" 
+            $(document).on("click", ".hapus_grup", function() {
+                let idGrup = $("#delete_grup").attr("data-id");
+                console.log("ID Grup yang akan dihapus:", idGrup); // Debugging
+
+                if (!idGrup) {
+                    alert("Terjadi kesalahan! ID Grup tidak ditemukan.");
+                    return;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: "/hapus_grup/" + idGrup,
+                    data: {
+                        id: idGrup
+                    },
+                    success: function(response) {
+                        // alert("Grup berhasil dihapus!");
+                        // location.reload();
+                        window.location.href = "/grup"
+                        var toast = new bootstrap.Toast(document.getElementById(
+                            "hapusGrup"));
+                        toast.show();
+                    },
+                    error: function(xhr) {
+                        alert("Gagal menghapus grup. Silakan coba lagi.");
+                    }
+                });
+            });
+        });
+
+        function showToast(message) {
+            $("#toastpemberitahuan").text(message);
+            $("#toastNotification").toast("show");
+        }
+
+        //batal kehadiran anggota
         $(document).ready(function() {
             // Saat user mengklik namanya di dalam daftar kehadiran
             $(document).on("click", ".anggota-hadir", function(event) {
@@ -325,6 +449,7 @@
                         var toast = new bootstrap.Toast(document.getElementById(
                             "batalHadir"));
                         toast.show();
+                        location.reload();
                     },
                     error: function(xhr) {
                         alert("Gagal membatalkan kehadiran. Silakan coba lagi.");
@@ -346,6 +471,14 @@
         function openModal(cell) {
             selectedCell = $(cell);
 
+            // Cek apakah kolom memiliki keterangan "Sudah ada jadwal"
+            if (selectedCell.text().trim() === "Sudah ada jadwal") {
+                console.log("Anda sudah mempunyai jadwal pada tanggal dan waktu ini.");
+                showToast("Anda sudah mempunyai jadwal pada tanggal dan waktu ini.");
+
+                return; // Hentikan eksekusi fungsi
+            }
+
             // Mengambil data tanggal, waktu, dan role dari atribut data
             let tanggal = selectedCell.data("tanggal");
             let waktu = selectedCell.data("waktu");
@@ -360,7 +493,7 @@
             let userTersedia = selectedCell.find(".anggota-hadir[data-user-id='1']").length > 0;
 
             if (userTersedia) {
-                console.log("User sudah hadir, tidak menampilkan modal penyediaan kehadiran.");
+                console.log("User sudah hadir, tidak menampilkan modal penyediaan ");
                 return; // Hentikan fungsi jika user sudah hadir
             }
 
@@ -377,6 +510,9 @@
             $("#selectedDate22").text(tanggal);
             $("#selectedTime22").text(waktu);
 
+            $("#selectedDate21").text(tanggal);
+            $("#selectedTime21").text(waktu);
+
             // Menampilkan modal sesuai role
             if (role === "admin") {
                 $("#scheduleModal").modal("show"); // Modal untuk Admin
@@ -386,15 +522,18 @@
                 alert("Role tidak dikenali!");
             }
         }
+
         /* membuka modal */
 
 
         /* tooltips */
         $(document).ready(function() {
-            $('.btn').tooltip();
+            $('[data-bs-toggle="tooltip"]').tooltip('dispose').tooltip();
         });
+
         /* tooltips */
 
+        //menghapus jadwal
         $(document).ready(function() {
             let selectedJadwalId = null;
 
@@ -430,6 +569,7 @@
                             // Hapus backdrop modal jika masih ada
                             $(".modal-backdrop").remove();
                             $("body").removeClass("modal-open").css("overflow", "");
+                            location.reload();
                             var toast = new bootstrap.Toast(document.getElementById(
                                 "successToast"));
                             toast.show();
@@ -514,6 +654,7 @@
                     setTimeout(() => {
                         $("#scheduleModal").modal("hide");
                     }, 500);
+                    location.reload();
                     var toast = new bootstrap.Toast(document.getElementById(
                         "jadwalDibuat"));
                     toast.show();
@@ -527,7 +668,7 @@
 
         //konfirmasi anggota untuk memberi jadwal
         $(document).on("click", "#confirmAvailability", function() {
-            let userId = 1;
+            let userId = 3;
             let grup_id = selectedCell.data("grup-id");
             let tanggal = $("#selectedDate").val();
             let waktu = $("#selectedTime").val();
@@ -566,8 +707,9 @@
                 ${userListHTML}
                 </div>
                 `);
-                    // **Tutup modal 
+                    // Tutup modal 
                     $("#availability").modal("hide");
+                    location.reload();
                     var toast = new bootstrap.Toast(document.getElementById("sediaAnggota"));
                     toast.show();
                 },
@@ -590,14 +732,19 @@
         $(document).ready(function() {
             let selectedJadwalId = null;
             let selectedGrupId = null;
+            let selectedTanggal = null;
+            let selectedWaktuMulai = null;
+
             $(".bjadwal").on("click", function() {
-                event.stopPropagation(); // Hindari modal lain muncul
+                event.stopPropagation();
 
                 selectedJadwalId = $(this).data("jadwal-id");
                 selectedGrupId = $(this).data("grup-id");
+                selectedTanggal = $(this).data("tanggal");
+                selectedWaktuMulai = $(this).data("waktu-mulai");
 
-                console.log("Jadwal ID dari tombol jadwal:", selectedJadwalId);
-                console.log("Grup ID dari tombol jadwal:", selectedGrupId);
+                console.log("Jadwal ID :", selectedJadwalId);
+                console.log("Grup ID :", selectedGrupId);
                 // Ambil data dari atribut tombol
                 let jadwalId = $(this).data("jadwal-id");
                 let judul = $(this).data("judul");
@@ -607,19 +754,19 @@
 
                 console.log(tanggal);
                 console.log(waktuMulai);
-                // Pastikan data tidak kosong
+
                 if (!jadwalId) {
                     console.error("Jadwal ID tidak ditemukan");
                     return;
                 }
 
-                // Format Tanggal (YYYY-MM-DD -> DD-MM-YYYY)
+                // Format Tanggal DD-MM-YYYY
                 let formattedTanggal = formatTanggal(tanggal);
 
-                // Format Waktu (HH:MM:SS -> HH:MM)
+                // Format Waktu HH:MM
                 let formattedWaktuMulai = formatWaktu(waktuMulai);
 
-                // Format Durasi (dalam menit)
+                // Format Durasi menjadi menit
                 let formattedDurasi = formatDurasi(durasi);
 
                 // Masukkan data ke dalam Offcanvas
@@ -667,10 +814,6 @@
             $("#konfirmasiHadir").click(function() {
                 console.log("jdawl", selectedJadwalId);
                 console.log("grup", selectedGrupId);
-                // let selectedTanggal = tanggal;
-                // let selectedWaktu = waktuMulai;
-                // console.log(selectedTanggal);
-                // console.log(selectedWaktu);
                 if (!selectedJadwalId) {
                     alert("Jadwal ID tidak valid!");
                     return;
@@ -682,12 +825,14 @@
                     data: {
                         jadwal_id: selectedJadwalId,
                         grup_id: selectedGrupId,
-                        _token: "{{ csrf_token() }}" // Pastikan CSRF token ada
+                        tanggal: selectedTanggal,
+                        waktu_mulai: selectedWaktuMulai,
+                        _token: "{{ csrf_token() }}"
                     },
                     success: function(response) {
                         $("#konfirmasi-modal").hide();
                         $("#jadwal").offcanvas("hide");
-                        location.reload(); // Refresh halaman agar daftar hadir diperbarui
+                        location.reload();
                     },
                     error: function(xhr) {
                         alert("Gagal menghadiri jadwal!");
@@ -696,7 +841,7 @@
                 });
             });
 
-            // Fungsi untuk memformat tanggal ke format DD-MM-YYYY
+            // memformat tanggal ke format DD-MM-YYYY
             function formatTanggal(tanggal) {
                 if (!tanggal) return "-";
 
@@ -708,13 +853,13 @@
                 return new Date(tanggal).toLocaleDateString("id-ID", options);
             }
 
-            // Fungsi untuk memformat waktu ke format HH:MM
+            // memformat waktu ke format HH:MM
             function formatWaktu(waktu) {
                 if (!waktu) return "-";
                 return waktu.substring(0, 5);
             }
 
-            // Fungsi untuk menampilkan durasi dalam menit
+            // menampilkan durasi dalam menit
             function formatDurasi(durasi) {
                 if (!durasi) return "-";
                 let angkaDurasi = durasi.match(/\d+/);
