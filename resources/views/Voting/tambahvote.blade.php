@@ -2,8 +2,8 @@
 
     @section('content')
     <div class="card border-0 shadow-sm">
-        <div class="card-body pt-3 pb-3 pe-3 border-0">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="card-body border-0 pb-3 pe-3 pt-3">
+            <div class="d-flex align-items-center justify-content-between">
                 <h5 class="mb-0">Tambah Vote</h5>
             </div>
         </div>
@@ -11,7 +11,7 @@
 
     <div class="container mt-4">
 
-        <form id="voteForm" method="POST" action="{{ route('vote.store') }}">
+        <form id="voteForm" method="POST" action="{{ route('vote.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="card p-4">
                 <h4>Detail</h4>
@@ -40,13 +40,13 @@
                         <div>
                             <label for="protectVote" class="form-label">Kode vote</label>
                             <div class="form-control form-switch mb-2">
-                                <div class="form-check form-switch ">
+                                <div class="form-check form-switch">
                                     <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
                                     <input class="form-check-input" type="checkbox" id="protectVote" name="is_protected">
                                 </div>
                             </div>
                         </div>
-                        <input type="text" id="randomCode" name="access_code" class="form-control mb-2 d-none" readonly>
+                        <input type="text" id="randomCode" name="access_code" class="d-none form-control mb-2" readonly>
                         <label class="form-label" for="includeName">Nonaktifkan anonymous</label>
                         <div class="form-control form-switch">
                             <div class="form-check form-switch">
@@ -62,7 +62,7 @@
 
                     <div class="col-md-5">
                         <label for="openDate" class="form-label">Buka vote pada</label>
-                        <div class="mb-2 input-group">
+                        <div class="input-group mb-2">
                             <input type="text" class="form-control" id="openDate" name="open_date"
                                 placeholder="Pilih Tanggal & Jam" required>
                             <span class="input-group-text">
@@ -70,7 +70,7 @@
                             </span>
                         </div>
                         <label for="closeDate" class="form-label">Tutup vote pada</label>
-                        <div class="mb-2 input-group">
+                        <div class="input-group mb-2">
                             <input type="text" class="form-control" id="closeDate" name="close_date"
                                 placeholder="Pilih Tanggal & Jam" required>
                             <span class="input-group-text">
@@ -106,14 +106,15 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body text-center">
-                        <div id="uploadContainer" class="border rounded p-4 d-flex flex-column align-items-center justify-content-center"
+                        <div id="uploadContainer" class="d-flex flex-column align-items-center border justify-content-center p-4 rounded"
                             style="border-style: dashed; cursor: pointer; width: 100%; height: 200px;">
                             <i id="uploadIcon" class="bi bi-upload" style="font-size: 2rem;"></i>
                             <p id="uploadText">Klik untuk upload foto</p>
                             <p id="uploadHint" class="text-muted">JPG, PNG, Max 3MB</p>
                             <img id="previewImage" src="" class="d-none" style="max-width: 100%; height: auto;">
                         </div>
-                        <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
+                        <!-- <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg"> -->
+                        <input type="file" name="choice_images" id="uploadInput" class="d-none">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" id="confirmUpload" data-bs-dismiss="modal">OK</button>
@@ -201,90 +202,105 @@
             }
 
             //Pilihan
-            function createChoiceElement(questionId) {
-                const $choicesContainer = $(`#choices_${questionId}`);
-                const choiceCount = $choicesContainer.find('.choice-group').length + 1;
+            let choiceCounters = {};
 
-                const choiceId = `choice_${questionId}_${choiceCount}`;
+            function createChoiceElement(questionId) {
+
+                if (!choiceCounters[questionId]) {
+                    choiceCounters[questionId] = 0;
+                }
+
+                choiceCounters[questionId]++;
+
+                const choiceId = `choice_${questionId}_${choiceCounters[questionId]}`;
+                // const $choicesContainer = $(`#choices_${questionId}`);
+                // const choiceCount = $choicesContainer.find('.choice-group').length + 1;
+                // const choiceId = `choice_${questionId}_${choiceCount}`;
+
                 return $(`
-            <div class="choice-group" id="${choiceId}">
-                <div class="row mb-2 align-items-center choice-item">
-                    <div class="col-auto">
-                        <span class="choice-number fw-bold"></span>
+                <div class="choice-group" id="${choiceId}">
+                    <div class="row align-items-center choice-item mb-2">
+                        <div class="col-auto">
+                            <span class="choice-number fw-bold"></span>
+                        </div>
+                        <div class="col">
+                            <input type="text" 
+                                class="form-control" 
+                                placeholder="Pilihan"
+                                name="choices[${questionId}][]"
+                                id="input_${choiceId}"
+                                required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-danger remove-choice-btn">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="d-flex btn btn-outline-primary align-items-center open-upload-modal" 
+                                    style="text-decoration: none;"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#uploadFotoModal" 
+                                    data-target="img_${choiceId}">
+                                <i class="bi bi-image me-2"></i> Tambah Gambar
+                            </button>
+                        </div>
                     </div>
-                    <div class="col">
-                        <input type="text" 
-                            class="form-control" 
-                            placeholder="Pilihan"
-                            name="choices[${questionId}][]"
-                            id="input_${choiceId}"
-                            required>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-danger remove-choice-btn">
+                    <div class="d-none position-relative image-container mb-2">
+                        <img id="img_${choiceId}" src="" class="img-thumbnail" style="width: 70%; height: 20%;">
+                        <input type="file" 
+                            name="choice_images[${questionId}][]" 
+                            id="actual_image_input_${choiceId}"
+                            class="d-none">
+                        <input type="hidden" 
+                            name="choice_image_data[${questionId}][]" 
+                            id="image_input_${choiceId}">
+                        <button type="button" class="btn btn-danger btn-sm position-absolute end-0 remove-image-btn top-0">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-primary d-flex align-items-center open-upload-modal" 
-                                style="text-decoration: none;"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#uploadFotoModal" 
-                                data-target="img_${choiceId}">
-                            <i class="bi bi-image me-2"></i> Tambah Gambar
-                        </button>
-                    </div>
                 </div>
-                <div class="mb-2 position-relative image-container d-none">
-                    <img id="img_${choiceId}" src="" class="img-thumbnail" style="width: 70%; height: 20%;">
-                    <input type="hidden" 
-                        name="choice_images[${questionId}][]" 
-                        id="image_input_${choiceId}">
-                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-            </div>
-        `);
+            `);
             }
 
             //Pertanyaan
             function createQuestionCard() {
                 questionCounter++;
                 const questionId = `question_${questionCounter}`;
+                choiceCounters[questionId] = 0;
                 const $card = $(`
-        <div class="card p-4 mt-3 position-relative card-question" id="${questionId}">
-            <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-question-btn"></button>
-            <h4>Daftar Pertanyaan ${questionCounter}</h4>
-            <hr class="my-3" style="height: 2px; background-color: black;">
-            <h5>Pertanyaan</h5>
-            <textarea class="form-control mb-3" 
-                    rows="3" 
-                    placeholder="Masukkan pertanyaan"
-                    name="questions[${questionId}]"
-                    id="question_text_${questionId}"
-                    required></textarea>
-            
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="multiple_${questionId}" name="is_multiple[${questionId}]">
-                        <label class="form-check-label" for="multiple_${questionId}">Izinkan pilih banyak</label>
+                    <div class="card card-question p-4 position-relative mt-3" id="${questionId}">
+                        <button type="button" class="btn-close m-2 position-absolute delete-question-btn end-0 top-0"></button>
+                        <h4>Daftar Pertanyaan ${questionCounter}</h4>
+                        <hr class="my-3" style="height: 2px; background-color: black;">
+                        <h5>Pertanyaan</h5>
+                        <textarea class="form-control mb-3" 
+                                rows="3" 
+                                placeholder="Masukkan pertanyaan"
+                                name="questions[${questionId}]"
+                                id="question_text_${questionId}"
+                                required></textarea>
+                        
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="multiple_${questionId}" name="is_multiple[${questionId}]">
+                                    <label class="form-check-label" for="multiple_${questionId}">Izinkan pilih banyak</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="required_${questionId}" name="is_required[${questionId}]">
+                                    <label class="form-check-label" for="required_${questionId}">Wajib diisi</label>
+                                </div>
+                        
+                        <h5>Pilihan</h5>
+                        <div class="choices" id="choices_${questionId}"></div>
+                        <div class="text-start mt-2">
+                            <button type="button" class="btn btn-primary add-choice-btn" 
+                                    style="text-decoration: none;" 
+                                    data-question-id="${questionId}">
+                                <i class="bi bi-plus-circle"></i> Tambah Pilihan
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="required_${questionId}" name="is_required[${questionId}]">
-                        <label class="form-check-label" for="required_${questionId}">Wajib diisi</label>
-                    </div>
-            
-            <h5>Pilihan</h5>
-            <div class="choices" id="choices_${questionId}"></div>
-            <div class="text-start mt-2">
-                <button type="button" class="btn btn-primary add-choice-btn" 
-                        style="text-decoration: none;" 
-                        data-question-id="${questionId}">
-                    <i class="bi bi-plus-circle"></i> Tambah Pilihan
-                </button>
-            </div>
-        </div>
-    `);
+                `);
 
                 const $choicesContainer = $card.find('.choices');
 
@@ -432,15 +448,34 @@
                 currentImageInput = $imageInput;
             });
 
-            $(document).on('click', '#confirmUpload', function() {
-                if (currentImageTarget && $previewImage.attr('src')) {
-                    currentImageTarget
-                        .attr('src', $previewImage.attr('src'))
-                        .closest(".image-container")
-                        .removeClass('d-none');
-                    currentImageInput.val($previewImage.attr('src'));
+            function transferFileToInput(file, targetInputId) {
+                const input = document.getElementById(targetInputId);
+                if (!input) return;
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+            }
+
+            $('#confirmUpload').on('click', function() {
+                if (currentImageTarget && $uploadInput[0].files[0]) {
+                    const file = $uploadInput[0].files[0];
+                    const reader = new FileReader();
+
+                    const inputId = "actual_" + currentImageInput.attr('id').replace('image_input_', 'image_input_');
+
+                    reader.onload = function(e) {
+                        currentImageTarget
+                            .attr('src', e.target.result)
+                            .closest(".image-container")
+                            .removeClass('d-none');
+
+                        transferFileToInput(file, inputId);
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
+
 
             $(document).on('click', '.remove-image-btn', function(e) {
                 e.stopPropagation();

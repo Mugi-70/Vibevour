@@ -59,6 +59,7 @@ Route::get('/detail_vote_{slug}', [VoteController::class, 'show'])->name('vote.s
 Route::get('/detail_vote_{slug}/data', [VoteController::class, 'getVoteDetail']);
 Route::get('/detail_vote_{slug}/vote-summary', [VoteController::class, 'getVoteSummary']);
 Route::get('/detail_vote_{slug}/chart-data', [VoteController::class, 'getChartData']);
+Route::get('/detail_vote_{slug}/people', [VoteController::class, 'getPeople'])->name('vote.people');
 
 Route::post('/simpan_vote', [VoteController::class, 'store'])->name('vote.store');
 Route::get('/edit_vote_{slug}', [VoteController::class, 'edit'])->name('vote.edit');
@@ -67,8 +68,10 @@ Route::delete('/hapus_vote_{slug}', [VoteController::class, 'destroy'])->name('v
 Route::delete('/hapus_pertanyaan/{id}', [VoteController::class, 'deleteQuestion'])->name('question.delete');
 
 
-Route::get('/vote_{slug}', [VoteController::class, 'vote'])->name('vote.vote');
+Route::get('/vote_{slug}', [VoteController::class, 'voting'])->name('vote.vote');
+Route::get('/result_vote_{slug}', [VoteController::class, 'getResult'])->name('vote.result');
 Route::get('/vote_{slug}/data', [VoteController::class, 'getVoteData']);
 Route::get('/vote_{slug}/check-protection', [VoteController::class, 'checkProtection']);
 Route::post('/vote_{slug}/verify-access', [VoteController::class, 'verifyAccess']);
+Route::get('/vote_{slug}/check-session', [VoteController::class, 'checkAccessSession']);
 Route::post('/vote_{slug}/submit', [VoteController::class, 'storeVoteData'])->name('vote.storeVote');

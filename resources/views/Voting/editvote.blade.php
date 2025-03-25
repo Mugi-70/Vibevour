@@ -73,7 +73,7 @@
                     </div>
                     <div class="mb-2 position-relative image-container {{ $option->image ? '' : 'd-none' }}">
                         <img id="img_{{ $option->id }}"
-                            src="{{ $option->image ? asset($option->image) : '' }}"
+                            src="{{ $option->image ? asset('storage/options/' . $option->image) : '' }}"
                             class="img-thumbnail"
                             style="width: 70%; height: auto;">
 
@@ -219,8 +219,8 @@
                             <p id="uploadText">Klik untuk upload foto</p>
                             <p id="uploadHint" class="text-muted">JPG, PNG, Max 3MB</p>
                             <img id="previewImage" src="" class="d-none" style="max-width: 100%; height: auto;">
-                            <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
                         </div>
+                        <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" id="confirmUpload" data-bs-dismiss="modal">OK</button>
@@ -635,6 +635,25 @@
         $('#updateVoteForm').on('submit', function(e) {
             let isValid = true;
             let errorMessage = "";
+
+            $('.question-card').each(function(questionIndex) {
+                const optionsContainer = $(this).find('.optionsContainer');
+
+                optionsContainer.find('.row').each(function(optionIndex) {
+                    const imageContainer = $(this).next('.image-container');
+                    const imageInput = imageContainer.find('.image-input');
+
+                    if (imageInput.length && !imageInput.hasClass('d-none')) {
+                        const imageValue = imageInput.val();
+
+                        $('<input>')
+                            .attr('type', 'hidden')
+                            .attr('name', `choice_images[${$(this).closest('.question-card').find('input[name$="[id]"]').val()}][]`)
+                            .val(imageValue)
+                            .appendTo($(this));
+                    }
+                });
+            });
 
             if ($('.question-card').length === 0) {
                 isValid = false;

@@ -40,17 +40,17 @@
 </head>
 
 <body>
-    <div class="header p-lg-3">
-        <div class=" card border-0 shadow-sm">
-            <div class="card-body pt-3 pb-3 pe-3 border-0">
-                <div class=" d-flex justify-content-between align-items-center">
+    <div class="p-lg-3 header">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body border-0 pb-3 pe-3 pt-3">
+                <div class="d-flex align-items-center justify-content-between">
                     <h3 class="fw-medium" id="vote-title1">Loading...</h3>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container d-flex justify-content-center align-items-center  p-3">
-        <div class="card shadow p-4 w-100" style="max-width: 1200px;">
+    <div class="container d-flex align-items-center justify-content-center p-3">
+        <div class="card p-4 shadow w-100" style="max-width: 1200px;">
             <div id="vote-content">
                 <h3 class="fw-medium" id="vote-title">Loading...</h3>
                 <p class="text-muted" id="vote-date"></p>
@@ -74,7 +74,7 @@
                 <div class="row">
                     <div class="col">
                         <a href="javascript:void(0);" class="btn btn-secondary btn-sm back-vote-btn" data-slug="{{ $vote->slug }}" style="color: white">
-                            <i class="bi bi-chevron-left"></i> Back
+                            <i class="bi bi-chevron-left"></i> Kembali
                         </a>
                         <script>
                             $(document).ready(function() {
@@ -85,7 +85,17 @@
                             });
                         </script>
                         <button id="submitVote" class="btn btn-primary btn-sm"><i class="bi bi-check-square"></i> Vote</button>
-                        <a href="#" id="voteResults" class="btn btn-success btn-sm"><i class="bi bi-card-checklist"></i> Hasil</a>
+                        <a href="javascript:void(0);" class="btn btn-sm btn-success result-vote-btn" data-slug="{{ $vote->slug }}">
+                            <i class="bi bi-card-checklist"></i> Hasil
+                        </a>
+                        <script>
+                            $(document).ready(function() {
+                                $(".result-vote-btn").on("click", function() {
+                                    var slug = $(this).data("slug");
+                                    window.location.href = "/result_vote_" + slug;
+                                });
+                            });
+                        </script>
                     </div>
                     <div class="col text-end">
                         <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()"><i class="bi bi-share"></i> Bagikan</button>
@@ -106,9 +116,24 @@
                     url: "/vote_" + voteSlug + "/check-protection",
                     type: "GET",
                     success: function(response) {
+                        console.log("Protection check:", response);
                         if (response.is_protected) {
-                            accessModal = new bootstrap.Modal(document.getElementById('accessCodeModal'));
-                            accessModal.show();
+                            $.ajax({
+                                url: "/vote_" + voteSlug + "/check-session",
+                                type: "GET",
+                                success: function(sessionResponse) {
+                                    if (sessionResponse.verified) {
+                                        loadVoteData();
+                                    } else {
+                                        accessModal = new bootstrap.Modal(document.getElementById('accessCodeModal'));
+                                        accessModal.show();
+                                    }
+                                },
+                                error: function() {
+                                    accessModal = new bootstrap.Modal(document.getElementById('accessCodeModal'));
+                                    accessModal.show();
+                                }
+                            });
                         } else {
                             loadVoteData();
                         }
@@ -125,13 +150,32 @@
                     url: "/vote_" + voteSlug + "/data",
                     type: "GET",
                     success: function(response) {
+                        let currentDate = new Date();
+                        let openDate = new Date(response.vote.open_date);
+                        let closeDate = new Date(response.vote.close_date);
+
+                        if (currentDate < openDate) {
+                            $("#voteNotStartedModal").modal('show');
+                            $("#vote-content").hide();
+                            return;
+                        }
+
+                        if (currentDate > closeDate) {
+                            $("#voteClosedModal").modal('show');
+                            $("#vote-content").hide();
+                            return;
+                        }
+
+                        if (response.vote.result_visibility === 'private') {
+                            $(".result-vote-btn").hide();
+                        }
+
                         console.log(response);
                         $("#vote-title1").text("Vote " + response.vote.title);
                         $("#vote-title").text(response.vote.title);
                         $("#vote-date").text("Vote dibuat pada " + response.vote.created_at);
                         $("#vote-description").text(response.vote.description);
                         $("#vote-end").text("Vote berakhir pada " + response.vote.close_date);
-                        $("#voteResults").attr("href", "/vote/" + voteSlug + "/results");
 
                         if (response.vote.require_name) {
                             $("#nameContainer").show();
@@ -145,24 +189,18 @@
                             response.vote.questions.forEach((question, index) => {
                                 questionsHtml += `<h6 class="mt-4">${question.question} ${question.required ? '<span class="text-danger">*</span>' : ''}</h6>`;
 
-                                if (question.type === "multiple") {
-                                    question.options.forEach(option => {
-                                        questionsHtml += `
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="voteOption[${question.id}][]" value="${option.id}" id="option${option.id}">
-                                        <label class="form-check-label text-muted" for="option${option.id}">${option.option}</label>
-                                    </div>`;
-                                    });
-                                } else {
-                                    question.options.forEach(option => {
-                                        questionsHtml += `
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="voteOption[${question.id}]" value="${option.id}" id="option${option.id}">
-                                        <label class="form-check-label text-muted" for="option${option.id}">${option.option}</label>
-                                    </div>`;
-                                    });
-                                }
-
+                                question.options.forEach(option => {
+                                    questionsHtml += `
+                                <div class="form-check">
+                                    <input class="form-check-input" type="${question.type === 'multiple' ? 'checkbox' : 'radio'}" 
+                                        name="voteOption[${question.id}]${question.type === 'multiple' ? '[]' : ''}" 
+                                        value="${option.id}" id="option${option.id}">
+                                    <label class="d-flex form-check-label align-items-center text-muted" for="option${option.id}">
+                                        ${option.image ? `<img src="${option.image}" alt="Option Image" class="img-thumbnail me-2" style="width: 1000px;  object-fit: cover;">` : ''}
+                                        ${option.option}
+                                    </label>
+                                </div>`;
+                                });
 
                                 if (index !== response.vote.questions.length - 1) {
                                     questionsHtml += `<hr class="hr my-3">`;
@@ -179,7 +217,6 @@
                     }
                 });
             }
-
 
             $("#submitAccessCode").click(function() {
                 let accessCode = $("#accessCodeInput").val().trim();
@@ -198,6 +235,8 @@
                         access_code: accessCode
                     },
                     success: function(response) {
+                        console.log("Access verification:", response);
+
                         if (response.valid) {
                             accessModal.hide();
                             loadVoteData();
@@ -207,7 +246,7 @@
                         }
                     },
                     error: function(error) {
-                        console.log("Error verifying access code:", error);
+                        console.error("Access verification error:", error);
                         $("#accessCodeInput").addClass("is-invalid");
                         $("#accessCodeFeedback").text("Terjadi kesalahan. Silakan coba lagi.");
                     }
@@ -226,7 +265,7 @@
                 let requiresName = $("#nameContainer").is(":visible");
                 let isValid = true;
 
-                $("input[type=checkbox]:checked").each(function() {
+                $("input[type=checkbox]:checked, input[type=radio]:checked").each(function() {
                     let name = $(this).attr("name").replace("voteOption[", "").replace("][]", "").replace("]", "");
                     if (!selectedOptions[name]) {
                         selectedOptions[name] = [];
@@ -234,12 +273,15 @@
                     selectedOptions[name].push($(this).val());
                 });
 
-                $(".form-check-input").each(function() {
-                    let questionId = $(this).attr("name").replace("voteOption[", "").replace("][]", "").replace("]", "");
-                    let isRequired = $(this).closest(".form-check").prev("h6").find(".text-danger").length > 0;
+                $("h6").each(function() {
+                    let questionId = $(this).next(".form-check").find("input").attr("name");
+                    if (questionId) {
+                        questionId = questionId.replace("voteOption[", "").replace("]", "");
+                        let isRequired = $(this).find(".text-danger").length > 0;
 
-                    if (isRequired && (!selectedOptions[questionId] || selectedOptions[questionId].length === 0)) {
-                        isValid = false;
+                        if (isRequired && (!selectedOptions[questionId] || selectedOptions[questionId].length === 0)) {
+                            isValid = false;
+                        }
                     }
                 });
 
@@ -278,6 +320,7 @@
             });
 
 
+
             function copyLink() {
                 var dummy = document.createElement("textarea");
                 document.body.appendChild(dummy);
@@ -313,5 +356,37 @@
         </div>
     </div>
 </body>
+
+<div class="modal fade" id="voteNotStartedModal" tabindex="-1" aria-labelledby="voteNotStartedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="voteNotStartedModalLabel">Vote Belum Dimulai</h5>
+            </div>
+            <div class="modal-body">
+                <p>Vote ini belum dibuka. Silakan kembali pada tanggal dan jam yang ditentukan.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="/" class="btn btn-primary">Kembali ke Beranda</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="voteClosedModal" tabindex="-1" aria-labelledby="voteClosedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="voteClosedModalLabel">Vote Telah Ditutup</h5>
+            </div>
+            <div class="modal-body">
+                <p>Vote ini sudah ditutup. Anda tidak dapat lagi melakukan vote.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="/" class="btn btn-primary">Kembali ke Beranda</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 </html>

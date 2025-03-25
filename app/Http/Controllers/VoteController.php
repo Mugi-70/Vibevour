@@ -78,9 +78,18 @@ class VoteController extends Controller
         return response()->json($chartData);
     }
 
-    public function vote($slug)
+    public function voting($slug)
     {
         $vote = Vote::where('slug', $slug)->with(['questions.options'])->firstOrFail();
+
+
+        foreach ($vote->questions as $question) {
+            foreach ($question->options as $option) {
+                $option->image = Storage::url('options/' . $option->image);
+                // dd($option);
+            }
+        }
+
         return view('voting.voting', compact('vote', 'slug'));
     }
 
@@ -92,17 +101,21 @@ class VoteController extends Controller
                 'title' => $vote->title,
                 'created_at' => Carbon::parse($vote->created_at)->format('d/m/y'),
                 'description' => $vote->description,
-                'close_date' => Carbon::parse($vote->close_date)->format('d/m/y H:i'),
+                'open_date' => $vote->open_date,
+                'close_date' => $vote->close_date,
+                'result_visibility' => $vote->result_visibility,
                 'require_name' => $vote->require_name,
                 'questions' => $vote->questions->map(function ($question) {
                     return [
                         'id' => $question->id,
                         'question' => $question->question,
                         'type' => $question->type,
+                        'required' => $question->required,
                         'options' => $question->options->map(function ($option) {
                             return [
                                 'id' => $option->id,
-                                'option' => $option->option
+                                'option' => $option->option,
+                                'image' => $option->image ? url('storage/options/' . $option->image) : null
                             ];
                         })
                     ];
@@ -138,8 +151,26 @@ class VoteController extends Controller
         return response()->json(['valid' => $valid]);
     }
 
+    public function checkAccessSession($slug)
+    {
+        $vote = Vote::where('slug', $slug)->firstOrFail();
 
-    public function storeVoteData(Request $request, $slug)
+        if (!$vote->is_protected) {
+            return response()->json([
+                'verified' => true
+            ]);
+        }
+
+        $verified = session()->has("verified_vote_{$slug}")
+            ? session("verified_vote_{$slug}")
+            : false;
+
+        return response()->json([
+            'verified' => $verified
+        ]);
+    }
+
+    public function     storeVoteData(Request $request, $slug)
     {
         $vote = Vote::where('slug', $slug)->firstOrFail();
 
@@ -148,7 +179,7 @@ class VoteController extends Controller
         }
 
         $rules = [
-            'votes' => 'required|array',
+            'votes' => 'nullable|array',
             'votes.*' => 'exists:options,id',
         ];
 
@@ -157,30 +188,33 @@ class VoteController extends Controller
         }
 
         $request->validate($rules, [
-            'votes.required' => 'Harap pilih setidaknya satu opsi sebelum mengirimkan vote.',
             'votes.*.exists' => 'Opsi yang dipilih tidak valid.',
             'name.required' => 'Nama wajib diisi.',
         ]);
 
+
         $voterName = $vote->require_name ? $request->input('name') : null;
 
-        foreach ($request->votes as $questionId => $optionIds) {
-            if (!is_array($optionIds)) {
-                $optionIds = [$optionIds];
-            }
+        if (!empty($request->votes)) {
+            foreach ($request->votes as $questionId => $optionIds) {
+                if (!is_array($optionIds)) {
+                    $optionIds = [$optionIds];
+                }
 
-            foreach ($optionIds as $optionId) {
-                Result::create([
-                    'vote_id' => $vote->id,
-                    'question_id' => $questionId,
-                    'option_id' => $optionId,
-                    'name' => $voterName,
-                ]);
+                foreach ($optionIds as $optionId) {
+                    Result::create([
+                        'vote_id' => $vote->id,
+                        'question_id' => $questionId,
+                        'option_id' => $optionId,
+                        'name' => $voterName,
+                    ]);
+                }
             }
         }
 
         return response()->json(['message' => 'Vote berhasil dikirim!']);
     }
+
 
 
 
@@ -202,6 +236,25 @@ class VoteController extends Controller
         ]);
     }
 
+    public function getPeople($slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
+
+        $results = $vote->questions->flatMap->options->flatMap->results;
+
+        $people = $results->whereNotNull('name')->unique('name')->pluck('name')->toArray();
+
+        return response()->json([
+            'people' => array_values($people)
+        ]);
+    }
+
+    public function getResult(string $slug)
+    {
+        $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
+
+        return view('voting.hasilvote', compact('vote'));
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -235,13 +288,13 @@ class VoteController extends Controller
 
 
             $request->validate($validationRules, $validationMessages);
+            // dd($request->all());
 
             $vote = new Vote();
             $vote->title = $request->title;
             $vote->slug = Str::slug($request->title);
             $vote->description = $request->description;
             $vote->open_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->open_date))->format('Y-m-d H:i:s');
-            $vote->close_date = $request->close_date;
             $vote->result_visibility = $request->visibility;
             $vote->status = 'open';
 
@@ -252,6 +305,7 @@ class VoteController extends Controller
             $vote->require_name = $request->has('require_name') && $request->require_name ? true : false;
 
             if ($request->has('is_protected') && $request->is_protected) {
+                $vote->is_protected = true;
                 $vote->access_code = $request->access_code;
             }
 
@@ -272,6 +326,13 @@ class VoteController extends Controller
                             $option = new Option();
                             $option->question_id = $question->id;
                             $option->option = $optionText;
+
+                            if ($request->hasFile("choice_images.$questionKey.$index")) {
+                                $file = $request->file("choice_images.$questionKey.$index");
+                                $imagePath = $file->store('options', 'public');
+                                $option->image = basename($imagePath);
+                            }
+
                             $option->save();
                         }
                     }
@@ -287,12 +348,22 @@ class VoteController extends Controller
     /**
      * Display the specified resource.
      */
+
     public function show(string $slug)
     {
         $vote = Vote::where('slug', $slug)->with('questions.options.results')->firstOrFail();
 
+        foreach ($vote->questions as $question) {
+            foreach ($question->options as $option) {
+                if ($option->image) {
+                    $option->image = asset('storage/options/' . $option->image);
+                }
+            }
+        }
+
         return view('voting.detailvote', compact('vote'));
     }
+
 
     public function getVoteDetail($slug)
     {
@@ -329,6 +400,7 @@ class VoteController extends Controller
             'questions.*.options.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
             'open_date' => 'nullable|date',
             'close_date' => 'nullable|date',
+            'require_name' => 'boolean',
             'is_protected' => 'boolean',
             'access_code' => 'nullable|string|max:6',
         ]);
@@ -354,6 +426,7 @@ class VoteController extends Controller
         $vote->open_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->open_date))->format('Y-m-d H:i:s');
         $vote->close_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->close_date ?: null))->format('Y-m-d H:i:s');
         $vote->result_visibility = $request->visibility;
+        $vote->require_name = $request->require_name ? 1 : 0;
         $vote->is_protected = $request->is_protected ? 1 : 0;
         $vote->access_code = $request->is_protected ? $request->access_code : null;
         $vote->save();
