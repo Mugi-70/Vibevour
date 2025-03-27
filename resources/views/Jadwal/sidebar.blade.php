@@ -84,7 +84,7 @@
             </a>
             <div class="collapse" id="menu_penjadwalan">
                 <a href="/grup" class="menu-sub-item">Grup</a>
-                <a href="/pertemuan" class="menu-sub-item">Pertemuan</a>
+                <a href="{{ route('pertemuan', ['id' => 1]) }}" class="menu-sub-item">Pertemuan</a>
             </div>
 
             <a href="/logout" class="menu-item"><i class="bi bi-box-arrow-right"></i> Keluar Akun</a>

@@ -70,7 +70,10 @@
                 <label for="durasi" class="form-label fw-bold">Durasi</label>
                 <div class="select-wrapper">
                     <i class="bi bi-clock"></i>
-                    <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)">
+                    <input type="hidden" name="durasi" value="{{ $grup->durasi }}">
+
+                    <select class="form-select" id="durasi" name="durasi" onchange="handleSelectChange(this)"
+                        {{ $jadwalAda ? 'disabled' : '' }}>
                         <option value="15 minutes" {{ $grup->durasi == '15 minutes' ? 'selected' : '' }}>15 menit
                         </option>
                         <option value="30 minutes" {{ $grup->durasi == '30 minutes' ? 'selected' : '' }}>30 menit
@@ -84,26 +87,32 @@
             </div>
 
             <hr>
-            {{-- waktu --}}
+            {{-- Waktu --}}
             <div class="time">
                 <label for="waktu" class="form-label fw-bold">Waktu</label>
                 <div class="row gx-2">
-                    {{-- mulai --}}
+                    {{-- Mulai --}}
                     <div class="col-5">
                         <div class="input-group flex-nowrap">
-                            <input type="text" class="form-control" id="waktuMulai" name="waktu_mulai"
-                                placeholder="01:00" value="{{ $wtku_mulai }}">
+                            <input type="hidden" id="hidden_waktu_mulai" name="waktu_mulai"
+                                value="{{ $wtku_mulai }}">
+                            <input type="text" class="form-control" id="waktuMulai" placeholder="01:00"
+                                value="{{ $wtku_mulai }}" {{ $jadwalAda ? 'disabled' : '' }}
+                                oninput="syncInput('waktuMulai', 'hidden_waktu_mulai')">
                             <span class="input-group-text">
                                 <i class="bi bi-clock"></i>
                             </span>
                         </div>
                     </div>
                     <div class="col-2 text-center align-self-center">s.d.</div>
-                    {{-- selesai --}}
+                    {{-- Selesai --}}
                     <div class="col-5">
                         <div class="input-group flex-nowrap">
-                            <input type="text" class="form-control" id="waktuSelesai" name="waktu_selesai"
-                                placeholder="12:00" value="{{ $wtku_selesai }}">
+                            <input type="hidden" id="hidden_waktu_selesai" name="waktu_selesai"
+                                value="{{ $wtku_selesai }}">
+                            <input type="text" class="form-control" id="waktuSelesai" placeholder="12:00"
+                                value="{{ $wtku_selesai }}" {{ $jadwalAda ? 'disabled' : '' }}
+                                oninput="syncInput('waktuSelesai', 'hidden_waktu_selesai')">
                             <span class="input-group-text">
                                 <i class="bi bi-clock"></i>
                             </span>
@@ -114,7 +123,7 @@
 
             <hr>
 
-            {{-- tanggal --}}
+            {{-- Tanggal --}}
             <div class="tanggal">
                 <div class="mb-3">
                     <label for="tanggal" class="form-label fw-bold">Tanggal</label>
@@ -122,9 +131,12 @@
                         <!-- Tanggal Mulai -->
                         <div class="col-5">
                             <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control" id="tanggalMulai" name="tanggal_mulai"
-                                    placeholder="dd/mm/yy" value="{{ $tnggl_mulai }}" required>
-                                <span class="input-group-text">`
+                                <input type="hidden" id="hidden_tanggal_mulai" name="tanggal_mulai"
+                                    value="{{ $tnggl_mulai }}">
+                                <input type="text" class="form-control" id="tanggalMulai" placeholder="dd/mm/yy"
+                                    value="{{ $tnggl_mulai }}" {{ $jadwalAda ? 'disabled' : '' }}
+                                    oninput="syncInput('tanggalMulai', 'hidden_tanggal_mulai')" required>
+                                <span class="input-group-text">
                                     <i class="bi bi-calendar"></i>
                                 </span>
                             </div>
@@ -135,9 +147,12 @@
                         <!-- Tanggal Selesai -->
                         <div class="col-5">
                             <div class="input-group flex-nowrap">
+                                <input type="hidden" id="hidden_tanggal_selesai" name="tanggal_selesai"
+                                    value="{{ $tnggl_selesai }}">
                                 <input type="text" class="form-control" id="tanggalSelesai"
-                                    name="tanggal_selesai" placeholder="dd/mm/yy" value="{{ $tnggl_selesai }}"
-                                    required>
+                                    placeholder="dd/mm/yy" value="{{ $tnggl_selesai }}"
+                                    {{ $jadwalAda ? 'disabled' : '' }}
+                                    oninput="syncInput('tanggalSelesai', 'hidden_tanggal_selesai')" required>
                                 <span class="input-group-text">
                                     <i class="bi bi-calendar"></i>
                                 </span>
@@ -146,13 +161,13 @@
                     </div>
                 </div>
             </div>
+
             <hr>
             <div class="row">
                 <label for="deskripsi" class="form-label fw-bold">Deskripsi</label>
                 <div class="form-floating">
                     <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" name="desk"
                         style="height: 100px">{{ $desk }}</textarea>
-                    <label for="floatingTextarea2">Isi Disini</label>
                 </div>
             </div>
     </div>
@@ -160,7 +175,9 @@
         <div class="b-grup d-flex">
             <button type="button" class="btn btn-secondary m-2" data-bs-dismiss="offcanvas"
                 style="font-size: 14px">Batal</button>
+            {{-- @if (!$jadwalAda) --}}
             <button type="submit" class="btn btn-primary m-2" style="font-size: 14px">Simpan Perubahan</button>
+            {{-- @endif --}}
         </div>
         </form>
     </div>
@@ -172,6 +189,10 @@
 
 
 <script>
+    function syncInput(sourceId, hiddenId) {
+        document.getElementById(hiddenId).value = document.getElementById(sourceId).value;
+    }
+
     $(document).ready(function() {
 
 
@@ -224,18 +245,19 @@
                 let email = data.email ? data.email : "Email tidak tersedia";
 
                 return $(`
-                <div style="display: flex; align-items: center;">
-                    <div style="width: 30px; height: 30px; background-color: red; color: white; 
+<div style="display: flex; align-items: center;">
+    <div
+        style="width: 30px; height: 30px; background-color: red; color: white; 
                                 display: flex; align-items: center; justify-content: center; 
                                 border-radius: 50%; font-weight: bold; margin-right: 10px;">
-                        ${icon}
-                    </div>
-                    <div>
-                        <div style="font-weight: bold;">${data.text}</div>
-                        <div style="color: gray; font-size: 12px;">${email}</div>
-                    </div>
-                </div>
-            `);
+        ${icon}
+    </div>
+    <div>
+        <div style="font-weight: bold;">${data.text}</div>
+        <div style="color: gray; font-size: 12px;">${email}</div>
+    </div>
+</div>
+`);
             }
 
         });
@@ -257,19 +279,18 @@
                 var emailText = data.email ? data.email : 'Email tidak tersedia';
 
                 var anggotaItem = $(`
-            <div id="anggota-${data.id}" class="box-item-1 d-flex align-items-center mt-3"
-                data-user-id="${data.id}">
-                <div class="avatar-search">${icon}</div>
-                <div class="nama-user mt-2">
-                    <h6>${data.text}</h6>
-                    <p class="text-muted" style="margin: 0; font-size: 12px;">${emailText}</p>
-                </div>
-                <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
-                    style="font-size: 14px; border-radius: 50%" data-id="${data.id}">
-                    X
-                </button>
-            </div>
-            `);
+<div id="anggota-${data.id}" class="box-item-1 d-flex align-items-center mt-3" data-user-id="${data.id}">
+    <div class="avatar-search">${icon}</div>
+    <div class="nama-user mt-2">
+        <h6>${data.text}</h6>
+        <p class="text-muted" style="margin: 0; font-size: 12px;">${emailText}</p>
+    </div>
+    <button type="button" class="delete btn btn-outline-danger h-25 ms-auto"
+        style="font-size: 14px; border-radius: 50%" data-id="${data.id}">
+        X
+    </button>
+</div>
+`);
 
                 anggotaList.append(anggotaItem);
 
@@ -320,11 +341,11 @@
             selectedIDUser = $(this).data("user-id");
             console.log("ID user yang dipilih:", selectedIDUser);
 
-            // Simpan ID dalam modal 
+            // Simpan ID dalam modal
             $("#delete_member").attr("data-id", selectedIDUser);
         });
 
-        // Ambil ID dari modal dan kirim lewat AJAX saat "Konfirmasi Hapus" 
+        // Ambil ID dari modal dan kirim lewat AJAX saat "Konfirmasi Hapus"
         $(document).on("click", ".hapus_member", function() {
             let idUser = $("#delete_member").attr("data-id");
             console.log("ID Grup yang akan dihapus:", idUser);

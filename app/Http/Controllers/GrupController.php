@@ -9,31 +9,66 @@ use Carbon\CarbonPeriod;
 use App\Models\AnggotaGrup;
 use App\Models\Ketersediaan;
 use Illuminate\Http\Request;
+use App\Mail\InviteMemberMail;
 use App\Models\JadwalPertemuan;
 use App\Models\AnggotaGrupPending;
-use App\Models\JadwalPertemuan_Anggota;
-use App\Models\JadwalPertemuanAnggota;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Models\JadwalPertemuanAnggota;
+use App\Models\JadwalPertemuan_Anggota;
 
 class GrupController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
+        $query = Grup::query();
+        $today = Carbon::now();
 
-        //? cari period dari rentang tanggal
-        //? cari period dari jam (sesuai dengan durasi)
+        if ($request->has('filter')) {
+            if ($request->filter == 'bulan_ini') {
+                $startOfMonth = $today->copy()->startOfMonth()->format('Y-m-d');
+                $endOfMonth = $today->copy()->endOfMonth()->format('Y-m-d');
 
-        $grup = Grup::all();
-        return view('Jadwal.grup', compact('grup'));
+                // Konversi ke y-m-d
+                $query->whereBetween(
+                    DB::raw("STR_TO_DATE(tanggal_mulai, '%d-%m-%Y')"),
+                    [$startOfMonth, $endOfMonth]
+                );
+            } elseif ($request->filter == 'bulan_lalu') {
+                $lastMonth = $today->copy()->subMonth();
+                $startOfLastMonth = $lastMonth->startOfMonth()->format('Y-m-d');
+                $endOfLastMonth = $lastMonth->endOfMonth()->format('Y-m-d');
+
+                $query->whereBetween(
+                    DB::raw("STR_TO_DATE(tanggal_mulai, '%d-%m-%Y')"),
+                    [$startOfLastMonth, $endOfLastMonth]
+                );
+            }
+        }
+        $userId = 3; // sementara
+
+        $filteredGrupIds = $query->pluck('id_grup');
+        // dd($filteredGrupIds);
+
+        // Ambil grup berdasarkan user_id di tabel AnggotaGrup
+        $grup2 = AnggotaGrup::where('user_id', $userId)
+            ->whereIn('grup_id', $filteredGrupIds) // Pastikan grup ada di hasil filter
+            ->with('grup')
+            ->get();
+
+        return view('Jadwal.grup', compact('grup2'));
     }
 
-    public function pertemuan($userId)
+
+    public function pertemuan()
     {
         $userId = 1;
-        $jadwals = JadwalPertemuanAnggota::where('user_id', $userId)
-            ->with('jadwal') // Ambil data jadwal terkait
+        $jadwals = JadwalPertemuan::whereHas('peserta', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+            ->with('peserta') // memastikan daftar anggota ikut dimuat  
             ->get();
         return view("Jadwal.pertemuan", compact('jadwals'));
     }
@@ -42,8 +77,8 @@ class GrupController extends Controller
     {
         $grup = Grup::with('anggota.user')->findOrFail($id);
 
-        // $role = 'admin';
-        $role = 'anggota';
+        $role = 'admin';
+        // $role = 'anggota';
 
         //? Data dari database
         $input_tanggal_mulai = $grup->tanggal_mulai;
@@ -58,7 +93,7 @@ class GrupController extends Controller
         $periode_tanggal = CarbonPeriod::create($tanggal_mulai, $tanggal_selesai);
         $tanggal_list = [];
         foreach ($periode_tanggal as $tanggal) {
-            $tanggal_list[] = $tanggal->format('Y-m-d'); // Format tanggal harus sesuai dengan DB
+            $tanggal_list[] = $tanggal->format('Y-m-d');
         }
 
         // *2. Buat daftar waktu*
@@ -123,6 +158,12 @@ class GrupController extends Controller
             $grup->durasi = $request->durasi;
             $grup->save();
 
+            AnggotaGrup::create([
+                'grup_id' => $grup->id_grup,
+                'user_id' => 3,
+                'role' => 'admin'
+            ]);
+
             // Ambil daftar anggota, jika tidak ada, buat array kosong
             $anggotaList = $request->input('anggota', []);
 
@@ -136,8 +177,8 @@ class GrupController extends Controller
                     // Pastikan email dikirim dari frontend
 
                     $email = $request->input('email', null);
-                    if (!$request->has('email')) {
-                        return response()->json(['error' => 'Email tidak ditemukan!'], 400);
+                    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        return response()->json(['error' => 'Email tidak valid!'], 400);
                     }
 
                     // Masukkan ke tabel pending
@@ -146,6 +187,11 @@ class GrupController extends Controller
                         'email' => $email,
                         'status' => 'Pending'
                     ]);
+
+                    // Kirim email undangan
+                    $inviteLink = url("/register?email=" . urlencode($email)); // Bisa diubah sesuai kebutuhan
+                    Mail::to($email)->send(new InviteMemberMail($email, $grup->nama_grup, $inviteLink));
+                    // dd($mail);
                 } else {
                     // Masukkan ke tabel anggota grup dengan user_id yang valid
                     AnggotaGrup::create([
@@ -233,9 +279,8 @@ class GrupController extends Controller
                 // Pastikan email dikirim dari frontend
 
                 $email = $request->input('email', null);
-
-                if (!$request->has('email')) {
-                    return response()->json(['error' => 'Email tidak ditemukan!'], 400);
+                if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    return response()->json(['error' => 'Email tidak valid!'], 400);
                 }
 
                 // Masukkan ke tabel pending
@@ -244,6 +289,9 @@ class GrupController extends Controller
                     'email' => $email,
                     'status' => 'Pending'
                 ]);
+
+                $inviteLink = url("/register?email=" . urlencode($email)); // Bisa diubah sesuai kebutuhan
+                Mail::to($email)->send(new InviteMemberMail($email, $grup->nama_grup, $inviteLink));
             } else {
                 // Masukkan ke tabel anggota grup dengan user_id yang valid
                 AnggotaGrup::create([
@@ -281,7 +329,7 @@ class GrupController extends Controller
     public function leaveGroup($group_id)
     {
         // $user = Auth::user();
-        $user_id = 3;
+        $user_id = 1;
         $deleted = AnggotaGrup::where('grup_id', $group_id)
             ->where('user_id', $user_id)
             ->delete();

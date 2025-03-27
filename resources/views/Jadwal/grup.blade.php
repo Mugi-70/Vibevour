@@ -36,7 +36,7 @@
         <div id="hapusGrup" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
             aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body"> berhasil membatalkan kehadiran
+                <div class="toast-body"> berhasil
                 </div>
                 <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
@@ -50,42 +50,42 @@
                 <i class="bi bi-sliders me-1"></i>Filter
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Action</a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                <li><a class="dropdown-item" href="{{ route('coba', ['filter' => 'bulan_ini']) }}">Bulan Ini</a></li>
+                <li><a class="dropdown-item" href="{{ route('coba', ['filter' => 'bulan_lalu']) }}">Bulan Lalu</a>
+                </li>
                 <li>
                     <hr class="dropdown-divider">
                 </li>
-                <li><a class="dropdown-item" href="#">Separated link</a></li>
+                <li><a class="dropdown-item" href="{{ route('coba') }}">Semua</a></li>
             </ul>
         </div>
 
-        @if ($grup->isEmpty())
+        @if ($grup2->isEmpty())
             <div class="d-flex align-items-center justify-content-center" style="min-height: 70vh">
                 <p class="text-muted">Kamu Belum Mempunyai Grup</p>
             </div>
         @else
             <div class="row">
-                @foreach ($grup as $item)
+                @foreach ($grup2 as $item)
                     <div class="col-md-4">
-                        <a href="{{ route('grup.detail', ['id' => $item->id_grup]) }}" style="text-decoration:none">
+                        <a href="{{ route('grup.detail', ['id' => $item->grup->id_grup]) }}" style="text-decoration:none">
                             <div class="card mt-3 border-0 shadow-sm">
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold fs-6">{{ $item->nama_grup }}</h5>
-                                    <p class="card-text" style="font-size: 14px">{{ $item->deskripsi }}</p>
+                                    <h5 class="card-title fw-bold fs-6">{{ $item->grup->nama_grup }}</h5>
+                                    <p class="card-text text-truncate" style="font-size: 14px">{{ $item->grup->deskripsi }}
+                                    </p>
 
-                                    <!-- Wrapper Flex untuk Tanggal & Tombol -->
                                     <div class="d-flex flex-nowrap justify-content-between align-items-center">
                                         <p class="mb-0 text-muted" style="font-size: 14px;">
-                                            {{ \Carbon\Carbon::parse($item->tanggal_mulai)->translatedFormat('d M Y') }} s.d
-                                            {{ \Carbon\Carbon::parse($item->tanggal_selesai)->translatedFormat('d M Y') }}
+                                            {{ \Carbon\Carbon::parse($item->grup->tanggal_mulai)->translatedFormat('d M Y') }}
+                                            s.d
+                                            {{ \Carbon\Carbon::parse($item->grup->tanggal_selesai)->translatedFormat('d M Y') }}
                                         </p>
 
-                                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary d-none">
                                             <i class="bi bi-share me-1"></i>
                                             <span class="d-none d-sm-inline">Bagikan</span>
                                         </button>
-
                                     </div>
                                 </div>
                             </div>
@@ -94,5 +94,6 @@
                 @endforeach
             </div>
         @endif
+
 
     @endsection

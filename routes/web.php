@@ -44,7 +44,9 @@ Route::post('/saveSchedules', [GrupController::class, 'saveSchedules']);
 Route::post('/undang', [GrupController::class, 'undang']);
 
 Route::get('/grup_UI_anggota', [GrupController::class, 'anggota']);
-Route::get('/pertemuan/{id}', [GrupController::class, 'pertemuan']);
+Route::get('/pertemuan', [GrupController::class, 'pertemuan'])->name('pertemuan');
+Route::get('/jadwal/detail/{id}', [GrupController::class, 'getDetailJadwal']);
+
 
 //coba cari 
 Route::get('/cari', [GrupController::class, 'cari_anggota']);

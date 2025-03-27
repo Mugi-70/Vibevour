@@ -131,7 +131,7 @@
 
                             <!-- Deskripsi -->
                             <strong>Deskripsi</strong>
-                            <div class="card p-2 bg-light border-0">
+                            <div class="card p-2 bg-light border-0 text-truncate ">
                                 {{ $desk }}
                             </div>
                         </div>
@@ -151,7 +151,7 @@
                             </button>
                         @endif
                         @unless ($role == 'admin')
-                            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#delete_grup"
+                            <button class="btn btn-danger w-100 d-none" data-bs-toggle="modal" data-bs-target="#delete_grup"
                                 id="hapus_grup">
                                 <i class="bi bi-trash"></i> Hapus Grup
                             </button>
@@ -215,7 +215,7 @@
                                             ->where('grup_id', '!=', $grup->id_grup)
                                             ->exists();
 
-                                        // Jika jadwal sudah ada di grup lain, tambahkan class CSS untuk menonaktifkan sel
+                                        // Jika jadwal sudah ada di grup lain
                                         $disabledClass = $jadwalDiGrupLain ? 'bg-black-300 pointer-events-none' : '';
                                     @endphp
 
@@ -244,7 +244,7 @@
                                                 </div>
                                             </button>
                                         @elseif ($jadwalDiGrupLain)
-                                            <!-- Jika slot ini sudah terpakai di grup lain -->
+                                            <!-- Jika sudah ada jadwal di grup lain -->
                                             <div class="text-muted" style="font-size: 14px; color:aqua">Sudah ada jadwal
                                             </div>
                                         @elseif ($anggotaYangTersedia->isNotEmpty())
@@ -290,12 +290,13 @@
         @include('Jadwal.off_canvas.edit_grup')
         @include('jadwal.off_canvas.daftar_anggota')
         {{-- offcanvas --}}
-        <div class="toast-container position-fixed bottom-0 end-0 p-3">
-            <div id="toastJadwalAda" class="toast align-items-center text-white bg-danger border-0" role="alert"
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="toastJadwalAda" class="toast align-items-center text-white bg-warning border-0" role="alert"
                 aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        Sudah ada jadwal di grup, Grup tidak dapat diedit!
+                        <i class="bi bi-info-circle"></i> Sudah ada jadwal di grup, Tidak dapat mengedit durasi, tanggal &
+                        waktu
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                         aria-label="Close"></button>

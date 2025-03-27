@@ -24,6 +24,6 @@ class JadwalPertemuanAnggota extends Model
 
     public function anggota()
     {
-        return $this->hasMany(JadwalPertemuanAnggota::class, 'jadwal_id');
+        return $this->belongsToMany(User::class, 'jadwal_pertemuan_anggota', 'jadwal_id', 'user_id');
     }
 }

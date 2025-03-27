@@ -111,8 +111,7 @@ textarea {
 
 .line-meet {
     height: 1px;
-    background-color: black;
-    width: 100%;
+    background-color: #d4e0ed;
     /* margin: px; */
 }
 
@@ -131,7 +130,8 @@ textarea {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid #000000;
+    /* border: 2px solid #000000; */
+    background-color: #72B5F6;
     border-radius: 50%;
 }
 
@@ -150,7 +150,7 @@ textarea {
 
 .card-grup {
     display: flex;
-    width: 85%;
+    width: 100%;
     background: white;
     border-radius: 28px;
 }
@@ -287,6 +287,20 @@ textarea {
     .bjadwal .icon {
         font-size: 16px;
     }
+
+        .card-body.d-flex {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    
+        .judul-pertemuan h6 {
+            text-align: left !important;
+        }
+    
+        .detail {
+            width: 100%;
+            text-align: center;
+        }
 }
 
 @keyframes bounce {

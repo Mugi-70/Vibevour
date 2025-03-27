@@ -15,7 +15,7 @@ class AnggotaGrup extends Model
 
     public function grup()
     {
-        return $this->belongsTo(Grup::class);
+        return $this->belongsTo(Grup::class, 'grup_id');
     }
 
     public function user()
