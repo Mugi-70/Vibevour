@@ -60,7 +60,7 @@
                     <div class="text-md-end w-100 text-center text-md-start">
                         <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal"
                             data-bs-target="#history-{{ $jadwal->id }}">
-                            <i class="bi bi-display"></i> Details
+                            <i class="bi bi-display"></i> Detail
                         </button>
                     </div>
                 </div>
@@ -68,15 +68,7 @@
 
 
 
-            <!-- CSS Avatar Responsif -->
-            <style>
-                @media (max-width: 768px) {
-                    #avatar-size {
-                        width: 25px !important;
-                        height: 25px !important;
-                    }
-                }
-            </style>
+
 
 
             @include('Jadwal.modal.detail_pertemuan')

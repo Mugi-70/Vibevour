@@ -19,6 +19,7 @@
 @endsection
 
 @section('content')
+    <!-- Toast Notifikasi -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050">
         <div id="toastNotification" class="toast align-items-center text-white bg-success border-0" role="alert"
             aria-live="assertive" aria-atomic="true">
@@ -31,7 +32,6 @@
             </div>
         </div>
     </div>
-    <!-- Toast Notifikasi -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="hapusGrup" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
             aria-atomic="true">
@@ -42,9 +42,11 @@
             </div>
         </div>
     </div>
+    <!-- Toast Notifikasi -->
+    <!-- Content -->
     <div class="row">
-        <!-- Example single danger button -->
-        <div class="text-end">
+        <!-- button -->
+        <div class="col-md-4 offset-md-8 text-end">
             <button type="button" class="btn btn-outline-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown"
                 aria-expanded="false">
                 <i class="bi bi-sliders me-1"></i>Filter
@@ -65,35 +67,34 @@
                 <p class="text-muted">Kamu Belum Mempunyai Grup</p>
             </div>
         @else
-            <div class="row">
-                @foreach ($grup2 as $item)
-                    <div class="col-md-4">
-                        <a href="{{ route('grup.detail', ['id' => $item->grup->id_grup]) }}" style="text-decoration:none">
-                            <div class="card mt-3 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title fw-bold fs-6">{{ $item->grup->nama_grup }}</h5>
-                                    <p class="card-text text-truncate" style="font-size: 14px">{{ $item->grup->deskripsi }}
+            @foreach ($grup2 as $item)
+                <div class="col-md-4">
+                    <a href="{{ route('grup.detail', ['id' => $item->grup->id_grup]) }}" style="text-decoration:none">
+                        <div class="card mt-3 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold fs-6">{{ $item->grup->nama_grup }}</h5>
+                                <p class="card-text text-truncate" style="font-size: 14px; max-width: 150px">
+                                    {{ $item->grup->deskripsi }}
+                                </p>
+
+                                <div class="d-flex flex-nowrap justify-content-between align-items-center">
+                                    <p class="mb-0 text-muted" style="font-size: 14px;">
+                                        {{ \Carbon\Carbon::parse($item->grup->tanggal_mulai)->translatedFormat('d M Y') }}
+                                        s.d
+                                        {{ \Carbon\Carbon::parse($item->grup->tanggal_selesai)->translatedFormat('d M Y') }}
                                     </p>
 
-                                    <div class="d-flex flex-nowrap justify-content-between align-items-center">
-                                        <p class="mb-0 text-muted" style="font-size: 14px;">
-                                            {{ \Carbon\Carbon::parse($item->grup->tanggal_mulai)->translatedFormat('d M Y') }}
-                                            s.d
-                                            {{ \Carbon\Carbon::parse($item->grup->tanggal_selesai)->translatedFormat('d M Y') }}
-                                        </p>
-
-                                        <button type="button" class="btn btn-sm btn-outline-secondary d-none">
-                                            <i class="bi bi-share me-1"></i>
-                                            <span class="d-none d-sm-inline">Bagikan</span>
-                                        </button>
-                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary d-none">
+                                        <i class="bi bi-share me-1"></i>
+                                        <span class="d-none d-sm-inline">Bagikan</span>
+                                    </button>
                                 </div>
                             </div>
-                        </a>
-                    </div>
-                @endforeach
-            </div>
-        @endif
-
-
-    @endsection
+                        </div>
+                    </a>
+                </div>
+            @endforeach
+    </div>
+    @endif
+    <!-- Content -->
+@endsection

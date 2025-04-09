@@ -36,7 +36,8 @@
 
     <div class="row position-relative">
         <div class="card shadow-sm w-100" style=" border:none; ">
-            <div class="card-body">
+            <div class="card-body ps-5">
+                {{-- tammpilan mobile --}}
                 <div class="position-absolute top-0 end-0 p-1 d-md-none">
                     <button class="btn btn-outline-dark border-0" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-three-dots-vertical"></i>
@@ -131,8 +132,13 @@
 
                             <!-- Deskripsi -->
                             <strong>Deskripsi</strong>
-                            <div class="card p-2 bg-light border-0 text-truncate ">
-                                {{ $desk }}
+                            <div class="card p-2 bg-light border-0">
+                                <!-- Teks yang bisa diklik -->
+                                <p id="textPreview" class="text-truncate m-0"
+                                    style="max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer;"
+                                    title="Klik untuk melihat selengkapnya">
+                                    {{ $desk }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -140,7 +146,7 @@
                     <!-- Tombol untuk Desktop di Sebelah Kanan Berbaris ke Bawah -->
                     <div class="col-md-2 d-none d-md-flex flex-column align-items-start gap-2">
                         <button class="btn btn-secondary w-100" data-bs-toggle="offcanvas" data-bs-target="#daftar_anggota"
-                            aria-controls="offcanvasRight">
+                            aria-controls="offcanvasRight" style="font-size: 15px">
                             <i class="bi bi-people"></i> Daftar Anggota
                         </button>
                         @if ($role === 'admin')
@@ -217,16 +223,19 @@
 
                                         // Jika jadwal sudah ada di grup lain
                                         $disabledClass = $jadwalDiGrupLain ? 'bg-black-300 pointer-events-none' : '';
+
+                                        $maxTampil = 1; // jumlah nama yang ditampilkan
+                                        $totalAnggotaKetersediaan = count($anggotaYangTersedia);
                                     @endphp
 
                                     <td class="item {{ $disabledClass }}" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}" data-role="{{ $role }}"
                                         data-grup-id="{{ $grup->id_grup }}" data-durasi="{{ $grup->durasi }}"
-                                        style="height: 50px; max-width:20px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
+                                        style="height: 50px; max-width:20px; height: 100px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
 
                                         @if ($jadwal)
                                             <!-- Jika jadwal sudah ada, tampilkan tombol -->
-                                            <button class="bjadwal btn btn-primary custom w-100 h-100"
+                                            <button class="bjadwal btn btn-sm btn-primary custom w-100"
                                                 data-bs-toggle="offcanvas" data-bs-target="#jadwal"
                                                 data-jadwal-id="{{ $jadwal->id ?? '' }}"
                                                 data-grup-id="{{ $grup->id_grup }}"
@@ -250,7 +259,7 @@
                                         @elseif ($anggotaYangTersedia->isNotEmpty())
                                             <!-- Jika tidak ada jadwal, tapi ada anggota yang bersedia -->
                                             <div class="schedule-content d-flex flex-column w-100 h-100 p-2">
-                                                @foreach ($anggotaYangTersedia as $anggota)
+                                                @foreach ($anggotaYangTersedia->take($maxTampil) as $anggota)
                                                     <div
                                                         class="anggota-d d-flex justify-content-between align-items-center">
                                                         <p class="m-0 fw-bold anggota-hadir"
@@ -262,6 +271,10 @@
                                                         <i class="bi bi-check-square fs-4"></i>
                                                     </div>
                                                 @endforeach
+                                                @if ($totalAnggotaKetersediaan > $maxTampil)
+                                                    <p class="m-0 text-muted">+{{ $totalAnggota - $maxTampil }} anggota
+                                                    </p>
+                                                @endif
                                             </div>
                                         @else
                                             <!-- Jika tidak ada jadwal maupun anggota yang bersedia, tampilkan ikon tambah -->
@@ -302,10 +315,44 @@
                         aria-label="Close"></button>
                 </div>
             </div>
+
+
         </div>
     </div>
+    @if (session('toast_warning'))
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                showToast("{{ session('toast_warning') }}", "warning");
+            });
+        </script>
+    @endif
 
     <script>
+        $(document).ready(function() {
+            $("#textPreview").click(function() {
+                var teks = $(this);
+                if (teks.hasClass("text-truncate")) {
+                    // Expand
+                    teks.removeClass("text-truncate")
+                        .css({
+                            "white-space": "normal",
+                            "overflow": "visible",
+                            "text-overflow": "unset"
+                        })
+                        .attr("title", "Klik untuk sembunyikan");
+                } else {
+                    // Collapse
+                    teks.addClass("text-truncate")
+                        .css({
+                            "white-space": "nowrap",
+                            "overflow": "hidden",
+                            "text-overflow": "ellipsis"
+                        })
+                        .attr("title", "Klik untuk melihat selengkapnya");
+                }
+            });
+        });
+
         //anggota keluar grup
         $(document).ready(function() {
             let groupId;

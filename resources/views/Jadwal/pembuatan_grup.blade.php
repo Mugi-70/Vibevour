@@ -120,7 +120,7 @@
 
                 <small class="text-muted d-block mt-1">
                     <i class="bi bi-question-circle"></i>
-                    Tentukan rentang tanggal untuk kegiatan grup.
+                    Tentukan rentang tanggal untuk jadwal grup.
                 </small>
             </div>
 
