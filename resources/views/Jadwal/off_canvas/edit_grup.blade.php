@@ -224,8 +224,8 @@
                     if (results.length === 0 && params.term.includes('@')) {
                         results.push({
                             id: 'invite',
-                            text: params.term, // Menampilkan email yang diketik
-                            email: params.term, // Mengirim email ke backend
+                            text: params.term, // Menampilkan email 
+                            email: params.term, // Mengirim email 
                             isInvite: true
                         });
                     }
@@ -247,9 +247,7 @@
                 return $(`
 <div style="display: flex; align-items: center;">
     <div
-        style="width: 30px; height: 30px; background-color: red; color: white; 
-                                display: flex; align-items: center; justify-content: center; 
-                                border-radius: 50%; font-weight: bold; margin-right: 10px;">
+        style="width: 30px; height: 30px; background-color: red; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px;">
         ${icon}
     </div>
     <div>

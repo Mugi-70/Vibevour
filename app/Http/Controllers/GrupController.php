@@ -110,6 +110,7 @@ class GrupController extends Controller
             ->exists();
 
         $totalAnggota = AnggotaGrup::where('grup_id', $id)->count();
+        // dd($totalAnggota);
 
         return view('jadwal.grup_UI', [
             'nama_grup' => $grup->nama_grup,
@@ -128,24 +129,11 @@ class GrupController extends Controller
         ]);
     }
 
-    // public function showKalender($id_grup)
-    // {
-    //     $user_id = Auth::id(); // Ambil ID user yang sedang login
-
-    //     // Ambil semua jadwal yang user ini sudah miliki di grup lain
-    //     $jadwalDiGrupLain = JadwalPertemuan::where('user_id', $user_id)
-    //         ->where('grup_id', '!=', $id_grup) // Bukan grup yang sedang dilihat
-    //         ->pluck('tanggal', 'waktu_mulai') // Ambil tanggal & waktu_mulai
-    //         ->toArray();
-
-    //     return view('Jadwal.grup_UI', compact('jadwalDiGrupLain'));
-    // }
-
     //todo Membuat Grup baru
     public function store(Request $request)
     {
         try {
-            DB::beginTransaction(); // Mulai transaksi database
+            DB::beginTransaction(); // transaksi database
 
             // Buat grup baru
             $grup = new Grup();
@@ -174,8 +162,8 @@ class GrupController extends Controller
             // Loop untuk setiap anggota
             foreach ($anggotaList as $anggota) {
                 if ($anggota === 'invite') {
-                    // Pastikan email dikirim dari frontend
 
+                    // Pastikan email dikirim dari frontend
                     $email = $request->input('email', null);
                     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                         return response()->json(['error' => 'Email tidak valid!'], 400);
@@ -191,7 +179,6 @@ class GrupController extends Controller
                     // Kirim email undangan
                     $inviteLink = url("/register?email=" . urlencode($email)); // Bisa diubah sesuai kebutuhan
                     Mail::to($email)->send(new InviteMemberMail($email, $grup->nama_grup, $inviteLink));
-                    // dd($mail);
                 } else {
                     // Masukkan ke tabel anggota grup dengan user_id yang valid
                     AnggotaGrup::create([
@@ -269,10 +256,6 @@ class GrupController extends Controller
 
         $anggotaList = $request->input('anggota', []);
 
-        // if (empty($anggotaList)) {
-        //     return response()->json(['error' => 'Tidak ada anggota yang ditambahkan!'], 400);
-        // }
-
         // Loop untuk setiap anggota
         foreach ($anggotaList as $anggota) {
             if ($anggota === 'invite') {
@@ -285,7 +268,7 @@ class GrupController extends Controller
 
                 // Masukkan ke tabel pending
                 AnggotaGrupPending::create([
-                    'grup_id' => $grup->id_grup, // Perbaikan penggunaan id
+                    'grup_id' => $grup->id_grup,
                     'email' => $email,
                     'status' => 'Pending'
                 ]);
@@ -293,10 +276,19 @@ class GrupController extends Controller
                 $inviteLink = url("/register?email=" . urlencode($email)); // Bisa diubah sesuai kebutuhan
                 Mail::to($email)->send(new InviteMemberMail($email, $grup->nama_grup, $inviteLink));
             } else {
-                // Masukkan ke tabel anggota grup dengan user_id yang valid
+                //  Cek apakah user sudah tergabung
+                $alreadyExists = AnggotaGrup::where('grup_id', $grup->id_grup)
+                    ->where('user_id', $anggota)
+                    ->exists();
+
+                if ($alreadyExists) {
+                    return redirect()->back()->with('toast_warning', 'anggota sudah ada di grup');
+                }
+
+                // Kalau belum tergabung, simpan ke DB
                 AnggotaGrup::create([
                     'grup_id' => $grup->id_grup,
-                    'user_id' => (int) $anggota,
+                    'user_id' => $anggota,
                     'role' => 'member'
                 ]);
             }
