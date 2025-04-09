@@ -224,7 +224,7 @@ textarea {
 /* Menampilkan scrollbar di browser berbasis Webkit (Chrome, Edge, Safari) */
 .table-responsive::-webkit-scrollbar {
     height: 8px;
-    /* Atur tinggi scrollbar */
+    /* tinggi scrollbar */
 }
 
 .table-responsive::-webkit-scrollbar-track {
@@ -270,9 +270,7 @@ textarea {
     /* Mobile */
     .bjadwal {
         padding: 10px;
-        /* Tambahkan padding */
         font-size: 14px;
-        /* Perkecil teks */
     }
 
     .bjadwal .title {
@@ -288,19 +286,23 @@ textarea {
         font-size: 16px;
     }
 
-        .card-body.d-flex {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+    .card-body.d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
     
-        .judul-pertemuan h6 {
-            text-align: left !important;
-        }
+    .judul-pertemuan h6 {
+        text-align: left !important;
+    }
     
-        .detail {
-            width: 100%;
-            text-align: center;
-        }
+    .detail {
+        width: 100%;
+        text-align: center;
+    }
+    #avatar-size {
+        width: 25px !important;
+        height: 25px !important;
+    }         
 }
 
 @keyframes bounce {

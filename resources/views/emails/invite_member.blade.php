@@ -57,9 +57,9 @@
     <div class="container">
         <h2>Hai,</h2>
         <p>Anda telah diundang untuk bergabung ke grup <strong>{{ $groupName }}</strong>.</p>
-        <p>Silakan klik tautan di bawah untuk menerima undangan:</p>
+        <p>Silakan klik tautan di bawah untuk masuk ke VibeFour dan menerima undangan grup</p>
         <p>
-            <a href="{{ $inviteLink }}" target="_blank" class="button">Bergabung ke Grup</a>
+            <a href="{{ $inviteLink }}" target="_blank" class="button">Klik disini</a>
         </p>
         <p>Jika Anda tidak mengenal undangan ini, silakan abaikan email ini.</p>
         <div class="footer">
