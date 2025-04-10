@@ -77,8 +77,8 @@ class GrupController extends Controller
     {
         $grup = Grup::with('anggota.user')->findOrFail($id);
 
-        $role = 'admin';
-        // $role = 'anggota';
+        // $role = 'admin';
+        $role = 'anggota';
 
         //? Data dari database
         $input_tanggal_mulai = $grup->tanggal_mulai;

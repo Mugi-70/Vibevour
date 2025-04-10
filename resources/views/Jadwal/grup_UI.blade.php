@@ -231,7 +231,7 @@
                                     <td class="item {{ $disabledClass }}" data-tanggal="{{ $t }}"
                                         data-waktu="{{ $ts }}" data-role="{{ $role }}"
                                         data-grup-id="{{ $grup->id_grup }}" data-durasi="{{ $grup->durasi }}"
-                                        style="height: 50px; max-width:20px; height: 100px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
+                                        style="height: 50px; max-width:20px; min-height: 100px; height: 100px; cursor: pointer; color: #6c747e; vertical-align: middle; text-align: center;">
 
                                         @if ($jadwal)
                                             <!-- Jika jadwal sudah ada, tampilkan tombol -->
@@ -272,7 +272,8 @@
                                                     </div>
                                                 @endforeach
                                                 @if ($totalAnggotaKetersediaan > $maxTampil)
-                                                    <p class="m-0 text-muted">+{{ $totalAnggota - $maxTampil }} anggota
+                                                    <p class="m-0 text-muted">
+                                                        +{{ $totalAnggotaKetersediaan - $maxTampil }} anggota
                                                     </p>
                                                 @endif
                                             </div>
