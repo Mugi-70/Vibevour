@@ -4,7 +4,9 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body pt-3 pb-3 pe-3 border-0">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Vote Saya</h5>
+            <h5 class="mb-0"><button class="btn d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                    data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list"></i> </button> Vote Saya</h5>
             <div class="header_menu">
                 <a href="/tambahvote" class="btn btn-success" style="font-size: 14px">
                     <i class="bi bi-plus"></i> Tambah Vote

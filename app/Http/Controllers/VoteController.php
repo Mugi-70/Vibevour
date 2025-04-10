@@ -102,7 +102,7 @@ class VoteController extends Controller
                 'created_at' => Carbon::parse($vote->created_at)->format('d/m/y'),
                 'description' => $vote->description,
                 'open_date' => $vote->open_date,
-                'close_date' => $vote->close_date,
+                'close_date' => Carbon::parse($vote->close_date)->format('d/m/y' . ' H:i'),
                 'result_visibility' => $vote->result_visibility,
                 'require_name' => $vote->require_name,
                 'questions' => $vote->questions->map(function ($question) {
@@ -145,7 +145,10 @@ class VoteController extends Controller
         $valid = $vote->access_code === $accessCode;
 
         if ($valid) {
-            session(["verified_vote_{$slug}" => true]);
+            session([
+                "verified_vote_{$slug}" => true,
+                "verified_vote_{$slug}_expires_at" => now()->addMinutes(10)
+            ]);
         }
 
         return response()->json(['valid' => $valid]);
@@ -161,9 +164,16 @@ class VoteController extends Controller
             ]);
         }
 
+        $expiresAt = session("verified_vote_{$slug}_expires_at");
         $verified = session()->has("verified_vote_{$slug}")
-            ? session("verified_vote_{$slug}")
-            : false;
+            && $expiresAt && now()->lessThan($expiresAt);
+
+        if (!$verified) {
+            session()->forget([
+                "verified_vote_{$slug}",
+                "verified_vote_{$slug}_expires_at"
+            ]);
+        }
 
         return response()->json([
             'verified' => $verified
@@ -192,10 +202,18 @@ class VoteController extends Controller
             'name.required' => 'Nama wajib diisi.',
         ]);
 
-
         $voterName = $vote->require_name ? $request->input('name') : null;
+        $ipAddress = $request->ip();
 
         if (!empty($request->votes)) {
+            $hasVoted = Result::where('vote_id', $vote->id)
+                ->where('ip_address', $ipAddress)
+                ->exists();
+
+            if ($hasVoted) {
+                return response()->json(['message' => 'Anda sudah melakukan voting sebelumnya.', 'has_voted' => true]);
+            }
+
             foreach ($request->votes as $questionId => $optionIds) {
                 if (!is_array($optionIds)) {
                     $optionIds = [$optionIds];
@@ -207,6 +225,7 @@ class VoteController extends Controller
                         'question_id' => $questionId,
                         'option_id' => $optionId,
                         'name' => $voterName,
+                        'ip_address' => $ipAddress,
                     ]);
                 }
             }
@@ -214,9 +233,6 @@ class VoteController extends Controller
 
         return response()->json(['message' => 'Vote berhasil dikirim!']);
     }
-
-
-
 
     public function getVoteSummary($slug)
     {
@@ -233,6 +249,7 @@ class VoteController extends Controller
         return response()->json([
             'totalVotes' => $totalVotes,
             'accessCode' => $vote->access_code,
+            'required_name' => $vote->require_name,
         ]);
     }
 
@@ -309,7 +326,6 @@ class VoteController extends Controller
                 $vote->access_code = $request->access_code;
             }
 
-            // dd($vote);
             $vote->save();
 
             if (!empty($request->questions)) {
@@ -383,7 +399,7 @@ class VoteController extends Controller
 
 
     /**
-     * Update the specified resource in storage.
+     *   the specified resource in storage.
      */
     public function update(Request $request, $slug)
     {
@@ -409,22 +425,21 @@ class VoteController extends Controller
             $validationRules['close_date'] = 'date|after:open_date';
         }
 
-
-        // dd($validationRules);
-        // dd($request->all());
-        // dd($request->is_protected);
-
         $validationMessages = [
             'open_date.before' => 'Tanggal buka vote harus lebih awal dari tanggal tutup vote.',
             'close_date.after' => 'Tanggal tutup vote harus lebih akhir dari tanggal buka vote.'
         ];
 
-        // $request->validate($validationRules, $validationMessages);
+        // dd($request->all());
 
         $vote->title = $request->title;
         $vote->description = $request->description;
         $vote->open_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->open_date))->format('Y-m-d H:i:s');
-        $vote->close_date = Carbon::createFromFormat('d-m-Y H:i', trim($request->close_date ?: null))->format('Y-m-d H:i:s');
+        $closeDateInput = trim($request->close_date);
+        $vote->close_date = $closeDateInput
+            ? Carbon::createFromFormat('d-m-Y H:i', $closeDateInput)->format('Y-m-d H:i:s')
+            : null;
+
         $vote->result_visibility = $request->visibility;
         $vote->require_name = $request->require_name ? 1 : 0;
         $vote->is_protected = $request->is_protected ? 1 : 0;
@@ -455,37 +470,49 @@ class VoteController extends Controller
 
             if (isset($qData['options'])) {
                 foreach ($qData['options'] as $oIndex => $oData) {
-                    if (!isset($oData['text'])) continue;
-
                     $optionId = $oData['id'] ?? null;
+                    $base64Image = $request->choice_images[$qData['id'] ?? null][$oIndex] ?? null;
+                    $removeImage = $request->remove_images[$optionId] ?? false;
+                    $filename = null;
 
-                    if ($optionId && in_array($optionId, $existingOptions)) {
-                        $option = Option::find($optionId);
+                    if ($base64Image) {
+                        preg_match("/data:image\/(.*?);base64,(.*)$/", $base64Image, $matches);
+
+                        if (count($matches) == 3) {
+                            $extension = $matches[1];
+                            $base64Str = $matches[2];
+                            $imageDecoded = base64_decode($base64Str);
+
+                            $filename = uniqid() . '.' . $extension;
+                            $path = 'options/' . $filename;
+
+                            Storage::disk('public')->put($path, $imageDecoded);
+                        }
+                    }
+
+                    if (isset($oData['id'])) {
+                        $option = Option::find($oData['id']);
                         if ($option) {
-                            $option->option = $oData['text'];
-
-                            if (isset($oData['image']) && $oData['image']->isValid()) {
+                            if ($filename) {
                                 if ($option->image) {
-                                    Storage::delete(str_replace('storage/', 'public/', $option->image));
+                                    Storage::disk('public')->delete($option->image);
                                 }
-
-                                $imagePath = $oData['image']->store('public/images');
-                                $option->image = str_replace('public/', 'storage/', $imagePath);
+                                $option->image = $filename;
+                            } else if ($removeImage) {
+                                if ($option->image) {
+                                    Storage::disk('public')->delete('options/' . $option->image);
+                                }
+                                $option->image = null;
                             }
-
+                            $option->option = $oData['text'] ?? $option->option;
                             $option->save();
                         }
                     } else {
-                        $option = new Option();
-                        $option->question_id = $question->id;
-                        $option->option = $oData['text'];
-
-                        if (isset($oData['image']) && $oData['image']->isValid()) {
-                            $imagePath = $oData['image']->store('public/images');
-                            $option->image = str_replace('public/', 'storage/', $imagePath);
-                        }
-
-                        $option->save();
+                        $newOption = new Option();
+                        $newOption->question_id = $question->id;
+                        $newOption->option = $oData['text'] ?? '';
+                        $newOption->image = $filename;
+                        $newOption->save();
                     }
                 }
             }
@@ -493,6 +520,8 @@ class VoteController extends Controller
             Option::where('question_id', $question->id)
                 ->whereNotIn('id', array_column($qData['options'] ?? [], 'id'))
                 ->delete();
+
+            Result::where('question_id', $question->id)->delete();
         }
 
         return redirect()->route('vote.show', ['slug' => $vote->slug])
@@ -517,6 +546,7 @@ class VoteController extends Controller
             ], 500);
         }
     }
+
     /**
      * Remove the specified resource from storage.
      */

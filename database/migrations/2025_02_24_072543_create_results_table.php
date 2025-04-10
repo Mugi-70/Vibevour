@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreign('vote_id')->references('id')->on('votes')->onDelete('cascade');
             $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
             $table->foreign('option_id')->references('id')->on('options')->onDelete('cascade');
-            $table->string('name')->nullable()->unique();
+            $table->string('name')->nullable();
+            $table->string('ip_address', 45);
             $table->timestamps();
         });
     }

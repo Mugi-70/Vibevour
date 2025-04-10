@@ -13,7 +13,8 @@ class result extends Model
         'vote_id',
         'question_id',
         'option_id',
-        'name'
+        'name',
+        'ip_address'
     ];
     
     public function vote()

@@ -2,10 +2,10 @@
 
 body {
     background-color: #f8f9fa;
-    font-family: 'Poppins';
 }
 
 .sidebar {
+    top: 0;
     width: 250px;
     background: white;
     height: 100vh;
@@ -34,6 +34,7 @@ body {
     border-radius: 5px;
     transition: 0.3s;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .menu-sub-item {
@@ -43,10 +44,6 @@ body {
     color: #333;
     text-decoration: none;
     transition: 0.3s;
-}
-
-.rotate.open {
-    transform: rotate(180deg);
 }
 
 .content {
@@ -60,16 +57,22 @@ body {
     cursor: pointer;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
     .sidebar {
-        margin-left: -250px;
+        display: none;
     }
 
     .content {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100%;
     }
 }
 
-.sidebar-hidden {
-    margin-left: -250px;
+
+.rotate {
+    transition: transform 0.3s ease;
+}
+
+.open-collapse {
+    transform: rotate(180deg);
 }

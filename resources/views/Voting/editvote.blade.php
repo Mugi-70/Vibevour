@@ -4,7 +4,9 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body pt-3 pb-3 pe-3 border-0">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Edit Vote {{ $vote->title }}</h5>
+            <h5 class="mb-0"><button class="btn me-2 d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                    data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list"></i> Edit Vote {{ $vote->title }}</h5>
         </div>
     </div>
 </div>
@@ -77,10 +79,6 @@
                             class="img-thumbnail"
                             style="width: 70%; height: auto;">
 
-                        <input type="hidden"
-                            name="choice_images[{{ $question->id }}][]"
-                            id="image_input_{{ $option->id }}"
-                            value="{{ $option->image }}">
 
                         <button type="button"
                             class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn"
@@ -110,42 +108,23 @@
             <hr style="height: 2px; background-color: black;">
             <div class="row">
                 <div class="col-md-5">
-                    <div>
-                        <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
-                        <select class="form-select" id="voteVisibility" name="visibility" required>
-                            <option value="private" {{ $vote->visibility == 'private' ? 'selected' : '' }}>Private</option>
-                            <option value="public" {{ $vote->visibility == 'public' ? 'selected' : '' }}>Public</option>
-                        </select>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-8">
-                            <div class="form-check form-switch mb-2">
-                                <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="protectVote" name="is_protected"
-                                    {{ $vote->is_protected ? 'checked' : '' }}>
-                            </div>
-                        </div>
-                        <div class="div">
-                            <input type="text" id="randomCode" name="access_code" class="form-control mb-2 
-                                        {{ $vote->is_protected ? '' : 'd-none' }}"
-                                value="{{ $vote->access_code ?? '' }}" readonly>
+                    <label for="protectVote" class="form-label">Kode vote</label>
+                    <div class="form-control form-switch mb-2">
+                        <div class="form-check form-switch">
+                            <label class="form-check-label" for="protectVote">Lindungi voting dengan kode</label>
+                            <input class="form-check-input" type="checkbox" id="protectVote" name="is_protected"
+                                {{ $vote->is_protected ? 'checked' : '' }}>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-check form-switch">
-                                <label class="form-check-label" for="includeName">Sertakan nama untuk mengisi</label>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="includeName" name="require_name" readonly
-                                    {{ $vote->require_name ? 'checked' : '' }}>
-                            </div>
+                    <input type="text" id="randomCode" name="access_code" class="form-control mb-2 
+                {{ $vote->is_protected ? '' : 'd-none' }}" value="{{ $vote->access_code ?? '' }}" readonly>
+
+                    <label class="form-label" for="includeName">Nonaktifkan anonymous</label>
+                    <div class="form-control form-switch">
+                        <div class="form-check form-switch">
+                            <label class="form-check-label" for="includeName">Sertakan nama untuk mengisi</label>
+                            <input class="form-check-input" type="checkbox" id="includeName" name="require_name"
+                                {{ $vote->require_name ? 'checked' : '' }}>
                         </div>
                     </div>
                 </div>
@@ -155,8 +134,8 @@
                 </div>
 
                 <div class="col-md-5">
-                    <label for="datetimePicker" class="form-label">Buka vote pada</label>
-                    <div class="mb-2 input-group">
+                    <label for="openDate" class="form-label">Buka vote pada</label>
+                    <div class="input-group mb-2">
                         <input type="text" class="form-control" id="openDate" name="open_date"
                             value="{{ $vote->open_date ? \Carbon\Carbon::parse($vote->open_date)->format('d-m-Y H:i') : '' }}"
                             placeholder="Pilih Tanggal & Jam" required>
@@ -164,8 +143,9 @@
                             <i class="bi bi-calendar-event"></i>
                         </span>
                     </div>
-                    <label for="datetimePicker" class="form-label">Tutup vote pada</label>
-                    <div class="mb-2 input-group">
+
+                    <label for="closeDate" class="form-label">Tutup vote pada</label>
+                    <div class="input-group mb-2">
                         <input type="text" class="form-control" id="closeDate" name="close_date"
                             value="{{ $vote->close_date ? \Carbon\Carbon::parse($vote->close_date)->format('d-m-Y H:i') : '' }}"
                             placeholder="Pilih Tanggal & Jam" required>
@@ -173,9 +153,18 @@
                             <i class="bi bi-calendar-event"></i>
                         </span>
                     </div>
+
+                    <div>
+                        <label for="voteVisibility" class="form-label">Tampilan hasil vote</label>
+                        <select class="form-select" id="voteVisibility" name="visibility" required>
+                            <option value="private" {{ $vote->visibility == 'private' ? 'selected' : '' }}>Private</option>
+                            <option value="public" {{ $vote->visibility == 'public' ? 'selected' : '' }}>Public</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="text-end mt-3">
             <a href="{{ route('vote.show', ['slug' => $vote->slug]) }}" class="btn btn-secondary m-1">
                 <i class="bi bi-chevron-left"></i>Kembali
@@ -279,6 +268,7 @@
 
         let openDateValue = $("#openDate").val();
         let closeDateValue = $("#closeDate").val();
+        let voteVisibilityValue = $("#voteVisibility").val();
 
         let openDateInput = flatpickr("#openDate", {
             enableTime: true,
@@ -288,10 +278,7 @@
             onChange: function(selectedDates) {
                 if (selectedDates.length > 0) {
                     let minCloseDate = new Date(selectedDates[0]);
-                    minCloseDate.setHours(minCloseDate.getHours() + 1);
-
                     closeDateInput.set("minDate", minCloseDate);
-                    closeDateInput.setDate(minCloseDate);
                 }
             }
         });
@@ -302,22 +289,6 @@
             time_24hr: true,
             minDate: "today"
         });
-
-        $(document).ready(function() {
-            if ($("#openDate").val()) {
-                openDateInput.setDate($("#openDate").val());
-
-                if (openDateInput.selectedDates.length > 0) {
-                    let minCloseDate = new Date(openDateInput.selectedDates[0]);
-                    minCloseDate.setHours(minCloseDate.getHours() + 1);
-
-                    closeDateInput.set("minDate", minCloseDate);
-                    closeDateInput.setDate(minCloseDate);
-                }
-            }
-        });
-
-
 
         // Kode vote
         $('#protectVote').on('change', function() {
@@ -504,7 +475,6 @@
                 });
             }
 
-            // Close the modal
             $('#deleteQuestionModal').modal('hide');
         });
 
@@ -627,9 +597,17 @@
 
         $(document).on("click", ".remove-image-btn", function() {
             const imageContainer = $(this).closest(".image-container");
+            const optionId = $(this).data("option-id");
+
             imageContainer.addClass("d-none");
             imageContainer.find("img").attr("src", "");
             imageContainer.find("input").val("");
+
+            $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', `remove_images[${optionId}]`)
+                .val('1')
+                .appendTo(imageContainer);
         });
 
         $('#updateVoteForm').on('submit', function(e) {
@@ -638,18 +616,18 @@
 
             $('.question-card').each(function(questionIndex) {
                 const optionsContainer = $(this).find('.optionsContainer');
+                const questionId = $(this).find('input[name$="[id]"]').val();
 
                 optionsContainer.find('.row').each(function(optionIndex) {
+                    const optionId = $(this).find('input[name$="[id]"]').val();
                     const imageContainer = $(this).next('.image-container');
-                    const imageInput = imageContainer.find('.image-input');
+                    const imageInput = imageContainer.find('img');
 
-                    if (imageInput.length && !imageInput.hasClass('d-none')) {
-                        const imageValue = imageInput.val();
-
+                    if (imageInput.length && imageInput.attr('src') && !imageContainer.hasClass('d-none')) {
                         $('<input>')
                             .attr('type', 'hidden')
-                            .attr('name', `choice_images[${$(this).closest('.question-card').find('input[name$="[id]"]').val()}][]`)
-                            .val(imageValue)
+                            .attr('name', `choice_images[${questionId}][${optionIndex}]`)
+                            .val(imageInput.attr('src'))
                             .appendTo($(this));
                     }
                 });

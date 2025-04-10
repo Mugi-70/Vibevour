@@ -3,9 +3,11 @@
 @section('content')
 
 <div class="card border-0 shadow-sm">
-    <div class="card-body border-0 pb-3 pe-3 pt-3">
+    <div class="card-body border-0 pb-3 pe-3 pt-3 ">
         <div class="d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">Detail Vote</h5>
+            <h5 class="mb-0 "><button class="btn me-2 d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                    data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list"></i> Detail Vote</h5>
         </div>
     </div>
 </div>
@@ -55,12 +57,11 @@
                                 </div>
                                 <div class="col-6 text-end">${percentage}% (${voteCount} Vote)</div>
                                 </div>
-                                <div class="col-12">
-                                ${imageHtml} 
-                                </div>
-
                                 <div class="mb-2 progress">
                                     <div class="progress-bar" style="width: ${percentage}%; background-color: ${barColor};"></div>
+                                </div>
+                                <div class=" mb-3 col-12">
+                                ${imageHtml} 
                                 </div>
                         <hr class="my-4">
                             `;
@@ -139,7 +140,7 @@
         </script>
 
         <div class="row">
-            <p class="fw-bold mt-3"><span id="total-votes">Loading...</span> <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#peopleModal">Detail</button> </p>
+            <p class="fw-bold mt-3"><span id="total-votes">Loading...</span> <button type="button" class="btn btn-link" id="detail-button" style="display: none;" data-bs-toggle="modal" data-bs-target="#peopleModal">Detail</button> </p>
             <p id="access-code-container" style="display: none;"><span id="access-code"></span></p>
             <script>
                 $(document).ready(function() {
@@ -153,12 +154,17 @@
                                 $("#access-code").text("Kode akses untuk vote ini adalah: " + (data.accessCode));
                                 $("#access-code-container").show();
                             }
+
+                            if (data.required_name) {
+                                $("#detail-button").show();
+                            }
                         },
                         error: function(error) {
                             console.log("Error fetching vote summary: ", error);
                             $("#total-votes").text("Gagal memuat data.");
                         }
                     });
+
                 });
             </script>
             <div class="col-md-9 mt-3">

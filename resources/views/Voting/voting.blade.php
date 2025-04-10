@@ -62,7 +62,7 @@
                 <div id="questions-container" class="m-3"></div>
 
                 <div class="m-3" id="nameContainer" style="display: none;">
-                    <label for="voterName" class="form-label">Nama Anda:</label>
+                    <label for="voterName" class="form-label">Nama</label>
                     <input type="text" class="form-control" id="voterName" placeholder="Masukkan nama Anda">
                     <div class="invalid-feedback" id="nameFeedback">
                         Nama wajib diisi.
@@ -154,6 +154,11 @@
                         let openDate = new Date(response.vote.open_date);
                         let closeDate = new Date(response.vote.close_date);
 
+
+                        if (response.vote.result_visibility === 'private') {
+                            $(".result-vote-btn").hide();
+                        }
+
                         if (currentDate < openDate) {
                             $("#voteNotStartedModal").modal('show');
                             $("#vote-content").hide();
@@ -164,10 +169,6 @@
                             $("#voteClosedModal").modal('show');
                             $("#vote-content").hide();
                             return;
-                        }
-
-                        if (response.vote.result_visibility === 'private') {
-                            $(".result-vote-btn").hide();
                         }
 
                         console.log(response);
@@ -195,10 +196,10 @@
                                     <input class="form-check-input" type="${question.type === 'multiple' ? 'checkbox' : 'radio'}" 
                                         name="voteOption[${question.id}]${question.type === 'multiple' ? '[]' : ''}" 
                                         value="${option.id}" id="option${option.id}">
-                                    <label class="d-flex form-check-label align-items-center text-muted" for="option${option.id}">
-                                        ${option.image ? `<img src="${option.image}" alt="Option Image" class="img-thumbnail me-2" style="width: 1000px;  object-fit: cover;">` : ''}
-                                        ${option.option}
-                                    </label>
+                                    <label class="d-flex flex-column align-items-start form-check-label text-muted" for="option${option.id}">
+                                    ${option.option}
+                                    ${option.image ? `<img src="${option.image}" alt="Option Image" class="img-thumbnail mt-2" style="width: 1000px; object-fit: cover;">` : ''}
+                                </label>
                                 </div>`;
                                 });
 
@@ -304,18 +305,19 @@
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         votes: selectedOptions,
-                        name: voterName
+                        name: voterName,
                     },
                     success: function(response) {
-                        alert(response.message);
+                        if (response.has_voted) {
+                            $("#alreadyVotedModal").modal("show");
+                        } else {
+                            $("#successVoteModal").modal("show");
+                        }
                     },
                     error: function(xhr) {
-                        if (xhr.status === 403) {
-                            alert(xhr.responseJSON.message);
-                        } else {
-                            alert("Terjadi kesalahan saat mengirim vote.");
-                        }
+                        $("#errorVoteModal").modal("show");
                     }
+
                 });
             });
 
@@ -383,7 +385,77 @@
                 <p>Vote ini sudah ditutup. Anda tidak dapat lagi melakukan vote.</p>
             </div>
             <div class="modal-footer">
+                <a href="javascript:void(0);" class="btn btn-success result-vote-btn" data-slug="{{ $vote->slug }}">
+                    <i class="bi bi-card-checklist"></i> Hasil
+                </a>
+                <script>
+                    $(document).ready(function() {
+                        $(".result-vote-btn").on("click", function() {
+                            var slug = $(this).data("slug");
+                            window.location.href = "/result_vote_" + slug;
+                        });
+                    });
+                </script>
                 <a href="/" class="btn btn-primary">Kembali ke Beranda</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successVoteModal" tabindex="-1" aria-labelledby="successVoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-success">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successVoteModalLabel">Vote Berhasil</h5>
+            </div>
+            <div class="modal-body">
+                <p>Terima kasih! Suara Anda telah berhasil dikirim.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="errorVoteModal" tabindex="-1" aria-labelledby="errorVoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorVoteModalLabel">Terjadi Kesalahan</h5>
+            </div>
+            <div class="modal-body">
+                <p>Maaf, terjadi kesalahan saat mengirim vote Anda. Silakan coba lagi nanti.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="alreadyVotedModal" tabindex="-1" aria-labelledby="alreadyVotedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="alreadyVotedModalLabel">Anda Sudah Vote</h5>
+            </div>
+            <div class="modal-body">
+                <p>Anda telah melakukan vote sebelumnya. Setiap orang hanya bisa vote satu kali.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <a href="javascript:void(0);" class="btn btn-success result-vote-btn" data-slug="{{ $vote->slug }}">
+                    <i class="bi bi-card-checklist"></i> Hasil
+                </a>
+                <script>
+                    $(document).ready(function() {
+                        $(".result-vote-btn").on("click", function() {
+                            var slug = $(this).data("slug");
+                            window.location.href = "/result_vote_" + slug;
+                        });
+                    });
+                </script>
             </div>
         </div>
     </div>

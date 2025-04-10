@@ -4,13 +4,14 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body border-0 pb-3 pe-3 pt-3">
             <div class="d-flex align-items-center justify-content-between">
-                <h5 class="mb-0">Tambah Vote</h5>
+                <h5 class="mb-0"><button class="btn me-2 d-lg-none" id="toggleSidebar" data-bs-toggle="offcanvas"
+                        data-bs-target="#mobileSidebar">
+                        <i class="bi bi-list"></i> Tambah Vote</h5>
             </div>
         </div>
     </div>
 
     <div class="container mt-4">
-
         <form id="voteForm" method="POST" action="{{ route('vote.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="card p-4">
@@ -72,7 +73,7 @@
                         <label for="closeDate" class="form-label">Tutup vote pada</label>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control" id="closeDate" name="close_date"
-                                placeholder="Pilih Tanggal & Jam" required>
+                                placeholder="Pilih Tanggal & Jam">
                             <span class="input-group-text">
                                 <i class="bi bi-calendar-event"></i>
                             </span>
@@ -113,12 +114,28 @@
                             <p id="uploadHint" class="text-muted">JPG, PNG, Max 3MB</p>
                             <img id="previewImage" src="" class="d-none" style="max-width: 100%; height: auto;">
                         </div>
-                        <!-- <input type="file" class="d-none" id="uploadInput" accept="image/png, image/jpeg"> -->
                         <input type="file" name="choice_images" id="uploadInput" class="d-none">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" id="confirmUpload" data-bs-dismiss="modal">OK</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Peringatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalContent">
+                    Setiap pertanyaan harus memiliki minimal 2 opsi.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
@@ -166,21 +183,6 @@
                 }
             });
 
-
-            // flatpickr("#openDate", {
-            //     enableTime: true,
-            //     dateFormat: "d-m-Y H:i",
-            //     time_24hr: true,
-            //     minDate: "today"
-            // });
-
-            // flatpickr("#closeDate", {
-            //     enableTime: true,
-            //     dateFormat: "d-m-Y H:i",
-            //     time_24hr: true,
-            //     minDate: "today"
-            // });  
-
             //Kode vote
             $('#protectVote').on('change', function() {
                 let textbox = $('#randomCode');
@@ -213,9 +215,6 @@
                 choiceCounters[questionId]++;
 
                 const choiceId = `choice_${questionId}_${choiceCounters[questionId]}`;
-                // const $choicesContainer = $(`#choices_${questionId}`);
-                // const choiceCount = $choicesContainer.find('.choice-group').length + 1;
-                // const choiceId = `choice_${questionId}_${choiceCount}`;
 
                 return $(`
                 <div class="choice-group" id="${choiceId}">
@@ -377,13 +376,6 @@
                     $(this).find('.choice-number').text(`${index + 1}.`);
                     $(this).find('input[type="text"]').attr('placeholder', `Pilihan ${index + 1}`);
                 });
-                updateDeleteChoiceButtons($choicesContainer);
-            }
-
-            function updateDeleteChoiceButtons($choicesContainer) {
-                const $choices = $choicesContainer.find('.choice-item');
-                const $deleteButtons = $choicesContainer.find('.remove-choice-btn');
-                $deleteButtons.toggle($choices.length > 2);
             }
 
             function updateDeleteButtons() {
@@ -490,32 +482,36 @@
                 const $choicesContainer = $choiceGroup.closest('.choices');
                 const totalChoices = $choicesContainer.find('.choice-group').length;
 
-                if (totalChoices > 2) {
-                    $choiceGroup.remove();
-
-                    const questionId = $choicesContainer.closest('.card-question').attr('id');
-                    $choicesContainer.find('.choice-group').each(function(choiceIndex) {
-                        const choiceNumber = choiceIndex + 1;
-                        const newChoiceId = `choice_${questionId}_${choiceNumber}`;
-                        const oldId = $(this).attr('id');
-
-                        $(this).attr('id', newChoiceId);
-                        $(this).find('input[type="text"]')
-                            .attr('name', `choices[${questionId}][]`)
-                            .attr('id', `input_${newChoiceId}`);
-
-                        $(this).find('input[type="hidden"]')
-                            .attr('name', `choice_images[${questionId}][]`)
-                            .attr('id', `image_input_${newChoiceId}`);
-
-                        $(this).find('img').attr('id', `img_${newChoiceId}`);
-                        $(this).find('.open-upload-modal').attr('data-target', `img_${newChoiceId}`);
-                    });
-
-                    updateChoiceNumbers($choicesContainer);
-                    updateDeleteChoiceButtons($choicesContainer);
+                if (totalChoices <= 2) {
+                    $("#errorModalContent").text("Setiap pertanyaan harus memiliki minimal 2 opsi.");
+                    new bootstrap.Modal(document.getElementById('errorModal')).show();
+                    return;
                 }
+
+                $choiceGroup.remove();
+
+                const questionId = $choicesContainer.closest('.card-question').attr('id');
+                $choicesContainer.find('.choice-group').each(function(choiceIndex) {
+                    const choiceNumber = choiceIndex + 1;
+                    const newChoiceId = `choice_${questionId}_${choiceNumber}`;
+
+                    $(this).attr('id', newChoiceId);
+                    $(this).find('input[type="text"]')
+                        .attr('name', `choices[${questionId}][]`)
+                        .attr('id', `input_${newChoiceId}`);
+
+                    $(this).find('input[type="hidden"]')
+                        .attr('name', `choice_images[${questionId}][]`)
+                        .attr('id', `image_input_${newChoiceId}`);
+
+                    $(this).find('img').attr('id', `img_${newChoiceId}`);
+                    $(this).find('.open-upload-modal').attr('data-target', `img_${newChoiceId}`);
+                });
+
+                updateChoiceNumbers($choicesContainer);
+                updateChoiceNumbers($choicesContainer);
             });
+
 
             $(document).on('click', '.delete-question-btn', function() {
                 $(this).closest(".card-question").remove();
