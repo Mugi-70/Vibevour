@@ -32,6 +32,9 @@
                         <h6 class="mb-0 fw-bold">{{ strtolower($item->user->name) }}</h6>
                         <p class="text-muted mb-0">{{ strtolower($item->user->email) }}</p>
                     </div>
+                    @if ($item->role == 'admin')
+                        <span class="badge text-bg-dark ms-5">Admin</span>
+                    @endif
                 </div>
             @endforeach
         </div>
